@@ -1,186 +1,52 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Historia </title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
+function dibujarGrafico(ancho, alto, factor, porcentaje) {
+  let canvas = document.getElementById("grafico")
+  let c = canvas.getContext("2d")
 
-    header {
-      background: #007BFF;
-      color: white;
-      padding: 30px 20px;
-      text-align: center;
-    }
+  c.clearRect(0,0,canvas.width,canvas.height)
 
-    h1 {
-      margin: 0;
-    }
+  let escala = Math.min(canvas.width/ancho, canvas.height/alto)
 
-    .timeline {
-      position: relative;
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 10px;
-    }
+  let w = ancho * escala
+  let h = alto * escala
 
-    .timeline::after {
-      content: '';
-      position: absolute;
-      width: 4px;
-      background-color: #007BFF;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-      margin-left: -2px;
-    }
+  let origenX = 20
+  let origenY = 20
 
-    .container {
-      padding: 20px 40px;
-      position: relative;
-      background-color: inherit;
-      width: 40%;
-    }
+  // Marco escalerilla
+  c.strokeRect(origenX, origenY, w, h)
 
-    .container.left {
-      left: 0;
-    }
+  // Zona permitida NEC
+  let anchoPermitido = w * factor
+  c.fillStyle = "rgba(255,165,0,0.3)"
+  c.fillRect(origenX, origenY, anchoPermitido, h)
 
-    .container.right {
-      left: 50%;
-    }
+  // Posición inicial → esquina inferior izquierda
+  let x = origenX
+  let yBase = origenY + h
+  let altoColumna = 0
+  let anchoColumna = 0
 
-    .content {
-      padding: 20px;
-      background-color: white;
-      position: relative;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
+  cables.forEach(cable => {
+    let r = (cable.d/2) * escala
+    let diam = r * 2
 
-    .container.left::before,
-    .container.right::before {
-      content: " ";
-      height: 0;
-      position: absolute;
-      top: 22px;
-      width: 0;
-      z-index: 1;
-      border: 10px solid transparent;
-    }
+    for (let i = 0; i < cable.n; i++) {
 
-    .container.left::before {
-      right: -20px;
-      border-left-color: white;
-    }
-
-    .container.right::before {
-      left: -20px;
-      border-right-color: white;
-    }
-
-    .container.left::after,
-    .container.right::after {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      right: -10px;
-      background-color: #007BFF;
-      border: 4px solid #f4f4f4;
-      top: 20px;
-      border-radius: 50%;
-      z-index: 1;
-    }
-
-    .container.right::after {
-      left: -10px;
-    }
-
-    @media screen and (max-width: 768px) {
-      .timeline::after {
-        left: 31px;
+      // Si no cabe verticalmente → nueva columna a la derecha
+      if (altoColumna + diam > h) {
+        x += anchoColumna
+        altoColumna = 0
+        anchoColumna = 0
       }
 
-      .container {
-        width: 100%;
-        padding-left: 70px;
-        padding-right: 25px;
-      }
+      let y = yBase - altoColumna - r
 
-      .container.right {
-        left: 0%;
-      }
+      c.beginPath()
+      c.arc(x + r, y, r, 0, Math.PI*2)
+      c.stroke()
 
-      .container.left::before,
-      .container.right::before {
-        left: 60px;
-        border: medium solid transparent;
-        border-left-color: white;
-      }
-
-      .container.left::after,
-      .container.right::after {
-        left: 15px;
-      }
+      altoColumna += diam
+      anchoColumna = Math.max(anchoColumna, diam)
     }
-  </style>
-</head>
-<body>
-
-<header>
-  <h1> Historia </h1>
-  <p>Una línea del tiempo de mi crecimiento laboral</p>
-  <a href="index.html">Inicio</a>
-  <a href="proyectos.html">Proyectos</a>
-</header>
-
-<div class="timeline">
-  <div class="container left">
-    <div class="content">
-      <h2>2015 - Inicio</h2>
-      <p>Comencé mi carrera como asistente técnico en una empresa de instalaciones eléctricas.</p>
-    </div>
-  </div>
-  <div class="container right">
-    <div class="content">
-      <h2>2017 - Primer ascenso</h2>
-      <p>Fui promovido a proyectista junior, participando en proyectos de media tensión.</p>
-    </div>
-  </div>
-  <div class="container left">
-    <div class="content">
-      <h2>2019 - Nuevos desafíos</h2>
-      <p>Me integré a una consultora en ingeniería, donde adquirí experiencia en Revit y modelado BIM.</p>
-    </div>
-  </div>
-  <div class="container right">
-    <div class="content">
-      <h2>2022 - Especialización</h2>
-      <p>Completé una certificación en diseño de sistemas eléctricos industriales y lideré mi primer equipo de trabajo.</p>
-    </div>
-  </div>
-  <div class="container left">
-    <div class="content">
-      <h2>2024 - Actualidad</h2>
-      <p>Actualmente trabajo como proyectista eléctrico senior, combinando experiencia técnica con liderazgo de proyectos.</p>
-    </div>
-  </div>
-</div>
-</body>
-
-
-<div class="timeline">
-  <!-- Contenido de la línea del tiempo (igual que antes) -->
-  <!-- ... -->
-</div>
-
-</body>
-</html>
+  })
+}
