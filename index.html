@@ -134,11 +134,14 @@ function dibujarCotaVertical(ctx, x, y1, y2, texto) {
   ctx.closePath()
   ctx.fill()
 
+  // TEXTO DESPLAZADO HACIA AFUERA
+  const offset = 18   // aumenta este valor si quieres más separación
+
   ctx.save()
-  ctx.translate(x - 6, (y1 + y2) / 2)
+  ctx.translate(x + offset, (y1 + y2) / 2)
   ctx.rotate(-Math.PI / 2)
   ctx.textAlign = "center"
-  ctx.textBaseline = "top"
+  ctx.textBaseline = "middle"
   ctx.fillText(texto, 0, 0)
   ctx.restore()
 }
@@ -299,6 +302,7 @@ dibujarCotaVertical(
 
 </body>
 </html>
+
 
 
 
