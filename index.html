@@ -87,6 +87,62 @@ Cantidad
 <script>
 let cables = []
 
+function dibujarCotaHorizontal(ctx, x1, y, x2, texto) {
+  ctx.beginPath()
+  ctx.moveTo(x1, y)
+  ctx.lineTo(x2, y)
+  ctx.stroke()
+
+  // flechas
+  ctx.beginPath()
+  ctx.moveTo(x1, y)
+  ctx.lineTo(x1 + 6, y - 4)
+  ctx.lineTo(x1 + 6, y + 4)
+  ctx.closePath()
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.moveTo(x2, y)
+  ctx.lineTo(x2 - 6, y - 4)
+  ctx.lineTo(x2 - 6, y + 4)
+  ctx.closePath()
+  ctx.fill()
+
+  ctx.textAlign = "center"
+  ctx.textBaseline = "bottom"
+  ctx.fillText(texto, (x1 + x2) / 2, y - 4)
+}
+
+function dibujarCotaVertical(ctx, x, y1, y2, texto) {
+  ctx.beginPath()
+  ctx.moveTo(x, y1)
+  ctx.lineTo(x, y2)
+  ctx.stroke()
+
+  // flechas
+  ctx.beginPath()
+  ctx.moveTo(x, y1)
+  ctx.lineTo(x - 4, y1 + 6)
+  ctx.lineTo(x + 4, y1 + 6)
+  ctx.closePath()
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.moveTo(x, y2)
+  ctx.lineTo(x - 4, y2 - 6)
+  ctx.lineTo(x + 4, y2 - 6)
+  ctx.closePath()
+  ctx.fill()
+
+  ctx.save()
+  ctx.translate(x - 6, (y1 + y2) / 2)
+  ctx.rotate(-Math.PI / 2)
+  ctx.textAlign = "center"
+  ctx.textBaseline = "top"
+  ctx.fillText(texto, 0, 0)
+  ctx.restore()
+}
+  
 function agregarCable() {
   let d = Number(diametro.value)
   let n = Number(cantidad.value)
@@ -167,6 +223,43 @@ function dibujarGrafico(ancho, alto, factor, porcentaje) {
   // Marco escalerilla
   c.strokeRect(origenX, origenY, w, h)
 
+  // Estilo de cotas
+c.font = "12px Arial"
+c.fillStyle = "#000"
+c.strokeStyle = "#000"
+
+// Líneas de referencia (extensión)
+c.beginPath()
+// verticales para cota de ancho
+c.moveTo(origenX, origenY - 10)
+c.lineTo(origenX, origenY)
+c.moveTo(origenX + w, origenY - 10)
+c.lineTo(origenX + w, origenY)
+// horizontales para cota de alto
+c.moveTo(origenX + w + 10, origenY)
+c.lineTo(origenX + w, origenY)
+c.moveTo(origenX + w + 10, origenY + h)
+c.lineTo(origenX + w, origenY + h)
+c.stroke()
+
+// Cota de ANCHO (mm)
+dibujarCotaHorizontal(
+  c,
+  origenX,
+  origenY - 10,
+  origenX + w,
+  `${ancho} mm`
+)
+
+// Cota de ALTO ÚTIL (mm)
+dibujarCotaVertical(
+  c,
+  origenX + w + 10,
+  origenY,
+  origenY + h,
+  `${alto} mm`
+)
+
   // Expandir cables y ordenar grandes primero
   let lista = []
   cables.forEach(cable => {
@@ -206,5 +299,6 @@ function dibujarGrafico(ancho, alto, factor, porcentaje) {
 
 </body>
 </html>
+
 
 
