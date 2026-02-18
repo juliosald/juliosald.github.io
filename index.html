@@ -82,7 +82,7 @@ Cantidad
 <h2 id="resultado"></h2>
 </div>
 
-<canvas id="grafico" width="600" height="250"></canvas>
+<canvas id="grafico"></canvas>
 
 <script>
 let cables = []
@@ -148,23 +148,24 @@ function dibujarGrafico(ancho, alto, factor, porcentaje) {
   let canvas = document.getElementById("grafico")
   let c = canvas.getContext("2d")
 
+  let margen = 40
+  let escalaBase = 1.2   // controla el tamaño visual general
+
+  // Ajustar tamaño del canvas según escalerilla
+  canvas.width = ancho * escalaBase + margen * 2
+  canvas.height = alto * escalaBase + margen * 2
+
   c.clearRect(0,0,canvas.width,canvas.height)
 
-  let escala = Math.min(canvas.width/ancho, canvas.height/alto)
-
+  let escala = escalaBase
   let w = ancho * escala
   let h = alto * escala
 
-  let origenX = 20
-  let origenY = 20
+  let origenX = margen
+  let origenY = margen
 
   // Marco escalerilla
   c.strokeRect(origenX, origenY, w, h)
-
-  // Zona permitida
-  //let anchoPermitido = w * factor
-  //c.fillStyle = "rgba(255,165,0,0.3)"
-  //c.fillRect(origenX, origenY, anchoPermitido, h)
 
   // Expandir cables y ordenar grandes primero
   let lista = []
@@ -175,22 +176,20 @@ function dibujarGrafico(ancho, alto, factor, porcentaje) {
   })
   lista.sort((a,b)=>b-a)
 
-  let yBase = origenY + h     // base de la capa actual
-  let alturaCapa = 0          // altura de la capa actual
-  let x = origenX             // avance horizontal
+  let yBase = origenY + h
+  let alturaCapa = 0
+  let x = origenX
 
   lista.forEach(diametro => {
     let r = (diametro/2) * escala
     let d = r * 2
 
-    // Si no cabe en el ancho → cerrar capa y subir
     if (x + d > origenX + w) {
       yBase -= alturaCapa
       x = origenX
       alturaCapa = 0
     }
 
-    // Si ya no hay altura disponible → no dibuja más
     if (yBase - d < origenY) return
 
     let y = yBase - r
@@ -207,4 +206,5 @@ function dibujarGrafico(ancho, alto, factor, porcentaje) {
 
 </body>
 </html>
+
 
