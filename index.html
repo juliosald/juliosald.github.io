@@ -1,3 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Llenado de Escalerilla - NEC</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 30px;
+  padding: 20px;
+}
+
+h2 { margin-top: 0 }
+
+input, select, button {
+  width: 100%;
+  padding: 6px;
+  margin: 4px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+td, th {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: center;
+}
+
+canvas {
+  border: 1px solid #aaa;
+  background: #fafafa;
+}
+
+.ok { color: green; font-weight: bold }
+.fail { color: red; font-weight: bold }
+</style>
+</head>
+
+<body>
+
+<div>
+<h2>Escalerilla</h2>
+
+Ancho (mm)
+<input id="ancho" value="300">
+
+Altura útil (mm)
+<input id="alto" value="100">
+
+Factor ocupación NEC
+<select id="factor">
+  <option value="0.4">40%</option>
+</select>
+
+<h2>Cables</h2>
+
+Diámetro (mm)
+<input id="diametro">
+
+Cantidad
+<input id="cantidad">
+
+<button onclick="agregarCable()">Agregar cable</button>
+
+<table id="tabla">
+<tr>
+<th>Ø mm</th>
+<th>Cant</th>
+<th>Eliminar</th>
+</tr>
+</table>
+
+<button onclick="calcular()">Calcular llenado</button>
+
+<h2 id="resultado"></h2>
+</div>
+
+<canvas id="grafico" width="600" height="250"></canvas>
+
+<script>
+let cables = []
+
+function agregarCable() {
+  let d = Number(diametro.value)
+  let n = Number(cantidad.value)
+  if (!d || !n) return
+
+  cables.push({d, n})
+  renderTabla()
+}
+
+function eliminar(index) {
+  cables.splice(index, 1)
+  renderTabla()
+}
+
+function renderTabla() {
+  let tabla = document.getElementById("tabla")
+  tabla.innerHTML = `
+  <tr>
+    <th>Ø mm</th>
+    <th>Cant</th>
+    <th>Eliminar</th>
+  </tr>`
+
+  cables.forEach((c, i) => {
+    tabla.innerHTML += `
+      <tr>
+        <td>${c.d}</td>
+        <td>${c.n}</td>
+        <td><button onclick="eliminar(${i})">X</button></td>
+      </tr>`
+  })
+}
+
+function calcular() {
+  let ancho = Number(document.getElementById("ancho").value)
+  let alto = Number(document.getElementById("alto").value)
+  let factor = Number(document.getElementById("factor").value)
+
+  let A_permitida = ancho * alto * factor
+
+  let A_total = 0
+  cables.forEach(c => {
+    A_total += Math.PI * (c.d/2)**2 * c.n
+  })
+
+  let porcentaje = (A_total / A_permitida) * 100
+
+  let estado = porcentaje <= 100
+    ? "<span class='ok'>CUMPLE NEC</span>"
+    : "<span class='fail'>EXCEDE NEC</span>"
+
+  resultado.innerHTML =
+    "Llenado: " + porcentaje.toFixed(1) + "%<br>" + estado
+
+  dibujarGrafico(ancho, alto, factor, porcentaje)
+}
+
 function dibujarGrafico(ancho, alto, factor, porcentaje) {
   let canvas = document.getElementById("grafico")
   let c = canvas.getContext("2d")
@@ -15,38 +161,49 @@ function dibujarGrafico(ancho, alto, factor, porcentaje) {
   // Marco escalerilla
   c.strokeRect(origenX, origenY, w, h)
 
-  // Zona permitida NEC
+  // Zona permitida
   let anchoPermitido = w * factor
   c.fillStyle = "rgba(255,165,0,0.3)"
   c.fillRect(origenX, origenY, anchoPermitido, h)
 
-  // Posición inicial → esquina inferior izquierda
-  let x = origenX
-  let yBase = origenY + h
-  let altoColumna = 0
-  let anchoColumna = 0
-
+  // Expandir cables y ordenar grandes primero
+  let lista = []
   cables.forEach(cable => {
-    let r = (cable.d/2) * escala
-    let diam = r * 2
-
     for (let i = 0; i < cable.n; i++) {
-
-      // Si no cabe verticalmente → nueva columna a la derecha
-      if (altoColumna + diam > h) {
-        x += anchoColumna
-        altoColumna = 0
-        anchoColumna = 0
-      }
-
-      let y = yBase - altoColumna - r
-
-      c.beginPath()
-      c.arc(x + r, y, r, 0, Math.PI*2)
-      c.stroke()
-
-      altoColumna += diam
-      anchoColumna = Math.max(anchoColumna, diam)
+      lista.push(cable.d)
     }
   })
+  lista.sort((a,b)=>b-a)
+
+  let yBase = origenY + h     // base de la capa actual
+  let alturaCapa = 0          // altura de la capa actual
+  let x = origenX             // avance horizontal
+
+  lista.forEach(diametro => {
+    let r = (diametro/2) * escala
+    let d = r * 2
+
+    // Si no cabe en el ancho → cerrar capa y subir
+    if (x + d > origenX + w) {
+      yBase -= alturaCapa
+      x = origenX
+      alturaCapa = 0
+    }
+
+    // Si ya no hay altura disponible → no dibuja más
+    if (yBase - d < origenY) return
+
+    let y = yBase - r
+
+    c.beginPath()
+    c.arc(x + r, y, r, 0, Math.PI*2)
+    c.stroke()
+
+    x += d
+    alturaCapa = Math.max(alturaCapa, d)
+  })
 }
+</script>
+
+</body>
+</html>
