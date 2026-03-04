@@ -498,8 +498,38 @@
   .card:nth-child(1) { animation-delay: 0.1s; }
   .card:nth-child(2) { animation-delay: 0.2s; }
 
-  /* EMPTY STATE */
-  .empty-state {
+  .btn-triada-on {
+    background: rgba(167,139,250,0.2);
+    color: #a78bfa;
+    border: 1px solid rgba(167,139,250,0.5);
+    padding: 6px 10px;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+  }
+  .btn-triada-on:hover { background: rgba(167,139,250,0.35); }
+
+  .btn-triada-off {
+    background: rgba(100,116,139,0.1);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+  }
+  .btn-triada-off:hover { background: rgba(167,139,250,0.1); color: #a78bfa; border-color: rgba(167,139,250,0.4); }
+
+  .triada-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    background: rgba(167,139,250,0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(167,139,250,0.3);
+    padding: 1px 6px;
+    letter-spacing: 1px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
     text-align: center;
     padding: 2rem;
     font-family: var(--mono);
@@ -684,12 +714,17 @@ function addCable() {
   if (!d || d <= 0) { shake('diam'); return; }
 
   const area = Math.PI * Math.pow(d / 2, 2);
-  cables.push({ diam: d, cant: c, area: area });
+  cables.push({ diam: d, cant: c, area: area, triada: false });
   renderTabla();
 
   document.getElementById('diam').value = '';
   document.getElementById('cant').value = '1';
   document.getElementById('diam').focus();
+}
+
+function toggleTriada(i) {
+  cables[i].triada = !cables[i].triada;
+  renderTabla();
 }
 
 function deleteCable(i) {
@@ -706,11 +741,18 @@ function renderTabla() {
 
   let rows = cables.map((c, i) => {
     const aTotal = (c.area * c.cant).toFixed(1);
+    const esMultiplo3 = c.cant % 3 === 0 && c.cant >= 3;
+    const triadaBtn = esMultiplo3
+      ? `<button class="btn ${c.triada ? 'btn-triada-on' : 'btn-triada-off'}" onclick="toggleTriada(${i})" title="Agrupar en triadas (2 abajo + 1 arriba)">
+           ${c.triada ? '▲ TRIADA' : '▲ TRIADA'}
+         </button>`
+      : `<span style="font-family:var(--mono);font-size:0.6rem;color:var(--border);">—</span>`;
     return `<tr>
       <td>Ø ${c.diam} mm</td>
       <td>${c.cant}</td>
       <td>${c.area.toFixed(1)} mm²</td>
       <td class="area-col">${aTotal} mm²</td>
+      <td>${triadaBtn}</td>
       <td><button class="btn btn-delete" onclick="deleteCable(${i})">✕</button></td>
     </tr>`;
   }).join('');
@@ -723,6 +765,7 @@ function renderTabla() {
           <th>Cant.</th>
           <th>Área/cable</th>
           <th>Área total</th>
+          <th>Triada</th>
           <th></th>
         </tr>
       </thead>
@@ -859,24 +902,32 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
   ctx.fillText(`${altura} mm`, 0, 0);
   ctx.restore();
 
-  // Place cables with physics-based stacking
-  // Each circle finds the lowest Y position where it fits (resting on floor or on other circles)
-  const allCircles = [];
+  // Build circle list — triada cables grouped as (left, right, top-center)
+  const allCircles = [];   // free-physics circles
+  const triadGroups = [];  // [{r, color, count}] one entry per triada group
+
   cableList.forEach((cable, ci) => {
-    for (let n = 0; n < cable.cant; n++) {
-      allCircles.push({ r: cable.diam / 2, color: CABLE_COLORS[ci % CABLE_COLORS.length], typeIdx: ci });
+    const color = CABLE_COLORS[ci % CABLE_COLORS.length];
+    if (cable.triada && cable.cant % 3 === 0 && cable.cant >= 3) {
+      const numTriadas = cable.cant / 3;
+      for (let t = 0; t < numTriadas; t++) {
+        triadGroups.push({ r: cable.diam / 2, color });
+      }
+    } else {
+      for (let n = 0; n < cable.cant; n++) {
+        allCircles.push({ r: cable.diam / 2, color, typeIdx: ci });
+      }
     }
   });
 
-  // Largest cables first for better physical packing
+  // Largest cables first
   allCircles.sort((a, b) => b.r - a.r);
+  triadGroups.sort((a, b) => b.r - a.r);
 
   const placed = [];
 
   function findLowestY(cx, r) {
-    // Floor: center.y = altura - r - gap (respects gap from bottom wall)
     let bestY = altura - r - gap;
-
     for (const p of placed) {
       const dx = Math.abs(cx - p.x);
       const minDist = r + p.r + gap;
@@ -886,30 +937,89 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
         bestY = Math.min(bestY, candidateY);
       }
     }
-
     return bestY;
   }
 
-  // Sweep X positions left to right to find best placement column
-  for (const circ of allCircles) {
+  function placeSingle(circ) {
     const r = circ.r;
-    let bestX = -1;
-    let bestY = -Infinity;
-    // Fine step for accurate tangential placement
+    let bestX = -1, bestY = -Infinity;
     const step = Math.max(0.1, r * 0.05);
-
     for (let cx = r + gap; cx <= ancho - r - gap; cx += step) {
       const cy = findLowestY(cx, r);
       if (cy - r < 0) continue;
       if (bestX < 0 || cy > bestY || (cy === bestY && cx < bestX)) {
-        bestY = cy;
-        bestX = cx;
+        bestY = cy; bestX = cx;
       }
     }
+    if (bestX < 0) return false;
+    placed.push({ x: bestX, y: bestY, r, color: circ.color, triada: circ.triada || false });
+    return true;
+  }
 
-    if (bestX < 0) break;
+  // Place triada groups: find leftmost X where 3 circles fit in triangle formation
+  for (const tg of triadGroups) {
+    const r = tg.r;
+    const d = r * 2;
+    // Horizontal distance between centers of bottom two: 2r + gap (tangential)
+    const hDist = d + gap;
+    // Vertical offset of top circle center above bottom two centers
+    // Centers of bottom two are at y_bot; top circle rests on both:
+    // dist(top, bottom) = 2r + gap => vertical = sqrt((2r+gap)^2 - (r+gap/2)^2)
+    const diagDist = 2 * r + gap;
+    const halfH = hDist / 2;
+    const vOffset = Math.sqrt(Math.max(0, diagDist * diagDist - halfH * halfH));
 
-    placed.push({ x: bestX, y: bestY, r: r, color: circ.color });
+    // Need: leftX + r >= gap+r  and  leftX + hDist + r <= ancho - gap
+    const minCx = r + gap;
+    const maxCx = ancho - r - gap - hDist;
+
+    let placed3 = false;
+    const step = Math.max(0.1, r * 0.05);
+
+    // Try each starting X for left circle of bottom pair
+    for (let lx = minCx; lx <= maxCx; lx += step) {
+      const rx = lx + hDist;        // right bottom circle center X
+      const tx = lx + hDist / 2;    // top circle center X
+
+      // Bottom two must clear walls
+      if (rx + r + gap > ancho) continue;
+
+      // Find lowest Y for left circle
+      const lyL = findLowestY(lx, r);
+      const lyR = findLowestY(rx, r);
+      // Both bottom circles share the same floor Y (take the higher one = more constrained)
+      const botY = Math.min(lyL, lyR);
+
+      // Check top circle fits
+      const topY = botY - vOffset;
+      if (botY - r < 0 || topY - r < 0) continue;
+
+      // Check top circle doesn't collide with existing placed
+      let topOk = true;
+      for (const p of placed) {
+        const dx = Math.abs(tx - p.x);
+        const dy = Math.abs(topY - p.y);
+        if (Math.sqrt(dx * dx + dy * dy) < r + p.r + gap - 0.01) { topOk = false; break; }
+      }
+      if (!topOk) continue;
+
+      // Place all three
+      placed.push({ x: lx, y: botY, r, color: tg.color, triada: true });
+      placed.push({ x: rx, y: botY, r, color: tg.color, triada: true });
+      placed.push({ x: tx, y: topY, r, color: tg.color, triada: true });
+      placed3 = true;
+      break;
+    }
+
+    // Fallback: place individually if triada didn't fit
+    if (!placed3) {
+      for (let k = 0; k < 3; k++) placeSingle({ r: tg.r, color: tg.color });
+    }
+  }
+
+  // Place remaining free circles
+  for (const circ of allCircles) {
+    placeSingle(circ);
   }
 
   // Draw placed cables — stroke clipped inside so circles appear truly tangential
@@ -920,23 +1030,22 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
     const strokeW = Math.max(1, pr * 0.04);
 
     ctx.save();
-    // Clip to circle so stroke doesn't bleed outside
     ctx.beginPath();
     ctx.arc(px, py, pr, 0, Math.PI * 2);
     ctx.clip();
 
-    // Fill gradient
+    // Fill gradient — triada cables get purple tint overlay
+    const baseColor = c.triada ? '#a78bfa' : c.color;
     const grad = ctx.createRadialGradient(px - pr * 0.3, py - pr * 0.3, 0, px, py, pr);
-    grad.addColorStop(0, c.color + 'dd');
-    grad.addColorStop(0.55, c.color + '99');
-    grad.addColorStop(1, c.color + '44');
+    grad.addColorStop(0, baseColor + 'dd');
+    grad.addColorStop(0.55, baseColor + '99');
+    grad.addColorStop(1, baseColor + '44');
     ctx.fillStyle = grad;
     ctx.fill();
 
-    // Inner stroke (stays within clip)
     ctx.beginPath();
     ctx.arc(px, py, pr - strokeW / 2, 0, Math.PI * 2);
-    ctx.strokeStyle = c.color;
+    ctx.strokeStyle = baseColor;
     ctx.lineWidth = strokeW * 2;
     ctx.stroke();
 
@@ -949,6 +1058,18 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(c.r * 2, px, py);
+    }
+
+    // Small triangle badge on triada circles
+    if (c.triada && pr > 6) {
+      const ts = Math.max(5, pr * 0.3);
+      ctx.beginPath();
+      ctx.moveTo(px, py - pr + ts * 0.2);
+      ctx.lineTo(px - ts * 0.6, py - pr + ts * 1.1);
+      ctx.lineTo(px + ts * 0.6, py - pr + ts * 1.1);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(167,139,250,0.9)';
+      ctx.fill();
     }
   }
 
