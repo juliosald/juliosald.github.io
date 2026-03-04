@@ -587,11 +587,7 @@
         <input type="number" id="altura" placeholder="Ej: 75" min="1">
       </div>
 
-      <div class="field" style="margin-top:0.5rem;">
-        <label>Separación entre cables (mm) <span class="info" title="0 = cables tangentes, sin espacio entre ellos">?</span></label>
-        <input type="number" id="gap" placeholder="0" min="0" step="0.5" value="0">
-      </div>
-      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">0 mm = contacto tangencial directo</div>
+      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">Cables tangenciales · contacto directo</div>
     </div>
 
     <!-- CARD: CABLES PRESET + INPUT -->
@@ -823,7 +819,7 @@ function calcular() {
 
   // Draw canvas visualization
   document.getElementById('canvas-legend').innerHTML = '';
-  const gap = parseFloat(document.getElementById('gap').value) || 0;
+  const gap = 0;
   setTimeout(() => drawEscalerilla(ancho, altura, cables, pct, gap), 100);
 
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -902,124 +898,141 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
   ctx.fillText(`${altura} mm`, 0, 0);
   ctx.restore();
 
-  // Build circle list — triada cables grouped as (left, right, top-center)
-  const allCircles = [];   // free-physics circles
-  const triadGroups = [];  // [{r, color, count}] one entry per triada group
+  // Build placement queue — mix triadas and singles, sorted largest first
+  // Each item: { type: 'single'|'triada', r, color }
+  const queue = [];
 
   cableList.forEach((cable, ci) => {
     const color = CABLE_COLORS[ci % CABLE_COLORS.length];
     if (cable.triada && cable.cant % 3 === 0 && cable.cant >= 3) {
       const numTriadas = cable.cant / 3;
       for (let t = 0; t < numTriadas; t++) {
-        triadGroups.push({ r: cable.diam / 2, color });
+        queue.push({ type: 'triada', r: cable.diam / 2, color });
       }
     } else {
       for (let n = 0; n < cable.cant; n++) {
-        allCircles.push({ r: cable.diam / 2, color, typeIdx: ci });
+        queue.push({ type: 'single', r: cable.diam / 2, color, typeIdx: ci });
       }
     }
   });
 
-  // Largest cables first
-  allCircles.sort((a, b) => b.r - a.r);
-  triadGroups.sort((a, b) => b.r - a.r);
+  // Sort largest first (by r)
+  queue.sort((a, b) => b.r - a.r);
 
   const placed = [];
 
-  function findLowestY(cx, r) {
-    let bestY = altura - r - gap;
+  function findLowestY(cx, r, isTriada) {
+    let bestY = altura - r; // no gap from floor
     for (const p of placed) {
       const dx = Math.abs(cx - p.x);
-      const minDist = r + p.r + gap;
-      if (dx < minDist) {
-        const dy = Math.sqrt(Math.max(0, minDist * minDist - dx * dx));
-        const candidateY = p.y - dy;
-        bestY = Math.min(bestY, candidateY);
+      // Internal triada circles touch tangentially (no gap between triada members)
+      const sameTriadaBlock = isTriada && p.triada;
+      const hGap = sameTriadaBlock ? 0 : gap;
+      const vGap = 0; // always tangential vertically
+      const minDistH = r + p.r + hGap;
+      const minDistV = r + p.r + vGap;
+      if (dx < minDistH) {
+        if (dx < minDistV) {
+          const dy = Math.sqrt(Math.max(0, minDistV * minDistV - dx * dx));
+          bestY = Math.min(bestY, p.y - dy);
+        }
       }
     }
     return bestY;
   }
 
-  function placeSingle(circ) {
-    const r = circ.r;
-    let bestX = -1, bestY = -Infinity;
+  function collidesWithPlaced(cx, cy, r, isTriada) {
+    for (const p of placed) {
+      const dx = cx - p.x;
+      const dy = cy - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const sameTriadaBlock = isTriada && p.triada;
+      const hGap = sameTriadaBlock ? 0 : gap;
+      const minDist = Math.abs(dx) > Math.abs(dy)
+        ? r + p.r + hGap
+        : r + p.r;
+      if (dist < minDist - 0.01) return true;
+    }
+    return false;
+  }
+
+  function placeSingle(r, color, isTriada) {
     const step = Math.max(0.1, r * 0.05);
+    let bestX = -1, bestY = -Infinity;
     for (let cx = r + gap; cx <= ancho - r - gap; cx += step) {
-      const cy = findLowestY(cx, r);
+      const cy = findLowestY(cx, r, isTriada);
       if (cy - r < 0) continue;
       if (bestX < 0 || cy > bestY || (cy === bestY && cx < bestX)) {
         bestY = cy; bestX = cx;
       }
     }
     if (bestX < 0) return false;
-    placed.push({ x: bestX, y: bestY, r, color: circ.color, triada: circ.triada || false });
+    placed.push({ x: bestX, y: bestY, r, color, triada: isTriada || false });
     return true;
   }
 
-  // Place triada groups: find leftmost X where 3 circles fit in triangle formation
-  for (const tg of triadGroups) {
-    const r = tg.r;
-    const d = r * 2;
-    // Horizontal distance between centers of bottom two: 2r + gap (tangential)
-    const hDist = d + gap;
-    // Vertical offset of top circle center above bottom two centers
-    // Centers of bottom two are at y_bot; top circle rests on both:
-    // dist(top, bottom) = 2r + gap => vertical = sqrt((2r+gap)^2 - (r+gap/2)^2)
-    const diagDist = 2 * r + gap;
-    const halfH = hDist / 2;
-    const vOffset = Math.sqrt(Math.max(0, diagDist * diagDist - halfH * halfH));
-
-    // Need: leftX + r >= gap+r  and  leftX + hDist + r <= ancho - gap
-    const minCx = r + gap;
-    const maxCx = ancho - r - gap - hDist;
-
-    let placed3 = false;
+  function placeTriada(r, color) {
+    const hDist = 2 * r;  // bottom pair tangential, no internal gap
+    const vOffset = Math.sqrt(Math.max(0, (2*r)*(2*r) - r*r)); // r*sqrt(3)
     const step = Math.max(0.1, r * 0.05);
 
-    // Try each starting X for left circle of bottom pair
-    for (let lx = minCx; lx <= maxCx; lx += step) {
-      const rx = lx + hDist;        // right bottom circle center X
-      const tx = lx + hDist / 2;    // top circle center X
+    let bestLx = -1, bestBotY = -Infinity;
 
-      // Bottom two must clear walls
-      if (rx + r + gap > ancho) continue;
+    for (let lx = r + gap; lx + hDist + r + gap <= ancho; lx += step) {
+      const rx = lx + hDist;
+      const tx = lx + hDist / 2;
 
-      // Find lowest Y for left circle
-      const lyL = findLowestY(lx, r);
-      const lyR = findLowestY(rx, r);
-      // Both bottom circles share the same floor Y (take the higher one = more constrained)
+      const lyL = findLowestY(lx, r, true);
+      const lyR = findLowestY(rx, r, true);
       const botY = Math.min(lyL, lyR);
-
-      // Check top circle fits
       const topY = botY - vOffset;
+
       if (botY - r < 0 || topY - r < 0) continue;
+      if (collidesWithPlaced(lx, botY, r, true)) continue;
+      if (collidesWithPlaced(rx, botY, r, true)) continue;
+      if (collidesWithPlaced(tx, topY, r, true)) continue;
 
-      // Check top circle doesn't collide with existing placed
-      let topOk = true;
-      for (const p of placed) {
-        const dx = Math.abs(tx - p.x);
-        const dy = Math.abs(topY - p.y);
-        if (Math.sqrt(dx * dx + dy * dy) < r + p.r + gap - 0.01) { topOk = false; break; }
+      // Priority: lowest row first (highest botY), then leftmost X
+      if (bestLx < 0) {
+        bestBotY = botY;
+        bestLx = lx;
+      } else {
+        // Accept if this position is on a lower row (higher botY by more than a tolerance)
+        // OR same row but more to the left
+        const sameLine = Math.abs(botY - bestBotY) < r * 0.1;
+        if (!sameLine && botY > bestBotY) {
+          bestBotY = botY;
+          bestLx = lx;
+        } else if (sameLine && lx < bestLx) {
+          bestBotY = botY;
+          bestLx = lx;
+        }
       }
-      if (!topOk) continue;
-
-      // Place all three
-      placed.push({ x: lx, y: botY, r, color: tg.color, triada: true });
-      placed.push({ x: rx, y: botY, r, color: tg.color, triada: true });
-      placed.push({ x: tx, y: topY, r, color: tg.color, triada: true });
-      placed3 = true;
-      break;
     }
 
-    // Fallback: place individually if triada didn't fit
-    if (!placed3) {
-      for (let k = 0; k < 3; k++) placeSingle({ r: tg.r, color: tg.color });
+    if (bestLx < 0) {
+      placeSingle(r, color, false);
+      placeSingle(r, color, false);
+      placeSingle(r, color, false);
+      return;
     }
+
+    const rx = bestLx + hDist;
+    const tx = bestLx + hDist / 2;
+    const topY = bestBotY - vOffset;
+
+    placed.push({ x: bestLx, y: bestBotY, r, color, triada: true });
+    placed.push({ x: rx,     y: bestBotY, r, color, triada: true });
+    placed.push({ x: tx,     y: topY,     r, color, triada: true });
   }
 
-  // Place remaining free circles
-  for (const circ of allCircles) {
-    placeSingle(circ);
+  // Place everything in queue order (largest first, triadas and singles interleaved)
+  for (const item of queue) {
+    if (item.type === 'triada') {
+      placeTriada(item.r, item.color);
+    } else {
+      placeSingle(item.r, item.color, false);
+    }
   }
 
   // Draw placed cables — stroke clipped inside so circles appear truly tangential
@@ -1110,4 +1123,3 @@ document.addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
-
