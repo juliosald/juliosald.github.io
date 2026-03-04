@@ -1,308 +1,991 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Llenado de Escalerilla - NEC</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Llenado Escalerilla NEC | Julio Proyectista</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family: Arial, sans-serif;
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 30px;
-  padding: 20px;
-}
+  :root {
+    --bg: #0a0e14;
+    --surface: #111720;
+    --surface2: #161d29;
+    --border: #1e2a3a;
+    --accent: #00c896;
+    --accent2: #0ea5e9;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Bebas Neue', sans-serif;
+  }
 
-h2 { margin-top: 0 }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-input, select, button {
-  width: 100%;
-  padding: 6px;
-  margin: 4px 0;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-td, th {
-  border: 1px solid #ccc;
-  padding: 6px;
-  text-align: center;
-}
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
 
-canvas {
-  border: 1px solid #aaa;
-  background: #fafafa;
-}
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.6s ease both;
+  }
 
-.ok { color: green; font-weight: bold }
-.fail { color: red; font-weight: bold }
+  .brand h1 {
+    font-family: var(--display);
+    font-size: 3rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .brand p {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .nec-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    padding: 4px 10px;
+    letter-spacing: 2px;
+    opacity: 0.8;
+  }
+
+  /* MAIN GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .brand h1 { font-size: 2rem; }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .card:nth-child(2)::before {
+    background: linear-gradient(90deg, var(--accent2), transparent);
+  }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* INPUTS */
+  .field {
+    margin-bottom: 1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,200,150,0.1);
+  }
+
+  /* CABLE INPUT ROW */
+  .cable-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .cable-row .field { flex: 1; margin-bottom: 0; }
+
+  .cable-row .field:first-child { flex: 2; }
+
+  /* TABLE */
+  .cables-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+
+  .cables-table th {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cables-table td {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(30,42,58,0.5);
+    color: var(--text);
+  }
+
+  .cables-table tr:last-child td { border-bottom: none; }
+
+  .cables-table tr { transition: background 0.15s; }
+  .cables-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .area-col { color: var(--accent); }
+
+  /* BUTTONS */
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
+    padding: 10px 18px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-add {
+    background: rgba(0,200,150,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,200,150,0.3);
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .btn-add:hover {
+    background: rgba(0,200,150,0.2);
+    border-color: var(--accent);
+  }
+
+  .btn-delete {
+    background: rgba(239,68,68,0.08);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.2);
+    padding: 6px 10px;
+    font-size: 0.7rem;
+  }
+
+  .btn-delete:hover {
+    background: rgba(239,68,68,0.18);
+  }
+
+  .btn-calc {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    font-size: 0.9rem;
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+    letter-spacing: 2px;
+    margin-top: 1.5rem;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-calc:hover {
+    background: #00e6ad;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(0,200,150,0.3);
+  }
+
+  .btn-calc:active { transform: translateY(0); }
+
+  /* PRESETS */
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .preset-btn {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+
+  .preset-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(14,165,233,0.08);
+  }
+
+  /* RESULT CARD */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    display: none;
+    animation: fadeUp 0.5s ease both;
+    margin-top: 1.5rem;
+  }
+
+  .result-card.visible { display: block; }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--warn), var(--accent));
+  }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .result-pct {
+    font-family: var(--display);
+    font-size: 5rem;
+    line-height: 1;
+    transition: color 0.4s;
+  }
+
+  .result-meta {
+    text-align: right;
+  }
+
+  .result-meta .status {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    font-weight: 600;
+  }
+
+  .status-ok { background: rgba(0,200,150,0.15); color: var(--accent); border: 1px solid rgba(0,200,150,0.3); }
+  .status-warn { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+  .status-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    margin-bottom: 1.75rem;
+  }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .progress-track {
+    height: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s;
+    position: relative;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .progress-limit {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 40%;
+    width: 2px;
+    background: var(--warn);
+    opacity: 0.7;
+  }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 500px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1rem;
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .stat-lbl {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* ADVICE BOX */
+  .advice {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 12px 16px;
+    border-left: 3px solid var(--accent);
+    background: rgba(0,200,150,0.05);
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    opacity: 0.5;
+  }
+
+  /* FACTOR SELECT */
+  .factor-display {
+    font-family: var(--display);
+    font-size: 2.5rem;
+    color: var(--accent2);
+    text-align: center;
+    padding: 0.5rem 0;
+    letter-spacing: 2px;
+  }
+
+  .factor-note {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    border: 1px dashed var(--border);
+  }
+
+  /* TOOLTIP */
+  .info {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 1px solid var(--muted);
+    border-radius: 50%;
+    font-size: 0.6rem;
+    text-align: center;
+    line-height: 12px;
+    color: var(--muted);
+    cursor: help;
+    margin-left: 4px;
+  }
+
+  /* FULL WIDTH CABLE CARD */
+  .cable-card {
+    grid-column: 1 / -1;
+  }
 </style>
 </head>
-
 <body>
 
-<div>
-<h2>Escalerilla</h2>
+<div class="container">
 
-Ancho (mm)
-<input id="ancho" value="300">
+  <header>
+    <div class="brand">
+      <h1>ESCALERILLA</h1>
+      <p>Calculadora de llenado · Julio Proyectista</p>
+    </div>
+    <div class="nec-badge">LLENADO ESCALERILLA</div>
+  </header>
 
-Altura útil (mm)
-<input id="alto" value="100">
+  <div class="grid">
 
-Factor ocupación NEC
-<select id="factor">
-  <option value="0.4">40%</option>
-</select>
+    <!-- CARD: ESCALERILLA -->
+    <div class="card">
+      <div class="card-label">01 / Escalerilla</div>
 
-<h2>Cables</h2>
+      <div class="field">
+        <label>Ancho (mm)</label>
+        <input type="number" id="ancho" placeholder="Ej: 300" min="1">
+      </div>
 
-Diámetro (mm)
-<input id="diametro">
+      <div class="field">
+        <label>Altura útil (mm)</label>
+        <input type="number" id="altura" placeholder="Ej: 75" min="1">
+      </div>
 
-Cantidad
-<input id="cantidad">
+      <div class="field" style="margin-top:0.5rem;">
+        <label>Separación entre cables (mm) <span class="info" title="0 = cables tangentes, sin espacio entre ellos">?</span></label>
+        <input type="number" id="gap" placeholder="0" min="0" step="0.5" value="0">
+      </div>
+      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">0 mm = contacto tangencial directo</div>
+    </div>
 
-<button onclick="agregarCable()">Agregar cable</button>
+    <!-- CARD: CABLES PRESET + INPUT -->
+    <div class="card">
+      <div class="card-label">02 / Cables</div>
 
-<table id="tabla">
-<tr>
-<th>Ø mm</th>
-<th>Cant</th>
-<th>Eliminar</th>
-</tr>
-</table>
+      <div class="field">
+        <label>Cables frecuentes <span class="info" title="Diámetros exteriores estándar">?</span></label>
+        <div class="presets">
+          <button class="preset-btn" onclick="addPreset(6, 'NYA 1.5mm²')">NYA 1.5</button>
+          <button class="preset-btn" onclick="addPreset(7.8, 'NYA 2.5mm²')">NYA 2.5</button>
+          <button class="preset-btn" onclick="addPreset(10.2, 'NYA 4mm²')">NYA 4</button>
+          <button class="preset-btn" onclick="addPreset(12.4, 'NYA 6mm²')">NYA 6</button>
+          <button class="preset-btn" onclick="addPreset(16, 'THHN 10mm²')">THHN 10</button>
+          <button class="preset-btn" onclick="addPreset(19.5, 'THHN 16mm²')">THHN 16</button>
+          <button class="preset-btn" onclick="addPreset(24, 'THHN 25mm²')">THHN 25</button>
+          <button class="preset-btn" onclick="addPreset(29, 'THHN 35mm²')">THHN 35</button>
+        </div>
+      </div>
 
-<button onclick="calcular()">Calcular llenado</button>
+      <div class="cable-row">
+        <div class="field">
+          <label>Ø diámetro (mm)</label>
+          <input type="number" id="diam" placeholder="Ej: 12.4" min="0.1" step="0.1">
+        </div>
+        <div class="field">
+          <label>Cant.</label>
+          <input type="number" id="cant" placeholder="1" min="1" value="1">
+        </div>
+      </div>
+      <button class="btn btn-add" onclick="addCable()">+ AGREGAR CABLE</button>
+    </div>
 
-<h2 id="resultado"></h2>
+    <!-- CABLE TABLE FULL WIDTH -->
+    <div class="card cable-card" style="padding-top: 1.25rem;">
+      <div class="card-label">03 / Lista de cables</div>
+      <div id="tabla-wrap">
+        <div class="empty-state">Sin cables agregados — usa los presets o ingresa manualmente</div>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="btn btn-calc" onclick="calcular()">▶ CALCULAR LLENADO</button>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resultado" style="position:relative;">
+    <div class="result-header">
+      <div>
+        <div class="card-label" style="margin-bottom:0.5rem;">Resultado</div>
+        <div class="result-pct" id="res-pct">0%</div>
+        <div style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);margin-top:4px;">ocupación real</div>
+      </div>
+      <div class="result-meta">
+        <div class="status" id="res-status">—</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span>0%</span>
+        <span>50%</span>
+        <span>100%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <span class="stat-val" id="s-total">—</span>
+        <span class="stat-lbl">Área total mm²</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val" id="s-cables">—</span>
+        <span class="stat-lbl">Área cables mm²</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val" id="s-libre">—</span>
+        <span class="stat-lbl">Área libre mm²</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val" id="s-ncables">—</span>
+        <span class="stat-lbl">N° cables</span>
+      </div>
+    </div>
+
+    <!-- VISUAL SECTION TRANSVERSAL -->
+    <div style="margin-top:1.75rem;">
+      <div class="card-label" style="margin-bottom:1rem;">Sección transversal · Vista real a escala</div>
+      <div style="position:relative;">
+        <canvas id="canvas-escalerilla" style="width:100%;display:block;border:1px solid var(--border);background:#070b10;"></canvas>
+        <div id="canvas-legend" style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:10px;"></div>
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:8px;letter-spacing:1px;">
+          * Distribución estimada para visualización. Los cables se empaquetan fila por fila de izquierda a derecha.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    JULIO PROYECTISTA · CALCULADORA LLENADO ESCALERILLA
+  </footer>
+
 </div>
 
-<canvas id="grafico"></canvas>
-
 <script>
-let cables = []
+let cables = [];
 
-function dibujarCotaHorizontal(ctx, x1, y, x2, texto) {
-  ctx.beginPath()
-  ctx.moveTo(x1, y)
-  ctx.lineTo(x2, y)
-  ctx.stroke()
-
-  // flechas
-  ctx.beginPath()
-  ctx.moveTo(x1, y)
-  ctx.lineTo(x1 + 6, y - 4)
-  ctx.lineTo(x1 + 6, y + 4)
-  ctx.closePath()
-  ctx.fill()
-
-  ctx.beginPath()
-  ctx.moveTo(x2, y)
-  ctx.lineTo(x2 - 6, y - 4)
-  ctx.lineTo(x2 - 6, y + 4)
-  ctx.closePath()
-  ctx.fill()
-
-  ctx.textAlign = "center"
-  ctx.textBaseline = "bottom"
-  ctx.fillText(texto, (x1 + x2) / 2, y - 4)
+function addPreset(diam, nombre) {
+  document.getElementById('diam').value = diam;
+  document.getElementById('cant').value = 1;
+  document.getElementById('diam').focus();
 }
 
-function dibujarCotaVertical(ctx, x, y1, y2, texto) {
-  ctx.beginPath()
-  ctx.moveTo(x, y1)
-  ctx.lineTo(x, y2)
-  ctx.stroke()
+function addCable() {
+  const d = parseFloat(document.getElementById('diam').value);
+  const c = parseInt(document.getElementById('cant').value) || 1;
+  if (!d || d <= 0) { shake('diam'); return; }
 
-  // flechas
-  ctx.beginPath()
-  ctx.moveTo(x, y1)
-  ctx.lineTo(x - 4, y1 + 6)
-  ctx.lineTo(x + 4, y1 + 6)
-  ctx.closePath()
-  ctx.fill()
+  const area = Math.PI * Math.pow(d / 2, 2);
+  cables.push({ diam: d, cant: c, area: area });
+  renderTabla();
 
-  ctx.beginPath()
-  ctx.moveTo(x, y2)
-  ctx.lineTo(x - 4, y2 - 6)
-  ctx.lineTo(x + 4, y2 - 6)
-  ctx.closePath()
-  ctx.fill()
-
-  // TEXTO DESPLAZADO HACIA AFUERA
-  const offset = 18   // aumenta este valor si quieres más separación
-
-  ctx.save()
-  ctx.translate(x + offset, (y1 + y2) / 2)
-  ctx.rotate(-Math.PI / 2)
-  ctx.textAlign = "center"
-  ctx.textBaseline = "middle"
-  ctx.fillText(texto, 0, 0)
-  ctx.restore()
-}
-  
-function agregarCable() {
-  let d = Number(diametro.value)
-  let n = Number(cantidad.value)
-  if (!d || !n) return
-
-  cables.push({d, n})
-  renderTabla()
+  document.getElementById('diam').value = '';
+  document.getElementById('cant').value = '1';
+  document.getElementById('diam').focus();
 }
 
-function eliminar(index) {
-  cables.splice(index, 1)
-  renderTabla()
+function deleteCable(i) {
+  cables.splice(i, 1);
+  renderTabla();
 }
 
 function renderTabla() {
-  let tabla = document.getElementById("tabla")
-  tabla.innerHTML = `
-  <tr>
-    <th>Ø mm</th>
-    <th>Cant</th>
-    <th>Eliminar</th>
-  </tr>`
+  const wrap = document.getElementById('tabla-wrap');
+  if (cables.length === 0) {
+    wrap.innerHTML = '<div class="empty-state">Sin cables agregados — usa los presets o ingresa manualmente</div>';
+    return;
+  }
 
-  cables.forEach((c, i) => {
-    tabla.innerHTML += `
-      <tr>
-        <td>${c.d}</td>
-        <td>${c.n}</td>
-        <td><button onclick="eliminar(${i})">X</button></td>
-      </tr>`
-  })
+  let rows = cables.map((c, i) => {
+    const aTotal = (c.area * c.cant).toFixed(1);
+    return `<tr>
+      <td>Ø ${c.diam} mm</td>
+      <td>${c.cant}</td>
+      <td>${c.area.toFixed(1)} mm²</td>
+      <td class="area-col">${aTotal} mm²</td>
+      <td><button class="btn btn-delete" onclick="deleteCable(${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table class="cables-table">
+      <thead>
+        <tr>
+          <th>Diámetro</th>
+          <th>Cant.</th>
+          <th>Área/cable</th>
+          <th>Área total</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 function calcular() {
-  let ancho = Number(document.getElementById("ancho").value)
-  let alto = Number(document.getElementById("alto").value)
-  let factor = Number(document.getElementById("factor").value)
+  const ancho = parseFloat(document.getElementById('ancho').value);
+  const altura = parseFloat(document.getElementById('altura').value);
 
-  let A_permitida = ancho * alto * factor
+  if (!ancho || ancho <= 0) { shake('ancho'); return; }
+  if (!altura || altura <= 0) { shake('altura'); return; }
+  if (cables.length === 0) { alert('Agrega al menos un cable.'); return; }
 
-  let A_total = 0
-  cables.forEach(c => {
-    A_total += Math.PI * (c.d/2)**2 * c.n
-  })
+  const areaTotal = ancho * altura;
+  const areaCables = cables.reduce((sum, c) => sum + c.area * c.cant, 0);
+  const pct = (areaCables / areaTotal) * 100;
+  const libre = areaTotal - areaCables;
+  const nCables = cables.reduce((sum, c) => sum + c.cant, 0);
 
-  let porcentaje = (A_total / A_permitida) * 100
+  const el = document.getElementById('resultado');
+  el.classList.add('visible');
 
-  let estado = porcentaje <= 100
-    ? "<span class='ok'>CUMPLE NEC</span>"
-    : "<span class='fail'>EXCEDE NEC</span>"
+  const pctEl = document.getElementById('res-pct');
+  pctEl.textContent = pct.toFixed(1) + '%';
 
-  resultado.innerHTML =
-    "Llenado: " + porcentaje.toFixed(1) + "%<br>" + estado
+  let color, statusClass, statusText;
+  if (pct <= 40) {
+    color = 'var(--accent)';
+    statusClass = 'status-ok';
+    statusText = '● HOLGADO';
+  } else if (pct <= 70) {
+    color = 'var(--warn)';
+    statusClass = 'status-warn';
+    statusText = '● MODERADO';
+  } else {
+    color = 'var(--danger)';
+    statusClass = 'status-danger';
+    statusText = '● SATURADO';
+  }
 
-  dibujarGrafico(ancho, alto, factor, porcentaje)
+  pctEl.style.color = color;
+  document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
+  document.getElementById('progress-fill').style.background = color;
+
+  const statusEl = document.getElementById('res-status');
+  statusEl.textContent = statusText;
+  statusEl.className = 'status ' + statusClass;
+
+  document.getElementById('s-total').textContent = areaTotal.toFixed(0);
+  document.getElementById('s-cables').textContent = areaCables.toFixed(1);
+  document.getElementById('s-libre').textContent = libre.toFixed(1);
+  document.getElementById('s-ncables').textContent = nCables;
+
+  // Draw canvas visualization
+  document.getElementById('canvas-legend').innerHTML = '';
+  const gap = parseFloat(document.getElementById('gap').value) || 0;
+  setTimeout(() => drawEscalerilla(ancho, altura, cables, pct, gap), 100);
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function dibujarGrafico(ancho, alto, factor, porcentaje) {
-  let canvas = document.getElementById("grafico")
-  let c = canvas.getContext("2d")
+// Cable colors palette
+const CABLE_COLORS = [
+  '#00c896','#0ea5e9','#f59e0b','#ef4444','#a78bfa',
+  '#f472b6','#34d399','#fb923c','#60a5fa','#e879f9',
+  '#facc15','#4ade80','#38bdf8','#f87171','#c084fc'
+];
 
-  let margen = 40
-  let escalaBase = 1.2   // controla el tamaño visual general
+function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
+  const canvas = document.getElementById('canvas-escalerilla');
+  const ctx = canvas.getContext('2d');
 
-  // Ajustar tamaño del canvas según escalerilla
-  canvas.width = ancho * escalaBase + margen * 2
-  canvas.height = alto * escalaBase + margen * 2
+  // Canvas size: map mm to px with padding
+  const PADDING = 32;
+  const MAX_W = canvas.parentElement.offsetWidth || 800;
+  const scale = Math.min((MAX_W - PADDING * 2) / ancho, 200 / altura);
+  const cW = Math.round(ancho * scale);
+  const cH = Math.round(altura * scale);
 
-  c.clearRect(0,0,canvas.width,canvas.height)
+  canvas.width = cW + PADDING * 2;
+  canvas.height = cH + PADDING * 2;
+  canvas.style.width = '100%';
 
-  let escala = escalaBase
-  let w = ancho * escala
-  let h = alto * escala
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  let origenX = margen
-  let origenY = margen
+  const ox = PADDING; // origin x
+  const oy = PADDING; // origin y
 
-  // Marco escalerilla
-  c.strokeRect(origenX, origenY, w, h)
+  // Background
+  ctx.fillStyle = '#070b10';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Estilo de cotas
-c.font = "12px Arial"
-c.fillStyle = "#000"
-c.strokeStyle = "#000"
+  // Grid lines inside tray
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  const gridMm = 50;
+  for (let x = 0; x <= ancho; x += gridMm) {
+    ctx.beginPath();
+    ctx.moveTo(ox + x * scale, oy);
+    ctx.lineTo(ox + x * scale, oy + cH);
+    ctx.stroke();
+  }
 
-// Líneas de referencia (extensión)
-c.beginPath()
-// verticales para cota de ancho
-c.moveTo(origenX, origenY - 10)
-c.lineTo(origenX, origenY)
-c.moveTo(origenX + w, origenY - 10)
-c.lineTo(origenX + w, origenY)
-// horizontales para cota de alto
-c.moveTo(origenX + w + 10, origenY)
-c.lineTo(origenX + w, origenY)
-c.moveTo(origenX + w + 10, origenY + h)
-c.lineTo(origenX + w, origenY + h)
-c.stroke()
+  // Tray body
+  ctx.strokeStyle = '#4a6a8a';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(ox, oy, cW, cH);
 
-// Cota de ANCHO (mm)
-dibujarCotaHorizontal(
-  c,
-  origenX,
-  origenY - 10,
-  origenX + w,
-  `${ancho} mm`
-)
+  // Tray cross-hatching (side walls appearance)
+  ctx.fillStyle = 'rgba(74,106,138,0.08)';
+  ctx.fillRect(ox, oy, cW, cH);
 
-// Cota de ALTO ÚTIL (mm)
-dibujarCotaVertical(
-  c,
-  origenX + w + 10,
-  origenY,
-  origenY + h,
-  `${alto} mm`
-)
+  // Rungs (escalones de la escalerilla)
+  const rungSpacing = Math.max(100, ancho / 6); // mm between rungs
+  ctx.strokeStyle = 'rgba(74,106,138,0.35)';
+  ctx.lineWidth = 1.5;
+  for (let x = rungSpacing; x < ancho; x += rungSpacing) {
+    ctx.beginPath();
+    ctx.moveTo(ox + x * scale, oy);
+    ctx.lineTo(ox + x * scale, oy + cH);
+    ctx.stroke();
+  }
 
-  // Expandir cables y ordenar grandes primero
-  let lista = []
-  cables.forEach(cable => {
-    for (let i = 0; i < cable.n; i++) {
-      lista.push(cable.d)
+  // Dimension labels
+  ctx.fillStyle = '#4a6a8a';
+  ctx.font = `${Math.max(9, scale * 2)}px DM Mono, monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText(`${ancho} mm`, ox + cW / 2, oy - 10);
+  ctx.save();
+  ctx.translate(ox - 14, oy + cH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(`${altura} mm`, 0, 0);
+  ctx.restore();
+
+  // Place cables with physics-based stacking
+  // Each circle finds the lowest Y position where it fits (resting on floor or on other circles)
+  const allCircles = [];
+  cableList.forEach((cable, ci) => {
+    for (let n = 0; n < cable.cant; n++) {
+      allCircles.push({ r: cable.diam / 2, color: CABLE_COLORS[ci % CABLE_COLORS.length], typeIdx: ci });
     }
-  })
-  lista.sort((a,b)=>b-a)
+  });
 
-  let yBase = origenY + h
-  let alturaCapa = 0
-  let x = origenX
+  // Largest cables first for better physical packing
+  allCircles.sort((a, b) => b.r - a.r);
 
-  lista.forEach(diametro => {
-    let r = (diametro/2) * escala
-    let d = r * 2
+  const placed = [];
 
-    if (x + d > origenX + w) {
-      yBase -= alturaCapa
-      x = origenX
-      alturaCapa = 0
+  function findLowestY(cx, r) {
+    // Floor: center.y = altura - r - gap (respects gap from bottom wall)
+    let bestY = altura - r - gap;
+
+    for (const p of placed) {
+      const dx = Math.abs(cx - p.x);
+      const minDist = r + p.r + gap;
+      if (dx < minDist) {
+        const dy = Math.sqrt(Math.max(0, minDist * minDist - dx * dx));
+        const candidateY = p.y - dy;
+        bestY = Math.min(bestY, candidateY);
+      }
     }
 
-    if (yBase - d < origenY) return
+    return bestY;
+  }
 
-    let y = yBase - r
+  // Sweep X positions left to right to find best placement column
+  for (const circ of allCircles) {
+    const r = circ.r;
+    let bestX = -1;
+    let bestY = -Infinity;
+    // Fine step for accurate tangential placement
+    const step = Math.max(0.1, r * 0.05);
 
-    c.beginPath()
-    c.arc(x + r, y, r, 0, Math.PI*2)
-    c.stroke()
+    for (let cx = r + gap; cx <= ancho - r - gap; cx += step) {
+      const cy = findLowestY(cx, r);
+      if (cy - r < 0) continue;
+      if (bestX < 0 || cy > bestY || (cy === bestY && cx < bestX)) {
+        bestY = cy;
+        bestX = cx;
+      }
+    }
 
-    x += d
-    alturaCapa = Math.max(alturaCapa, d)
-  })
+    if (bestX < 0) break;
+
+    placed.push({ x: bestX, y: bestY, r: r, color: circ.color });
+  }
+
+  // Draw placed cables — stroke clipped inside so circles appear truly tangential
+  for (const c of placed) {
+    const px = ox + c.x * scale;
+    const py = oy + c.y * scale;
+    const pr = c.r * scale;
+    const strokeW = Math.max(1, pr * 0.04);
+
+    ctx.save();
+    // Clip to circle so stroke doesn't bleed outside
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.clip();
+
+    // Fill gradient
+    const grad = ctx.createRadialGradient(px - pr * 0.3, py - pr * 0.3, 0, px, py, pr);
+    grad.addColorStop(0, c.color + 'dd');
+    grad.addColorStop(0.55, c.color + '99');
+    grad.addColorStop(1, c.color + '44');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Inner stroke (stays within clip)
+    ctx.beginPath();
+    ctx.arc(px, py, pr - strokeW / 2, 0, Math.PI * 2);
+    ctx.strokeStyle = c.color;
+    ctx.lineWidth = strokeW * 2;
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Label
+    if (pr > 10) {
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${Math.min(pr * 0.7, 13)}px DM Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(c.r * 2, px, py);
+    }
+  }
+
+  ctx.textBaseline = 'alphabetic';
+
+  // Legend
+  const legend = document.getElementById('canvas-legend');
+  const seenTypes = {};
+  cableList.forEach((cable, ci) => {
+    if (!seenTypes[ci]) {
+      seenTypes[ci] = true;
+      const color = CABLE_COLORS[ci % CABLE_COLORS.length];
+      legend.innerHTML += `
+        <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.65rem;color:var(--muted);">
+          <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+          Ø${cable.diam}mm × ${cable.cant}
+        </div>`;
+    }
+  });
 }
+
+function shake(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--danger)';
+  el.style.animation = 'none';
+  setTimeout(() => {
+    el.style.animation = '';
+    el.style.borderColor = '';
+  }, 600);
+  el.focus();
+}
+
+// Enter key to add cable
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.activeElement.id === 'cant') addCable();
+  if (e.key === 'Enter' && document.activeElement.id === 'diam') document.getElementById('cant').focus();
+});
 </script>
-
 </body>
 </html>
-
-
-
-
