@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Llenado Conduits NEC | Julio Proyectista</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e14;
+  --surface: #111720;
+  --surface2: #161d29;
+  --border: #1e2a3a;
+  --accent: #00c896;
+  --accent2: #0ea5e9;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --ok: #00c896;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --display: 'Bebas Neue', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  animation: fadeDown 0.6s ease both;
+}
+
+.brand h1 {
+  font-family: var(--display);
+  font-size: 2.8rem;
+  letter-spacing: 2px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.brand p {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.nec-badge {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  padding: 4px 10px;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+/* TABS */
+.tabs-wrapper {
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.5s ease both;
+}
+
+.tabs-scroll {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.tab-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.tab-btn:hover { color: var(--text); border-color: #2e3f55; }
+.tab-btn.active {
+  background: rgba(0,200,150,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* TAB PANELS */
+.tab-panel { display: none; animation: fadeUp 0.4s ease both; }
+.tab-panel.active { display: block; }
+
+/* MAIN LAYOUT */
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .brand h1 { font-size: 2rem; }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.card.card-blue::before {
+  background: linear-gradient(90deg, var(--accent2), transparent);
+}
+
+.card-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* CABLE TABLE */
+.cables-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.cables-table th {
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.cables-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(30,42,58,0.5);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.cables-table tr:last-child td { border-bottom: none; }
+.cables-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.qty-input {
+  width: 70px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: center;
+}
+
+.qty-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,200,150,0.1);
+}
+
+.type-tag {
+  font-size: 0.6rem;
+  color: var(--accent2);
+  background: rgba(14,165,233,0.1);
+  border: 1px solid rgba(14,165,233,0.2);
+  padding: 2px 6px;
+  letter-spacing: 1px;
+}
+
+/* CONDUIT TYPE SELECT */
+.field { margin-bottom: 1rem; }
+
+.field label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+}
+
+.field select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.field select:focus { border-color: var(--accent); }
+
+/* BUTTONS */
+.btn-calc {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  border: none;
+  cursor: pointer;
+  padding: 14px;
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 1.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-calc:hover {
+  background: #00e6ad;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(0,200,150,0.3);
+}
+
+.btn-reset {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--muted);
+  margin-top: 0.75rem;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.btn-reset:hover { color: var(--text); border-color: #2e3f55; }
+
+/* RESULTS */
+.results-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  animation: fadeUp 0.5s ease both;
+}
+
+.results-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.conduit-cell {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 12px 10px;
+  text-align: center;
+  position: relative;
+}
+
+.conduit-cell.ok {
+  border-color: rgba(0,200,150,0.4);
+  background: rgba(0,200,150,0.05);
+}
+
+.conduit-cell.no {
+  border-color: rgba(239,68,68,0.2);
+  opacity: 0.5;
+}
+
+.conduit-size {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  color: var(--text);
+}
+
+.conduit-cell.ok .conduit-size { color: var(--accent); }
+.conduit-cell.no .conduit-size { color: var(--muted); }
+
+.conduit-pct {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.conduit-cell.ok .conduit-pct { color: var(--accent); }
+
+.conduit-badge {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  margin-top: 6px;
+  padding: 2px 6px;
+  display: inline-block;
+}
+
+.conduit-cell.ok .conduit-badge {
+  background: rgba(0,200,150,0.15);
+  color: var(--accent);
+  border: 1px solid rgba(0,200,150,0.3);
+}
+
+.conduit-cell.no .conduit-badge {
+  background: rgba(239,68,68,0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.2);
+}
+
+.summary-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.summary-item {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+}
+
+.summary-item .val {
+  font-size: 1.1rem;
+  color: var(--accent);
+  display: block;
+}
+
+.summary-item .lbl {
+  color: var(--muted);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.min-conduit-banner {
+  background: rgba(0,200,150,0.08);
+  border: 1px solid rgba(0,200,150,0.3);
+  padding: 12px 16px;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.min-conduit-banner .arrow { font-size: 1.2rem; }
+
+.hidden { display: none; }
+
+.note-box {
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.2);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--warn);
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+/* SECTION DIVIDER inside cables table */
+.section-header td {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  background: rgba(14,165,233,0.05);
+  border-top: 1px solid rgba(14,165,233,0.2);
+  border-bottom: 1px solid rgba(14,165,233,0.2);
+  padding: 6px 8px;
+  font-weight: 500;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="brand">
+      <h1>LLENADO CONDUITS</h1>
+      <p>Calculadora NEC — Julio Proyectista</p>
+    </div>
+    <span class="nec-badge">NEC 2023</span>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs-wrapper">
+    <div class="tabs-scroll" id="tabsScroll"></div>
+  </div>
+
+  <!-- PANELS rendered by JS -->
+  <div id="panelsContainer"></div>
+
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+
+// Conduit areas (mm²) — RGS and PVC Sch 40
+// Fill factors: 1 cond = 53%, 2 cond = 31%, 3+ cond = 40%
+const CONDUIT_SIZES = ['1/2"','3/4"','1"','1 1/2"','2"','3"','4"','6"'];
+
+const CONDUIT_AREA = {
+  RGS:    [203.58, 352.99, 572.56, 1333.17, 2197.87, 4839.82, 8316.12, 18820.53],
+  'PVC-40': [218.52, 308.22, 510.71, 1239.11, 2069.34, 4584.34, 7948.51, 18155.39]
+};
+
+// Fill factors by count
+function fillArea(conduitArea, count) {
+  if (count === 0) return 0;
+  const factor = count === 1 ? 0.53 : count === 2 ? 0.31 : 0.40;
+  return conduitArea * factor;
+}
+
+// ─── CABLE DEFINITIONS ─────────────────────────────────────────────────────
+
+const TABS = [
+  {
+    id: 'alumbrado',
+    label: 'Alumbrado',
+    note: 'Cables THHN para circuitos de alumbrado. Porcentajes NEC: 53% / 31% / 40%.',
+    sections: [
+      { name: 'THHN — Monoconductores', cables: [
+        { cal:'12 AWG', tipo:'1C', diam:3.6 },
+        { cal:'10 AWG', tipo:'1C', diam:4.3 },
+        { cal:'8 AWG',  tipo:'1C', diam:5.6 },
+        { cal:'6 AWG',  tipo:'1C', diam:6.6 },
+        { cal:'4 AWG',  tipo:'1C', diam:8.4 },
+        { cal:'2 AWG',  tipo:'1C', diam:9.7 },
+        { cal:'1/0 AWG',tipo:'1C', diam:12.4},
+        { cal:'2/0 AWG',tipo:'1C', diam:13.5},
+        { cal:'3/0 AWG',tipo:'1C', diam:14.7},
+        { cal:'4/0 AWG',tipo:'1C', diam:16.3},
+        { cal:'250 kcmil',tipo:'1C',diam:18  },
+        { cal:'350 kcmil',tipo:'1C',diam:20.6},
+        { cal:'500 kcmil',tipo:'1C',diam:23.9},
+      ]}
+    ]
+  },
+  {
+    id: 'instrumento',
+    label: 'Instrumentación',
+    note: 'Cables de instrumentación multipares.',
+    sections: [
+      { name: 'Instrumentación — Multipares', cables: [
+        { cal:'N° 16 Awg', tipo:'1P',  diam:7.5 },
+        { cal:'N° 16 Awg', tipo:'2P',  diam:13  },
+        { cal:'N° 16 Awg', tipo:'4P',  diam:16  },
+        { cal:'N° 16 Awg', tipo:'6P',  diam:19  },
+        { cal:'N° 16 Awg', tipo:'8T',  diam:30  },
+        { cal:'N° 16 Awg', tipo:'2T',  diam:15  },
+      ]}
+    ]
+  },
+  {
+    id: 'control',
+    label: 'Control',
+    note: 'Cables THHN para circuitos de control.',
+    sections: [
+      { name: 'THHN — Control Multiconductor', cables: [
+        { cal:'N° 14 Awg', tipo:'3/C',  diam:10 },
+        { cal:'N° 14 Awg', tipo:'5/C',  diam:12 },
+        { cal:'N° 14 Awg', tipo:'7/C',  diam:13 },
+        { cal:'N° 14 Awg', tipo:'9/C',  diam:17 },
+        { cal:'N° 14 Awg', tipo:'12/C', diam:18 },
+        { cal:'N° 14 Awg', tipo:'19/C', diam:21 },
+      ]}
+    ]
+  },
+  {
+    id: 'mezcla',
+    label: 'Mezcla 600V',
+    note: 'Mezcla de cables 600V — THHN monoconductores y multiconductores.',
+    sections: [
+      { name: 'Multiconductores 3C+G', cables: [
+        { cal:'12 AWG', tipo:'3C+G', diam:12 },
+        { cal:'10 AWG', tipo:'3C+G', diam:13 },
+        { cal:'8 AWG',  tipo:'3C+G', diam:18 },
+        { cal:'6 AWG',  tipo:'3C+G', diam:20 },
+        { cal:'4 AWG',  tipo:'3C+G', diam:24 },
+        { cal:'2 AWG',  tipo:'3C+G', diam:27 },
+        { cal:'1/0 AWG',tipo:'3C+G', diam:33 },
+        { cal:'2/0 AWG',tipo:'3C+G', diam:35 },
+      ]},
+      { name: 'Multiconductores 4C+G', cables: [
+        { cal:'10 AWG', tipo:'4C+G', diam:16 },
+        { cal:'8 AWG',  tipo:'4C+G', diam:20 },
+        { cal:'6 AWG',  tipo:'4C+G', diam:24 },
+        { cal:'2 AWG',  tipo:'4C+G', diam:31 },
+      ]},
+      { name: 'Monoconductores', cables: [
+        { cal:'12 AWG',   tipo:'5C',  diam:14 },
+        { cal:'2/0 AWG',  tipo:'1C',  diam:14 },
+        { cal:'4/0 AWG',  tipo:'1C',  diam:17 },
+        { cal:'250 kcmil',tipo:'1C',  diam:18 },
+        { cal:'350 kcmil',tipo:'1C',  diam:21 },
+        { cal:'500 kcmil',tipo:'1C',  diam:25 },
+        { cal:'2 AWG (Grd)',  tipo:'1C',diam:10},
+        { cal:'1/0 AWG (Grd)',tipo:'1C',diam:13},
+      ]},
+      { name: 'Control 14 AWG', cables: [
+        { cal:'N° 14 Awg', tipo:'3/C',  diam:10 },
+        { cal:'N° 14 Awg', tipo:'5/C',  diam:12 },
+        { cal:'N° 14 Awg', tipo:'7/C',  diam:13 },
+        { cal:'N° 14 Awg', tipo:'9/C',  diam:17 },
+        { cal:'N° 14 Awg', tipo:'12/C', diam:18 },
+        { cal:'N° 14 Awg', tipo:'19/C', diam:21 },
+      ]}
+    ]
+  },
+  {
+    id: 'cables600',
+    label: 'Cables 600V',
+    note: 'Cables XTU monoconductores y XTMU multiconductores 600V.',
+    sections: [
+      { name: 'XTU — Monoconductores', cables: [
+        { cal:'14 AWG',   tipo:'1C', diam:5.2  },
+        { cal:'12 AWG',   tipo:'1C', diam:5.7  },
+        { cal:'10 AWG',   tipo:'1C', diam:6.3  },
+        { cal:'8 AWG',    tipo:'1C', diam:7.7  },
+        { cal:'6 AWG',    tipo:'1C', diam:8.6  },
+        { cal:'4 AWG',    tipo:'1C', diam:9.8  },
+        { cal:'2 AWG',    tipo:'1C', diam:11.2 },
+        { cal:'1 AWG',    tipo:'1C', diam:13.4 },
+        { cal:'1/0 AWG',  tipo:'1C', diam:14.4 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:15.5 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:16.7 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:18   },
+        { cal:'250MCM',   tipo:'1C', diam:19.7 },
+        { cal:'350MCM',   tipo:'1C', diam:23.2 },
+        { cal:'500MCM',   tipo:'1C', diam:26.4 },
+        { cal:'750MCM',   tipo:'1C', diam:31.6 },
+        { cal:'1000MCM',  tipo:'1C', diam:35.9 },
+      ]},
+      { name: 'XTMU — 3 Conductores (1x3C)', cables: [
+        { cal:'14 AWG',  tipo:'3C', diam:10.2 },
+        { cal:'12 AWG',  tipo:'3C', diam:11.2 },
+        { cal:'10 AWG',  tipo:'3C', diam:12.5 },
+        { cal:'8 AWG',   tipo:'3C', diam:16.4 },
+        { cal:'6 AWG',   tipo:'3C', diam:18.3 },
+        { cal:'4 AWG',   tipo:'3C', diam:21   },
+        { cal:'2 AWG',   tipo:'3C', diam:25.3 },
+        { cal:'1 AWG',   tipo:'3C', diam:28.3 },
+        { cal:'1/0 AWG', tipo:'3C', diam:30.4 },
+        { cal:'2/0 AWG', tipo:'3C', diam:32.08},
+        { cal:'3/0 AWG', tipo:'3C', diam:35.4 },
+        { cal:'4/0 AWG', tipo:'3C', diam:38.5 },
+        { cal:'250MCM',  tipo:'3C', diam:42.1 },
+        { cal:'350MCM',  tipo:'3C', diam:49   },
+        { cal:'500MCM',  tipo:'3C', diam:56.3 },
+        { cal:'750MCM',  tipo:'3C', diam:67.7 },
+      ]},
+      { name: 'XTMU — 4 Conductores (1x4C)', cables: [
+        { cal:'14 AWG',  tipo:'4C', diam:11.4 },
+        { cal:'12 AWG',  tipo:'4C', diam:12.4 },
+        { cal:'10 AWG',  tipo:'4C', diam:14   },
+        { cal:'8 AWG',   tipo:'4C', diam:18.3 },
+        { cal:'6 AWG',   tipo:'4C', diam:20.5 },
+        { cal:'4 AWG',   tipo:'4C', diam:24.7 },
+        { cal:'2 AWG',   tipo:'4C', diam:28.4 },
+        { cal:'1 AWG',   tipo:'4C', diam:31.8 },
+        { cal:'1/0 AWG', tipo:'4C', diam:34.2 },
+        { cal:'2/0 AWG', tipo:'4C', diam:36.9 },
+        { cal:'3/0 AWG', tipo:'4C', diam:39.9 },
+        { cal:'4/0 AWG', tipo:'4C', diam:43.4 },
+        { cal:'250MCM',  tipo:'4C', diam:49.2 },
+      ]}
+    ]
+  },
+  {
+    id: 'c5kv',
+    label: '5 kV',
+    note: 'Cables XAT 5 kV — Monoconductores y Multiconductores 1x3C.',
+    sections: [
+      { name: 'XAT — Monoconductor 5 kV', cables: [
+        { cal:'6 AWG',    tipo:'1C', diam:15.9 },
+        { cal:'4 AWG',    tipo:'1C', diam:17.1 },
+        { cal:'2 AWG',    tipo:'1C', diam:18.5 },
+        { cal:'1 AWG',    tipo:'1C', diam:19.3 },
+        { cal:'1/0 AWG',  tipo:'1C', diam:20.4 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:21.4 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:23.6 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:25   },
+        { cal:'250 MCM',  tipo:'1C', diam:25.9 },
+        { cal:'350 MCM',  tipo:'1C', diam:28.3 },
+        { cal:'500 MCM',  tipo:'1C', diam:31.8 },
+        { cal:'750 MCM',  tipo:'1C', diam:36.7 },
+        { cal:'1000 MCM', tipo:'1C', diam:40.8 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 5 kV', cables: [
+        { cal:'6 AWG',    tipo:'3C', diam:31   },
+        { cal:'4 AWG',    tipo:'3C', diam:33.4 },
+        { cal:'2 AWG',    tipo:'3C', diam:36.6 },
+        { cal:'1 AWG',    tipo:'3C', diam:38.3 },
+        { cal:'1/0 AWG',  tipo:'3C', diam:40.6 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:42.8 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:47.5 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:50.5 },
+        { cal:'250 MCM',  tipo:'3C', diam:52.6 },
+        { cal:'350 MCM',  tipo:'3C', diam:57.7 },
+        { cal:'500 MCM',  tipo:'3C', diam:65.1 },
+        { cal:'750 MCM',  tipo:'3C', diam:77.2 },
+        { cal:'1000 MCM', tipo:'3C', diam:86.1 },
+      ]}
+    ]
+  },
+  {
+    id: 'c8kv100',
+    label: '8 kV 100%',
+    note: 'Cables XAT 8 kV con 100% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 8 kV 100%', cables: [
+        { cal:'6 AWG',    tipo:'1C', diam:17.2 },
+        { cal:'4 AWG',    tipo:'1C', diam:18.4 },
+        { cal:'2 AWG',    tipo:'1C', diam:19.8 },
+        { cal:'1 AWG',    tipo:'1C', diam:20.6 },
+        { cal:'1/0 AWG',  tipo:'1C', diam:21.7 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:23.5 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:24.9 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:26.3 },
+        { cal:'250 MCM',  tipo:'1C', diam:27.2 },
+        { cal:'350 MCM',  tipo:'1C', diam:29.6 },
+        { cal:'500 MCM',  tipo:'1C', diam:33.5 },
+        { cal:'750 MCM',  tipo:'1C', diam:38   },
+        { cal:'1000 MCM', tipo:'1C', diam:42.1 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 8 kV 100%', cables: [
+        { cal:'6 AWG',    tipo:'3C', diam:33.8 },
+        { cal:'4 AWG',    tipo:'3C', diam:36.2 },
+        { cal:'2 AWG',    tipo:'3C', diam:39.4 },
+        { cal:'1 AWG',    tipo:'3C', diam:41.1 },
+        { cal:'1/0 AWG',  tipo:'3C', diam:43.4 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:47.2 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:50.3 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:53.3 },
+        { cal:'250 MCM',  tipo:'3C', diam:55.4 },
+        { cal:'350 MCM',  tipo:'3C', diam:60.5 },
+        { cal:'500 MCM',  tipo:'3C', diam:68.8 },
+        { cal:'750 MCM',  tipo:'3C', diam:80   },
+        { cal:'1000 MCM', tipo:'3C', diam:88.9 },
+      ]}
+    ]
+  },
+  {
+    id: 'c8kv133',
+    label: '8 kV 133%',
+    note: 'Cables XAT 8 kV con 133% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 8 kV 133%', cables: [
+        { cal:'6 AWG',    tipo:'1C', diam:18.6 },
+        { cal:'4 AWG',    tipo:'1C', diam:19.7 },
+        { cal:'2 AWG',    tipo:'1C', diam:21.2 },
+        { cal:'1 AWG',    tipo:'1C', diam:22   },
+        { cal:'1/0 AWG',  tipo:'1C', diam:23.8 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:24.8 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:26.2 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:27.6 },
+        { cal:'250 MCM',  tipo:'1C', diam:28.6 },
+        { cal:'350 MCM',  tipo:'1C', diam:31   },
+        { cal:'500 MCM',  tipo:'1C', diam:34.8 },
+        { cal:'750 MCM',  tipo:'1C', diam:39.3 },
+        { cal:'1000 MCM', tipo:'1C', diam:43.4 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 8 kV 133%', cables: [
+        { cal:'6 AWG',    tipo:'3C', diam:36.6 },
+        { cal:'4 AWG',    tipo:'3C', diam:39.1 },
+        { cal:'2 AWG',    tipo:'3C', diam:42.2 },
+        { cal:'1 AWG',    tipo:'3C', diam:45.6 },
+        { cal:'1/0 AWG',  tipo:'3C', diam:47.9 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:50.1 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:53.1 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:56.2 },
+        { cal:'250 MCM',  tipo:'3C', diam:58.2 },
+        { cal:'350 MCM',  tipo:'3C', diam:63.4 },
+        { cal:'500 MCM',  tipo:'3C', diam:73.1 },
+        { cal:'750 MCM',  tipo:'3C', diam:82.9 },
+        { cal:'1000 MCM', tipo:'3C', diam:91.7 },
+      ]}
+    ]
+  },
+  {
+    id: 'c15kv100',
+    label: '15 kV 100%',
+    note: 'Cables XAT 15 kV con 100% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 15 kV 100%', cables: [
+        { cal:'2 AWG',    tipo:'1C', diam:23.8 },
+        { cal:'1 AWG',    tipo:'1C', diam:24.6 },
+        { cal:'1/0 AWG',  tipo:'1C', diam:25.6 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:26.6 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:28   },
+        { cal:'4/0 AWG',  tipo:'1C', diam:29.5 },
+        { cal:'250 MCM',  tipo:'1C', diam:30.4 },
+        { cal:'350 MCM',  tipo:'1C', diam:33.2 },
+        { cal:'500 MCM',  tipo:'1C', diam:36.6 },
+        { cal:'750 MCM',  tipo:'1C', diam:41.2 },
+        { cal:'1000 MCM', tipo:'1C', diam:46.9 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 15 kV 100%', cables: [
+        { cal:'2 AWG',    tipo:'3C', diam:47.9 },
+        { cal:'1 AWG',    tipo:'3C', diam:49.6 },
+        { cal:'1/0 AWG',  tipo:'3C', diam:51.8 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:54   },
+        { cal:'3/0 AWG',  tipo:'3C', diam:57.1 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:60.1 },
+        { cal:'250 MCM',  tipo:'3C', diam:62.2 },
+        { cal:'350 MCM',  tipo:'3C', diam:68.2 },
+        { cal:'500 MCM',  tipo:'3C', diam:77.1 },
+        { cal:'750 MCM',  tipo:'3C', diam:86.9 },
+        { cal:'1000 MCM', tipo:'3C', diam:95.7 },
+      ]}
+    ]
+  },
+  {
+    id: 'c15kv133',
+    label: '15 kV 133%',
+    note: 'Cables XAT 15 kV con 133% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 15 kV 133%', cables: [
+        { cal:'2 AWG',    tipo:'1C', diam:26.1 },
+        { cal:'1 AWG',    tipo:'1C', diam:26.9 },
+        { cal:'1/0 AWG',  tipo:'1C', diam:28   },
+        { cal:'2/0 AWG',  tipo:'1C', diam:29   },
+        { cal:'3/0 AWG',  tipo:'1C', diam:30.4 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:31.8 },
+        { cal:'250 MCM',  tipo:'1C', diam:33.2 },
+        { cal:'350 MCM',  tipo:'1C', diam:35.5 },
+        { cal:'500 MCM',  tipo:'1C', diam:39   },
+        { cal:'750 MCM',  tipo:'1C', diam:43.5 },
+        { cal:'1000 MCM', tipo:'1C', diam:49.7 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 15 kV 133%', cables: [
+        { cal:'2 AWG',    tipo:'3C', diam:52.9 },
+        { cal:'1 AWG',    tipo:'3C', diam:54.7 },
+        { cal:'1/0 AWG',  tipo:'3C', diam:56.9 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:59.1 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:62.1 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:65.2 },
+        { cal:'250 MCM',  tipo:'3C', diam:68.1 },
+        { cal:'350 MCM',  tipo:'3C', diam:74.7 },
+        { cal:'500 MCM',  tipo:'3C', diam:82.1 },
+        { cal:'750 MCM',  tipo:'3C', diam:91.9 },
+        { cal:'1000 MCM', tipo:'3C', diam:101.6},
+      ]}
+    ]
+  },
+  {
+    id: 'c25kv100',
+    label: '25 kV 100%',
+    note: 'Cables XAT 25 kV con 100% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 25 kV 100%', cables: [
+        { cal:'1 AWG',    tipo:'1C', diam:29   },
+        { cal:'1/0 AWG',  tipo:'1C', diam:30   },
+        { cal:'2/0 AWG',  tipo:'1C', diam:31.1 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:32.5 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:34.3 },
+        { cal:'250 MCM',  tipo:'1C', diam:35.2 },
+        { cal:'350 MCM',  tipo:'1C', diam:37.6 },
+        { cal:'500 MCM',  tipo:'1C', diam:41.1 },
+        { cal:'750 MCM',  tipo:'1C', diam:47.2 },
+        { cal:'1000 MCM', tipo:'1C', diam:51.7 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 25 kV 100%', cables: [
+        { cal:'2 AWG',    tipo:'3C', diam:59.4 },
+        { cal:'1 AWG',    tipo:'3C', diam:59.2 },
+        { cal:'1/0 AWG',  tipo:'3C', diam:61.4 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:63.6 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:66.6 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:70.6 },
+        { cal:'250 MCM',  tipo:'3C', diam:74.1 },
+        { cal:'350 MCM',  tipo:'3C', diam:79.2 },
+        { cal:'500 MCM',  tipo:'3C', diam:86.6 },
+        { cal:'750 MCM',  tipo:'3C', diam:96.4 },
+        { cal:'1000 MCM', tipo:'3C', diam:106.1},
+      ]}
+    ]
+  },
+  {
+    id: 'c25kv133',
+    label: '25 kV 133%',
+    note: 'Cables XAT 25 kV con 133% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 25 kV 133%', cables: [
+        { cal:'1 AWG',    tipo:'1C', diam:32.6 },
+        { cal:'1/0 AWG',  tipo:'1C', diam:33.6 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:34.6 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:36   },
+        { cal:'4/0 AWG',  tipo:'1C', diam:37.5 },
+        { cal:'250 MCM',  tipo:'1C', diam:38.4 },
+        { cal:'350 MCM',  tipo:'1C', diam:40.8 },
+        { cal:'500 MCM',  tipo:'1C', diam:45.9 },
+        { cal:'750 MCM',  tipo:'1C', diam:50.8 },
+        { cal:'1000 MCM', tipo:'1C', diam:54.9 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 25 kV 133%', cables: [
+        { cal:'2 AWG',    tipo:'3C', diam:67.1 },
+        { cal:'1 AWG',    tipo:'3C', diam:66.9 },
+        { cal:'1/0 AWG',  tipo:'3C', diam:69.1 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:71.3 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:75.8 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:78.8 },
+        { cal:'250 MCM',  tipo:'3C', diam:80.9 },
+        { cal:'350 MCM',  tipo:'3C', diam:86   },
+        { cal:'500 MCM',  tipo:'3C', diam:93.4 },
+        { cal:'750 MCM',  tipo:'3C', diam:104.1},
+      ]}
+    ]
+  },
+  {
+    id: 'c35kv100',
+    label: '35 kV 100%',
+    note: 'Cables XAT 35 kV con 100% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 35 kV 100%', cables: [
+        { cal:'1/0 AWG',  tipo:'1C', diam:33.9 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:34.9 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:36.2 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:37.6 },
+        { cal:'250 MCM',  tipo:'1C', diam:38.5 },
+        { cal:'350 MCM',  tipo:'1C', diam:40.9 },
+        { cal:'500 MCM',  tipo:'1C', diam:45.8 },
+        { cal:'750 MCM',  tipo:'1C', diam:50.6 },
+        { cal:'1000 MCM', tipo:'1C', diam:54.5 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 35 kV 100%', cables: [
+        { cal:'1/0 AWG',  tipo:'3C', diam:73.3 },
+        { cal:'2/0 AWG',  tipo:'3C', diam:75.6 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:78.6 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:81.6 },
+        { cal:'250 MCM',  tipo:'3C', diam:83.7 },
+        { cal:'350 MCM',  tipo:'3C', diam:88.8 },
+        { cal:'500 MCM',  tipo:'3C', diam:96.2 },
+        { cal:'750 MCM',  tipo:'3C', diam:103.8},
+      ]}
+    ]
+  },
+  {
+    id: 'c35kv133',
+    label: '35 kV 133%',
+    note: 'Cables XAT 35 kV con 133% de aislación.',
+    sections: [
+      { name: 'XAT — Monoconductor 35 kV 133%', cables: [
+        { cal:'1/0 AWG',  tipo:'1C', diam:37.8 },
+        { cal:'2/0 AWG',  tipo:'1C', diam:38.8 },
+        { cal:'3/0 AWG',  tipo:'1C', diam:40.1 },
+        { cal:'4/0 AWG',  tipo:'1C', diam:41.5 },
+        { cal:'250 MCM',  tipo:'1C', diam:44   },
+        { cal:'350 MCM',  tipo:'1C', diam:46.7 },
+        { cal:'500 MCM',  tipo:'1C', diam:50.1 },
+        { cal:'750 MCM',  tipo:'1C', diam:54.5 },
+        { cal:'1000 MCM', tipo:'1C', diam:58.4 },
+      ]},
+      { name: 'XAT — Multiconductor 1x3C 35 kV 133%', cables: [
+        { cal:'1/0 AWG',  tipo:'3C', diam:82   },
+        { cal:'2/0 AWG',  tipo:'3C', diam:84.2 },
+        { cal:'3/0 AWG',  tipo:'3C', diam:87.2 },
+        { cal:'4/0 AWG',  tipo:'3C', diam:90.3 },
+        { cal:'250 MCM',  tipo:'3C', diam:92.3 },
+        { cal:'350 MCM',  tipo:'3C', diam:98.4 },
+        { cal:'500 MCM',  tipo:'3C', diam:105.8},
+      ]}
+    ]
+  }
+];
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+
+const tabsScroll = document.getElementById('tabsScroll');
+const panelsContainer = document.getElementById('panelsContainer');
+
+TABS.forEach((tab, ti) => {
+  // Tab button
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn' + (ti === 0 ? ' active' : '');
+  btn.textContent = tab.label;
+  btn.dataset.tab = tab.id;
+  btn.onclick = () => switchTab(tab.id);
+  tabsScroll.appendChild(btn);
+
+  // Panel
+  const panel = document.createElement('div');
+  panel.className = 'tab-panel' + (ti === 0 ? ' active' : '');
+  panel.id = 'panel-' + tab.id;
+
+  // Build cable rows HTML
+  let tableRows = '';
+  let rowIdx = 0;
+  tab.sections.forEach(sec => {
+    tableRows += `<tr class="section-header"><td colspan="4">${sec.name}</td></tr>`;
+    sec.cables.forEach(cable => {
+      const area = Math.PI * (cable.diam / 2) ** 2;
+      tableRows += `
+        <tr>
+          <td>${cable.cal}</td>
+          <td><span class="type-tag">${cable.tipo}</span></td>
+          <td style="color:var(--muted);font-size:0.75rem">${area.toFixed(1)} mm²</td>
+          <td><input class="qty-input" type="number" min="0" value="0"
+            data-tab="${tab.id}" data-idx="${rowIdx}" data-area="${area.toFixed(6)}"
+            onchange="validateQty(this)" oninput="validateQty(this)"></td>
+        </tr>`;
+      rowIdx++;
+    });
+  });
+
+  panel.innerHTML = `
+    <div class="calc-grid">
+      <div class="card" style="grid-column: 1 / -1">
+        <div class="card-label">Tipo de Conduit y Conductores</div>
+        <div class="note-box">
+          ℹ️ ${tab.note} &nbsp;|&nbsp; Llenado NEC: 1 cond = 53% · 2 cond = 31% · 3+ cond = 40%
+        </div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <div class="field" style="flex:1;min-width:180px">
+            <label>Tipo de Conduit</label>
+            <select id="conduit-type-${tab.id}">
+              <option value="RGS">RGS (Rígido Galvanizado)</option>
+              <option value="PVC-40">PVC Schedule 40</option>
+              <option value="both" selected>Ambos</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="cables-table">
+            <thead>
+              <tr>
+                <th>Calibre</th>
+                <th>Tipo</th>
+                <th>Área unit.</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+        <button class="btn-calc" onclick="calcular('${tab.id}')">
+          ▶ CALCULAR LLENADO
+        </button>
+        <button class="btn-reset" onclick="resetTab('${tab.id}')">↺ Limpiar cantidades</button>
+      </div>
+    </div>
+    <div id="results-${tab.id}" class="hidden"></div>
+  `;
+
+  panelsContainer.appendChild(panel);
+});
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+}
+
+function validateQty(el) {
+  let v = parseInt(el.value);
+  if (isNaN(v) || v < 0) el.value = 0;
+}
+
+function resetTab(tabId) {
+  document.querySelectorAll(`input[data-tab="${tabId}"]`).forEach(i => i.value = 0);
+  document.getElementById('results-' + tabId).innerHTML = '';
+  document.getElementById('results-' + tabId).classList.add('hidden');
+}
+
+function calcular(tabId) {
+  const inputs = document.querySelectorAll(`input[data-tab="${tabId}"]`);
+  let totalArea = 0;
+  let totalCount = 0;
+
+  inputs.forEach(inp => {
+    const qty = parseInt(inp.value) || 0;
+    const area = parseFloat(inp.dataset.area);
+    totalArea += area * qty;
+    totalCount += qty;
+  });
+
+  if (totalCount === 0) {
+    alert('Ingresa al menos un conductor.');
+    return;
+  }
+
+  // Fill factor based on count
+  const factor = totalCount === 1 ? 0.53 : totalCount === 2 ? 0.31 : 0.40;
+  const neededArea = totalArea / factor; // conduit must have at least this area
+
+  const conduitTypeVal = document.getElementById('conduit-type-' + tabId).value;
+  const types = conduitTypeVal === 'both' ? ['RGS', 'PVC-40'] : [conduitTypeVal];
+
+  let html = `
+    <div class="results-card" style="position:relative">
+      <div class="card-label">Resultados — Llenado NEC</div>
+      <div class="summary-row">
+        <div class="summary-item">
+          <span class="val">${totalCount}</span>
+          <span class="lbl">Conductores</span>
+        </div>
+        <div class="summary-item">
+          <span class="val">${totalArea.toFixed(1)} mm²</span>
+          <span class="lbl">Área Total Cables</span>
+        </div>
+        <div class="summary-item">
+          <span class="val">${(factor*100).toFixed(0)}%</span>
+          <span class="lbl">Factor Llenado NEC</span>
+        </div>
+        <div class="summary-item">
+          <span class="val">${neededArea.toFixed(1)} mm²</span>
+          <span class="lbl">Área Conduit Mínima</span>
+        </div>
+      </div>`;
+
+  types.forEach(type => {
+    const areas = CONDUIT_AREA[type];
+    const label = type === 'RGS' ? 'Conduit RGS (Rígido Galvanizado)' : 'Conduit PVC Schedule 40';
+    let minOkIdx = -1;
+
+    html += `<div style="margin-top:1.5rem">
+      <div class="card-label">${label}</div>
+      <div class="results-grid">`;
+
+    CONDUIT_SIZES.forEach((size, si) => {
+      const cArea = areas[si];
+      const allowed = cArea * factor;
+      const pct = (totalArea / cArea * 100).toFixed(1);
+      const ok = cArea >= neededArea;
+      if (ok && minOkIdx < 0) minOkIdx = si;
+
+      html += `
+        <div class="conduit-cell ${ok ? 'ok' : 'no'}">
+          <div class="conduit-size">${size}</div>
+          <div class="conduit-pct">${pct}% usado</div>
+          <div class="conduit-badge">${ok ? 'OK ✓' : 'NO ✗'}</div>
+        </div>`;
+    });
+
+    html += `</div>`;
+
+    if (minOkIdx >= 0) {
+      const minSize = CONDUIT_SIZES[minOkIdx];
+      html += `<div class="min-conduit-banner">
+        <span class="arrow">→</span>
+        Conduit mínimo ${type}: <strong style="margin-left:6px;font-size:1rem">${minSize}</strong>
+        &nbsp;·&nbsp; Área disponible: ${(CONDUIT_AREA[type][minOkIdx] * factor).toFixed(1)} mm²
+        &nbsp;·&nbsp; Uso: ${(totalArea / CONDUIT_AREA[type][minOkIdx] * 100).toFixed(1)}%
+      </div>`;
+    } else {
+      html += `<div class="min-conduit-banner" style="border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.06);color:#ef4444">
+        <span class="arrow">⚠</span>
+        Los cables no caben en ningún conduit ${type} disponible en esta tabla.
+      </div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+
+  // ── Canvas visualization section ──
+  // Build cable list for drawing: [{r, color, label}]
+  const cableList = [];
+  const tab = TABS.find(t => t.id === tabId);
+  let globalIdx = 0;
+  tab.sections.forEach(sec => {
+    sec.cables.forEach((cable, ci) => {
+      const inp = document.querySelector(`input[data-tab="${tabId}"][data-idx="${globalIdx}"]`);
+      const qty = inp ? (parseInt(inp.value) || 0) : 0;
+      if (qty > 0) {
+        cableList.push({ r: cable.diam / 2, qty, label: cable.cal + ' ' + cable.tipo, color: CABLE_COLORS[cableList.length % CABLE_COLORS.length] });
+      }
+      globalIdx++;
+    });
+  });
+
+  // Find minimum OK conduit for visualization (prefer RGS if available)
+  const vizType = (conduitTypeVal === 'PVC-40') ? 'PVC-40' : 'RGS';
+  const vizAreas = CONDUIT_AREA[vizType];
+  let vizIdx = vizAreas.findIndex(a => a >= neededArea);
+  if (vizIdx < 0) vizIdx = vizAreas.length - 1;
+
+  // Inner diameter from area: A = π*(d/2)² → d = 2*sqrt(A/π)
+  const conduitInnerDiam = 2 * Math.sqrt(vizAreas[vizIdx] / Math.PI);
+  const conduitR = conduitInnerDiam / 2;
+
+  const canvasId = 'canvas-' + tabId;
+  const legendId = 'legend-' + tabId;
+
+  html += `
+    <div class="results-card" style="position:relative;margin-top:1.5rem">
+      <div class="card-label">Sección Transversal — Conduit ${vizType} ${CONDUIT_SIZES[vizIdx]}</div>
+      <div style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-bottom:1rem;letter-spacing:0.5px;">
+        Visualización en sección transversal · Ø interior ${conduitInnerDiam.toFixed(1)} mm · Los cables se empaquetan automáticamente
+      </div>
+      <canvas id="${canvasId}" style="width:100%;display:block;border:1px solid var(--border)"></canvas>
+      <div id="${legendId}" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:1rem"></div>
+      <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
+        ${CONDUIT_SIZES.map((sz, si) => {
+          const a = vizAreas[si];
+          const ok = a >= neededArea;
+          return `<button onclick="redrawForSize('${tabId}','${vizType}',${si})" 
+            style="font-family:var(--mono);font-size:0.65rem;letter-spacing:1px;border:1px solid ${ok?'rgba(0,200,150,0.4)':'var(--border)'};
+            background:${ok?'rgba(0,200,150,0.07)':'transparent'};color:${ok?'var(--accent)':'var(--muted)'};
+            padding:5px 10px;cursor:pointer" title="${sz}">${sz}</button>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  html += `</div>`;
+
+  const resultsDiv = document.getElementById('results-' + tabId);
+  resultsDiv.innerHTML = html;
+  resultsDiv.classList.remove('hidden');
+  resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Draw after DOM update
+  setTimeout(() => {
+    drawConduit(tabId, vizType, vizIdx);
+  }, 80);
+}
+
+// ── Cable color palette ──
+const CABLE_COLORS = [
+  '#00c896','#0ea5e9','#f59e0b','#ef4444','#a78bfa',
+  '#f472b6','#34d399','#fb923c','#60a5fa','#e879f9',
+  '#facc15','#4ade80','#38bdf8','#f87171','#c084fc'
+];
+
+function redrawForSize(tabId, type, sizeIdx) {
+  drawConduit(tabId, type, sizeIdx);
+}
+
+function drawConduit(tabId, type, sizeIdx) {
+  const canvas = document.getElementById('canvas-' + tabId);
+  if (!canvas) return;
+  const legend = document.getElementById('legend-' + tabId);
+  if (legend) legend.innerHTML = '';
+
+  const ctx = canvas.getContext('2d');
+  const conduitAreaVal = CONDUIT_AREA[type][sizeIdx];
+  const conduitR = Math.sqrt(conduitAreaVal / Math.PI); // inner radius in mm
+
+  // Build cable queue from inputs
+  const tab = TABS.find(t => t.id === tabId);
+  const queue = [];
+  let globalIdx = 0;
+  let colorIdx = 0;
+  tab.sections.forEach(sec => {
+    sec.cables.forEach(cable => {
+      const inp = document.querySelector(`input[data-tab="${tabId}"][data-idx="${globalIdx}"]`);
+      const qty = inp ? (parseInt(inp.value) || 0) : 0;
+      if (qty > 0) {
+        const color = CABLE_COLORS[colorIdx % CABLE_COLORS.length];
+        for (let q = 0; q < qty; q++) {
+          queue.push({ r: cable.diam / 2, color, label: cable.cal + ' ' + cable.tipo });
+        }
+        // Legend
+        if (legend) {
+          legend.innerHTML += `<div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.65rem;color:var(--muted)">
+            <div style="width:11px;height:11px;border-radius:50%;background:${color};flex-shrink:0"></div>
+            Ø${cable.diam}mm · ${cable.cal} ${cable.tipo} ×${qty}
+          </div>`;
+        }
+        colorIdx++;
+      }
+      globalIdx++;
+    });
+  });
+
+  // Sort largest first
+  queue.sort((a, b) => b.r - a.r);
+
+  // Canvas sizing
+  const PADDING = 28;
+  const MAX_W = canvas.parentElement.offsetWidth || 600;
+  const DISPLAY_R = Math.min((MAX_W - PADDING * 2) / 2, 280);
+  const scale = DISPLAY_R / conduitR;
+
+  canvas.width = DISPLAY_R * 2 + PADDING * 2;
+  canvas.height = DISPLAY_R * 2 + PADDING * 2;
+  canvas.style.width = '100%';
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+
+  // Background
+  ctx.fillStyle = '#070b10';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+  ctx.lineWidth = 1;
+  const step = 50 * scale;
+  for (let x = cx % step; x < canvas.width; x += step) {
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
+  }
+  for (let y = cy % step; y < canvas.height; y += step) {
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
+  }
+
+  // Conduit wall
+  const wallThick = Math.max(4, DISPLAY_R * 0.045);
+  ctx.beginPath();
+  ctx.arc(cx, cy, DISPLAY_R + wallThick, 0, Math.PI * 2);
+  ctx.fillStyle = '#1e3050';
+  ctx.fill();
+
+  // Conduit interior fill
+  ctx.beginPath();
+  ctx.arc(cx, cy, DISPLAY_R, 0, Math.PI * 2);
+  ctx.fillStyle = '#0d1520';
+  ctx.fill();
+
+  // Conduit border ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, DISPLAY_R + wallThick / 2, 0, Math.PI * 2);
+  ctx.strokeStyle = '#4a6a8a';
+  ctx.lineWidth = wallThick;
+  ctx.stroke();
+
+  // Inner border subtle
+  ctx.beginPath();
+  ctx.arc(cx, cy, DISPLAY_R, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(74,106,138,0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Diameter label
+  ctx.font = `${Math.max(9, DISPLAY_R * 0.06)}px DM Mono, monospace`;
+  ctx.fillStyle = '#4a6a8a';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Ø ${(conduitR * 2).toFixed(1)} mm (interior)`, cx, cy - DISPLAY_R - wallThick - 8);
+
+  // ── Pack circles inside conduit ──
+  const placed = [];
+
+  function circleOverlaps(nx, ny, nr) {
+    for (const p of placed) {
+      const dx = nx - p.x, dy = ny - p.y;
+      if (Math.sqrt(dx*dx + dy*dy) < nr + p.r - 0.01) return true;
+    }
+    // Check conduit boundary
+    const distFromCenter = Math.sqrt(nx*nx + ny*ny);
+    if (distFromCenter + nr > conduitR) return true;
+    return false;
+  }
+
+  function tryPlace(r) {
+    const step = Math.max(0.3, r * 0.08);
+    // Spiral outward search from center
+    const angles = 72;
+    const maxD = conduitR - r;
+    if (maxD < 0) return false;
+    for (let d = 0; d <= maxD + step; d += step) {
+      for (let ai = 0; ai < angles; ai++) {
+        const angle = (ai / angles) * Math.PI * 2;
+        const nx = d * Math.cos(angle);
+        const ny = d * Math.sin(angle);
+        if (!circleOverlaps(nx, ny, r)) {
+          placed.push({ x: nx, y: ny, r });
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  let overflow = 0;
+  for (const item of queue) {
+    if (!tryPlace(item.r)) overflow++;
+  }
+
+  // Draw placed cables
+  placed.forEach((c, i) => {
+    const item = queue[i];
+    const color = item ? item.color : '#888';
+    const px = cx + c.x * scale;
+    const py = cy + c.y * scale;
+    const pr = c.r * scale;
+    const sw = Math.max(1, pr * 0.06);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.clip();
+
+    const grad = ctx.createRadialGradient(px - pr*0.3, py - pr*0.3, 0, px, py, pr);
+    grad.addColorStop(0, color + 'ee');
+    grad.addColorStop(0.6, color + '99');
+    grad.addColorStop(1, color + '33');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(px, py, Math.max(0.5, pr - sw), 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = sw * 2;
+    ctx.stroke();
+    ctx.restore();
+
+    if (pr > 9) {
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = `bold ${Math.min(pr * 0.65, 11)}px DM Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(c.r * 2, px, py);
+      ctx.textBaseline = 'alphabetic';
+    }
+  });
+
+  // Overflow warning
+  if (overflow > 0) {
+    ctx.fillStyle = 'rgba(245,158,11,0.9)';
+    ctx.font = `bold 11px DM Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`⚠ ${overflow} cable(s) no dibujado(s) por espacio`, cx, canvas.height - 10);
+  }
+
+  // Center crosshair
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(cx, cy - DISPLAY_R); ctx.lineTo(cx, cy + DISPLAY_R); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - DISPLAY_R, cy); ctx.lineTo(cx + DISPLAY_R, cy); ctx.stroke();
+  ctx.setLineDash([]);
+}
+</script>
+</body>
+</html>
