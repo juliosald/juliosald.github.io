@@ -510,7 +510,7 @@ header {
 // ─── DATA ──────────────────────────────────────────────────────────────────
 
 // Conduit areas (mm²) — RGS and PVC Sch 40
-// Fill factors: 1 cond = 53%, 2 cond = 31%, 3+ cond = 40%
+// Fill factors RIC Tabla 4.21: 1 cond = 50%, 2 cond = 33%, 3+ cond = 33%
 const CONDUIT_SIZES = ['1/2"','3/4"','1"','1 1/2"','2"','3"','4"','6"'];
 
 const CONDUIT_AREA = {
@@ -521,7 +521,7 @@ const CONDUIT_AREA = {
 // Fill factors by count
 function fillArea(conduitArea, count) {
   if (count === 0) return 0;
-  const factor = count === 1 ? 0.53 : count === 2 ? 0.31 : 0.40;
+  const factor = count === 1 ? 0.50 : count === 2 ? 0.33 : 0.33;
   return conduitArea * factor;
 }
 
@@ -531,7 +531,7 @@ const TABS = [
   {
     id: 'alumbrado',
     label: 'Alumbrado',
-    note: 'Cables THHN para circuitos de alumbrado. Porcentajes NEC: 53% / 31% / 40%.',
+    note: 'Cables THHN para circuitos de alumbrado. Porcentajes RIC Tabla 4.21: 50% / 33% / 33%.',
     sections: [
       { name: 'THHN — Monoconductores', cables: [
         { cal:'12 AWG', tipo:'1C', diam:3.6 },
@@ -1021,7 +1021,7 @@ TABS.forEach((tab, ti) => {
       <div class="card" style="grid-column: 1 / -1">
         <div class="card-label">Tipo de Conduit y Conductores</div>
         <div class="note-box">
-          ℹ️ ${tab.note} &nbsp;|&nbsp; Llenado NEC: 1 cond = 53% · 2 cond = 31% · 3+ cond = 40%
+          ℹ️ ${tab.note} &nbsp;|&nbsp; Llenado RIC Tabla 4.21: 1 cond = 50% · 2 cond = 33% · 3+ cond = 33%
         </div>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
           <div class="field" style="flex:1;min-width:180px">
@@ -1092,7 +1092,7 @@ function calcular(tabId) {
   }
 
   // Fill factor based on count
-  const factor = totalCount === 1 ? 0.53 : totalCount === 2 ? 0.31 : 0.40;
+  const factor = totalCount === 1 ? 0.50 : totalCount === 2 ? 0.33 : 0.33;
   const neededArea = totalArea / factor; // conduit must have at least this area
 
   const conduitTypeVal = document.getElementById('conduit-type-' + tabId).value;
