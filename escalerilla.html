@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Llenado Escalerilla</title>
+<title>Calculadora Llenado Escalerilla NEC</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -595,6 +595,71 @@
   #cat-select, #sec-select, #cable-select {
     cursor: pointer;
   }
+
+  /* SEPARATOR */
+  .sep-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 1rem;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.2s;
+  }
+  .sep-toggle:hover { border-color: var(--accent2); }
+  .sep-toggle input[type=checkbox] { accent-color: var(--accent2); width:14px; height:14px; cursor:pointer; }
+  .sep-toggle-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    flex: 1;
+  }
+  .sep-panel {
+    margin-top: 0.75rem;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border: 1px solid rgba(14,165,233,0.25);
+    border-left: 3px solid var(--accent2);
+  }
+  .sep-panel .field { margin-bottom: 0.75rem; }
+  .sep-panel .field:last-child { margin-bottom: 0; }
+
+  /* ZONE BADGE */
+  .zone-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    padding: 2px 7px;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .zone-fuerza   { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .zone-control  { background: rgba(14,165,233,0.15); color: var(--accent2); border: 1px solid rgba(14,165,233,0.3); }
+
+  /* ZONE TOGGLE BUTTONS */
+  .zona-btn-group { display: flex; gap: 6px; margin-top: 2px; }
+  .zona-btn {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.2s;
+    opacity: 0.35;
+  }
+  .zona-btn-fuerza.active  { background: rgba(239,68,68,0.15);  color: #ef4444; border-color: rgba(239,68,68,0.5);  opacity: 1; }
+  .zona-btn-control.active { background: rgba(14,165,233,0.15); color: var(--accent2); border-color: rgba(14,165,233,0.5); opacity: 1; }
+  .zona-btn-fuerza:not(.active)  { color: #ef4444; }
+  .zona-btn-control:not(.active) { color: var(--accent2); }
+  .zona-btn:hover { opacity: 0.7; }
+  .zona-btn.active:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -626,6 +691,22 @@
       </div>
 
       <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">Cables tangenciales · contacto directo</div>
+      <div style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;">
+        <label class="sep-toggle" onclick="toggleSeparador()">
+          <input type="checkbox" id="chk-sep" onclick="event.stopPropagation();toggleSeparador()">
+          <span class="sep-toggle-label">&#9135; SEPARADOR VERTICAL</span>
+          <span style="font-family:var(--mono);font-size:0.6rem;color:var(--accent2);letter-spacing:1px;">Fuerza / Control</span>
+        </label>
+        <div id="sep-panel" class="sep-panel" style="display:none;">
+          <div class="field">
+            <label>Posici&oacute;n del separador (mm desde izquierda)</label>
+            <input type="number" id="sep-pos" placeholder="Ej: 200" min="1" step="1">
+          </div>
+          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);letter-spacing:1px;margin-top:4px;">
+            &#9632; FUERZA &nbsp;(izquierda) &nbsp;&nbsp; &#9632; CTRL/INST &nbsp;(derecha)
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- CARD: CABLES CATALOG + INPUT -->
@@ -669,6 +750,15 @@
             <input type="number" id="cant-cat" placeholder="1" min="1" value="1">
           </div>
         </div>
+
+        <div class="field" id="zona-cat-wrap" style="margin-top:0.5rem;display:none;">
+          <label>Zona</label>
+          <div class="zona-btn-group">
+            <button class="zona-btn zona-btn-fuerza active" id="zona-cat-fuerza" onclick="setZona('cat','fuerza')">&#9632; FUERZA</button>
+            <button class="zona-btn zona-btn-control" id="zona-cat-control" onclick="setZona('cat','control')">&#9632; CTRL / INST</button>
+          </div>
+          <input type="hidden" id="zona-cat" value="fuerza">
+        </div>
         <button class="btn btn-add" onclick="addCableFromCatalog()">+ AGREGAR DEL CAT&Aacute;LOGO</button>
       </div>
 
@@ -683,6 +773,15 @@
             <label>Cant.</label>
             <input type="number" id="cant" placeholder="1" min="1" value="1">
           </div>
+        </div>
+
+        <div class="field" id="zona-manual-wrap" style="margin-top:0.25rem;display:none;">
+          <label>Zona</label>
+          <div class="zona-btn-group">
+            <button class="zona-btn zona-btn-fuerza active" id="zona-manual-fuerza" onclick="setZona('manual','fuerza')">&#9632; FUERZA</button>
+            <button class="zona-btn zona-btn-control" id="zona-manual-control" onclick="setZona('manual','control')">&#9632; CTRL / INST</button>
+          </div>
+          <input type="hidden" id="zona-manual" value="fuerza">
         </div>
         <button class="btn btn-add" onclick="addCable()">+ AGREGAR CABLE</button>
       </div>
@@ -1079,7 +1178,8 @@ function addCableFromCatalog() {
   const cant = parseInt(document.getElementById('cant-cat').value) || 1;
   const area = Math.PI * Math.pow(cable.diam / 2, 2);
   const label = cable.cal + ' ' + cable.tipo + ' [' + TABS[+catIdx].label + ']';
-  cables.push({ diam: cable.diam, cant, area, triada: false, label });
+  const zona = document.getElementById('zona-cat') ? document.getElementById('zona-cat').value : 'fuerza';
+  cables.push({ diam: cable.diam, cant, area, triada: false, label, zona });
   renderTabla();
   document.getElementById('cant-cat').value = '1';
   document.getElementById('cable-select').value = '';
@@ -1088,6 +1188,34 @@ function addCableFromCatalog() {
 }
 
 window.addEventListener('DOMContentLoaded', initCatalog);
+
+function toggleSeparador() {
+  const chk = document.getElementById('chk-sep');
+  const panel = document.getElementById('sep-panel');
+  if (event && event.target !== chk) chk.checked = !chk.checked;
+  const active = chk.checked;
+  panel.style.display = active ? '' : 'none';
+  ['zona-cat-wrap', 'zona-manual-wrap'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = active ? '' : 'none';
+  });
+  renderTabla();
+}
+
+function setZona(panel, zona) {
+  document.getElementById('zona-' + panel).value = zona;
+  document.getElementById('zona-' + panel + '-fuerza').className  = 'zona-btn zona-btn-fuerza'  + (zona === 'fuerza'  ? ' active' : '');
+  document.getElementById('zona-' + panel + '-control').className = 'zona-btn zona-btn-control' + (zona === 'control' ? ' active' : '');
+}
+
+function getSeparadorMm() {
+  const chk = document.getElementById('chk-sep');
+  if (!chk || !chk.checked) return null;
+  const pos = parseFloat(document.getElementById('sep-pos').value);
+  const grosor = 1;
+  if (!pos || pos <= 0) return null;
+  return { pos, grosor };
+}
 
 let cables = [];
 
@@ -1103,7 +1231,8 @@ function addCable() {
   if (!d || d <= 0) { shake('diam'); return; }
 
   const area = Math.PI * Math.pow(d / 2, 2);
-  cables.push({ diam: d, cant: c, area: area, triada: false });
+  const zona = document.getElementById('zona-manual') ? document.getElementById('zona-manual').value : 'fuerza';
+  cables.push({ diam: d, cant: c, area: area, triada: false, zona });
   renderTabla();
 
   document.getElementById('diam').value = '';
@@ -1123,44 +1252,61 @@ function deleteCable(i) {
 
 function renderTabla() {
   const wrap = document.getElementById('tabla-wrap');
+  const useSep = document.getElementById('chk-sep') && document.getElementById('chk-sep').checked;
+
   if (cables.length === 0) {
     wrap.innerHTML = '<div class="empty-state">Sin cables agregados — usa los presets o ingresa manualmente</div>';
     return;
   }
 
-  let rows = cables.map((c, i) => {
-    const aTotal = (c.area * c.cant).toFixed(1);
-    const label = c.label || ('Ø ' + c.diam + ' mm manual');
-    const esMultiplo3 = c.cant % 3 === 0 && c.cant >= 3;
-    const triadaBtn = esMultiplo3
-      ? `<button class="btn ${c.triada ? 'btn-triada-on' : 'btn-triada-off'}" onclick="toggleTriada(${i})" title="Agrupar en triadas (2 abajo + 1 arriba)">
-           ${c.triada ? '▲ TRIADA' : '▲ TRIADA'}
-         </button>`
-      : `<span style="font-family:var(--mono);font-size:0.6rem;color:var(--border);">—</span>`;
-    return `<tr>
-      <td title="Ø${c.diam}mm">${c.label ? '<span style="font-size:0.75rem;color:var(--accent2);">' + c.label + '</span>' : 'Ø ' + c.diam + ' mm'}</td>
-      <td>${c.cant}</td>
-      <td><span style="color:var(--muted);font-size:0.7rem;">Ø${c.diam}mm</span><br>${c.area.toFixed(1)} mm²</td>
-      <td class="area-col">${aTotal} mm²</td>
-      <td>${triadaBtn}</td>
-      <td><button class="btn btn-delete" onclick="deleteCable(${i})">✕</button></td>
-    </tr>`;
-  }).join('');
+  function makeRows(list, realIndices) {
+    return list.map((c, li) => {
+      const i = realIndices[li];
+      const aTotal = (c.area * c.cant).toFixed(1);
+      const esMultiplo3 = c.cant % 3 === 0 && c.cant >= 3;
+      const triadaBtn = esMultiplo3
+        ? `<button class="btn ${c.triada ? 'btn-triada-on' : 'btn-triada-off'}" onclick="toggleTriada(${i})" title="Agrupar en triadas">▲ TRIADA</button>`
+        : `<span style="font-family:var(--mono);font-size:0.6rem;color:var(--border);">—</span>`;
+      const zonaBadge = useSep
+        ? `<span class="zone-badge ${c.zona === 'control' ? 'zone-control' : 'zone-fuerza'}">${c.zona === 'control' ? 'CTRL' : 'FZA'}</span> `
+        : '';
+      return `<tr>
+        <td title="Ø${c.diam}mm">${zonaBadge}${c.label ? '<span style="font-size:0.75rem;color:var(--accent2);">' + c.label + '</span>' : 'Ø ' + c.diam + ' mm'}</td>
+        <td>${c.cant}</td>
+        <td><span style="color:var(--muted);font-size:0.7rem;">Ø${c.diam}mm</span><br>${c.area.toFixed(1)} mm²</td>
+        <td class="area-col">${aTotal} mm²</td>
+        <td>${triadaBtn}</td>
+        <td><button class="btn btn-delete" onclick="deleteCable(${i})">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
 
-  wrap.innerHTML = `
-    <table class="cables-table">
-      <thead>
-        <tr>
-          <th>Cable / Diámetro</th>
-          <th>Cant.</th>
-          <th>Área/cable</th>
-          <th>Área total</th>
-          <th>Triada</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  const thead = `<thead><tr>
+    <th>Cable / Diámetro</th><th>Cant.</th><th>Área/cable</th>
+    <th>Área total</th><th>Triada</th><th></th>
+  </tr></thead>`;
+
+  if (useSep) {
+    const fuerza  = cables.map((c,i)=>({c,i})).filter(({c})=> c.zona !== 'control');
+    const control = cables.map((c,i)=>({c,i})).filter(({c})=> c.zona === 'control');
+    const rowsF = makeRows(fuerza.map(x=>x.c),  fuerza.map(x=>x.i));
+    const rowsC = makeRows(control.map(x=>x.c), control.map(x=>x.i));
+
+    const sectionHeader = (label, cls) =>
+      `<tr><td colspan="6" style="padding:6px 10px;font-family:var(--mono);font-size:0.6rem;letter-spacing:2px;background:var(--surface2);border-bottom:1px solid var(--border);">
+        <span class="zone-badge ${cls}" style="margin-right:6px;">${label}</span>
+      </td></tr>`;
+
+    wrap.innerHTML = `<table class="cables-table">${thead}<tbody>
+      ${sectionHeader('FUERZA', 'zone-fuerza')}
+      ${rowsF || '<tr><td colspan="6" style="color:var(--border);font-family:var(--mono);font-size:0.7rem;padding:8px 10px;">Sin cables</td></tr>'}
+      ${sectionHeader('CTRL / INSTRUMENTO', 'zone-control')}
+      ${rowsC || '<tr><td colspan="6" style="color:var(--border);font-family:var(--mono);font-size:0.7rem;padding:8px 10px;">Sin cables</td></tr>'}
+    </tbody></table>`;
+  } else {
+    const allIdx = cables.map((_,i)=>i);
+    wrap.innerHTML = `<table class="cables-table">${thead}<tbody>${makeRows(cables, allIdx)}</tbody></table>`;
+  }
 }
 
 function calcular() {
@@ -1292,20 +1438,52 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
   ctx.fillText(`${altura} mm`, 0, 0);
   ctx.restore();
 
-  // Build placement queue — mix triadas and singles, sorted largest first
-  // Each item: { type: 'single'|'triada', r, color }
+  // Separator
+  const sep = getSeparadorMm ? getSeparadorMm() : null;
+  const sepPosLeft  = sep ? sep.pos : null;                        // left edge of separator
+  const sepPosRight = sep ? sep.pos + sep.grosor : null;           // right edge
+  const SEP_GROSOR_MM = sep ? sep.grosor : 0;
+
+  // Draw separator on canvas
+  if (sep && sep.pos > 0 && sep.pos < ancho) {
+    const spx = ox + sep.pos * scale;
+    const sgx = sep.grosor * scale;
+
+    // Separator fill
+    ctx.fillStyle = 'rgba(14,165,233,0.12)';
+    ctx.fillRect(spx, oy, sgx, cH);
+
+    // Separator border lines
+    ctx.strokeStyle = 'rgba(14,165,233,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(spx, oy); ctx.lineTo(spx, oy + cH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(spx + sgx, oy); ctx.lineTo(spx + sgx, oy + cH); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Zone labels above tray
+    ctx.fillStyle = 'rgba(239,68,68,0.8)';
+    ctx.font = `bold ${Math.max(8, 10)}px DM Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText('FUERZA', ox + sep.pos * scale / 2, oy - 10);
+    ctx.fillStyle = 'rgba(14,165,233,0.8)';
+    ctx.fillText('CTRL/INST', ox + (sep.pos + sep.grosor + (ancho - sep.pos - sep.grosor) / 2) * scale, oy - 10);
+  }
+
+  // Build placement queue — one per zone (or single queue if no separator)
   const queue = [];
 
   cableList.forEach((cable, ci) => {
     const color = CABLE_COLORS[ci % CABLE_COLORS.length];
+    const zona = cable.zona || 'fuerza';
     if (cable.triada && cable.cant % 3 === 0 && cable.cant >= 3) {
       const numTriadas = cable.cant / 3;
       for (let t = 0; t < numTriadas; t++) {
-        queue.push({ type: 'triada', r: cable.diam / 2, color });
+        queue.push({ type: 'triada', r: cable.diam / 2, color, zona });
       }
     } else {
       for (let n = 0; n < cable.cant; n++) {
-        queue.push({ type: 'single', r: cable.diam / 2, color, typeIdx: ci });
+        queue.push({ type: 'single', r: cable.diam / 2, color, typeIdx: ci, zona });
       }
     }
   });
@@ -1314,6 +1492,13 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
   queue.sort((a, b) => b.r - a.r);
 
   const placed = [];
+
+  // Zone bounds in mm
+  function getZoneBounds(zona) {
+    if (!sep || !sep.pos) return { xMin: 0, xMax: ancho };
+    if (zona === 'control') return { xMin: sep.pos + sep.grosor, xMax: ancho };
+    return { xMin: 0, xMax: sep.pos };
+  }
 
   function findLowestY(cx, r, isTriada) {
     let bestY = altura - r; // no gap from floor
@@ -1350,10 +1535,11 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
     return false;
   }
 
-  function placeSingle(r, color, isTriada) {
+  function placeSingle(r, color, isTriada, zona) {
     const step = Math.max(0.1, r * 0.05);
+    const bounds = getZoneBounds(zona || 'fuerza');
     let bestX = -1, bestY = -Infinity;
-    for (let cx = r + gap; cx <= ancho - r - gap; cx += step) {
+    for (let cx = bounds.xMin + r + gap; cx <= bounds.xMax - r - gap; cx += step) {
       const cy = findLowestY(cx, r, isTriada);
       if (cy - r < 0) continue;
       if (bestX < 0 || cy > bestY || (cy === bestY && cx < bestX)) {
@@ -1365,14 +1551,15 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
     return true;
   }
 
-  function placeTriada(r, color) {
+  function placeTriada(r, color, zona) {
     const hDist = 2 * r;  // bottom pair tangential, no internal gap
     const vOffset = Math.sqrt(Math.max(0, (2*r)*(2*r) - r*r)); // r*sqrt(3)
     const step = Math.max(0.1, r * 0.05);
 
     let bestLx = -1, bestBotY = -Infinity;
 
-    for (let lx = r + gap; lx + hDist + r + gap <= ancho; lx += step) {
+    const trBounds = getZoneBounds(zona || 'fuerza');
+    for (let lx = trBounds.xMin + r + gap; lx + hDist + r + gap <= trBounds.xMax; lx += step) {
       const rx = lx + hDist;
       const tx = lx + hDist / 2;
 
@@ -1405,9 +1592,9 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
     }
 
     if (bestLx < 0) {
-      placeSingle(r, color, false);
-      placeSingle(r, color, false);
-      placeSingle(r, color, false);
+      placeSingle(r, color, false, zona);
+      placeSingle(r, color, false, zona);
+      placeSingle(r, color, false, zona);
       return;
     }
 
@@ -1423,9 +1610,9 @@ function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
   // Place everything in queue order (largest first, triadas and singles interleaved)
   for (const item of queue) {
     if (item.type === 'triada') {
-      placeTriada(item.r, item.color);
+      placeTriada(item.r, item.color, item.zona);
     } else {
-      placeSingle(item.r, item.color, false);
+      placeSingle(item.r, item.color, false, item.zona);
     }
   }
 
@@ -1517,4 +1704,3 @@ document.addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
-
