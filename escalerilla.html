@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Llenado Escalerilla </title>
+<title>Calculadora Llenado Escalerilla</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -557,6 +557,44 @@
   .cable-card {
     grid-column: 1 / -1;
   }
+
+  /* MODE BUTTONS */
+  .mode-btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    justify-content: center;
+  }
+  .mode-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .mode-btn-active {
+    background: rgba(0,200,150,0.12);
+    color: var(--accent);
+    border-color: rgba(0,200,150,0.4);
+  }
+
+  /* CATALOG INFO CHIP */
+  .catalog-info {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--accent2);
+    background: rgba(14,165,233,0.08);
+    border: 1px solid rgba(14,165,233,0.2);
+    padding: 6px 10px;
+    margin-top: 0.5rem;
+    letter-spacing: 0.5px;
+  }
+
+  /* SELECT styling override for catalog */
+  #cat-select, #sec-select, #cable-select {
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -590,35 +628,65 @@
       <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">Cables tangenciales · contacto directo</div>
     </div>
 
-    <!-- CARD: CABLES PRESET + INPUT -->
+    <!-- CARD: CABLES CATALOG + INPUT -->
     <div class="card">
       <div class="card-label">02 / Cables</div>
 
-      <div class="field">
-        <label>Cables frecuentes <span class="info" title="Diámetros exteriores estándar">?</span></label>
-        <div class="presets">
-          <button class="preset-btn" onclick="addPreset(6, 'NYA 1.5mm²')">NYA 1.5</button>
-          <button class="preset-btn" onclick="addPreset(7.8, 'NYA 2.5mm²')">NYA 2.5</button>
-          <button class="preset-btn" onclick="addPreset(10.2, 'NYA 4mm²')">NYA 4</button>
-          <button class="preset-btn" onclick="addPreset(12.4, 'NYA 6mm²')">NYA 6</button>
-          <button class="preset-btn" onclick="addPreset(16, 'THHN 10mm²')">THHN 10</button>
-          <button class="preset-btn" onclick="addPreset(19.5, 'THHN 16mm²')">THHN 16</button>
-          <button class="preset-btn" onclick="addPreset(24, 'THHN 25mm²')">THHN 25</button>
-          <button class="preset-btn" onclick="addPreset(29, 'THHN 35mm²')">THHN 35</button>
-        </div>
+      <!-- MODE TOGGLE -->
+      <div style="display:flex;gap:6px;margin-bottom:1rem;">
+        <button id="btn-mode-catalog" class="btn mode-btn mode-btn-active" onclick="setMode('catalog')">&#128203; CAT&Aacute;LOGO</button>
+        <button id="btn-mode-manual" class="btn mode-btn" onclick="setMode('manual')">&#9998; MANUAL mm</button>
       </div>
 
-      <div class="cable-row">
+      <!-- CATALOG MODE -->
+      <div id="panel-catalog">
         <div class="field">
-          <label>Ø diámetro (mm)</label>
-          <input type="number" id="diam" placeholder="Ej: 12.4" min="0.1" step="0.1">
+          <label>Categor&iacute;a</label>
+          <select id="cat-select" onchange="renderSectionSelect()">
+            <option value="">&#8212; Seleccionar categor&iacute;a &mdash;</option>
+          </select>
         </div>
         <div class="field">
-          <label>Cant.</label>
-          <input type="number" id="cant" placeholder="1" min="1" value="1">
+          <label>Secci&oacute;n</label>
+          <select id="sec-select" onchange="renderCableSelect()">
+            <option value="">&#8212; Seleccionar secci&oacute;n &mdash;</option>
+          </select>
         </div>
+        <div class="field">
+          <label>Cable</label>
+          <select id="cable-select" onchange="onCableSelectChange()">
+            <option value="">&#8212; Seleccionar cable &mdash;</option>
+          </select>
+        </div>
+        <div class="catalog-info" id="catalog-info" style="display:none;"></div>
+        <div class="cable-row" style="margin-top:0.75rem;">
+          <div class="field" style="flex:1;">
+            <label>&Oslash; di&aacute;metro (mm)</label>
+            <input type="number" id="diam-cat" placeholder="Auto" min="0.1" step="0.1" readonly style="background:var(--surface2);color:var(--accent);cursor:default;">
+          </div>
+          <div class="field" style="flex:1;">
+            <label>Cant.</label>
+            <input type="number" id="cant-cat" placeholder="1" min="1" value="1">
+          </div>
+        </div>
+        <button class="btn btn-add" onclick="addCableFromCatalog()">+ AGREGAR DEL CAT&Aacute;LOGO</button>
       </div>
-      <button class="btn btn-add" onclick="addCable()">+ AGREGAR CABLE</button>
+
+      <!-- MANUAL MODE -->
+      <div id="panel-manual" style="display:none;">
+        <div class="cable-row">
+          <div class="field">
+            <label>&Oslash; di&aacute;metro (mm)</label>
+            <input type="number" id="diam" placeholder="Ej: 12.4" min="0.1" step="0.1">
+          </div>
+          <div class="field">
+            <label>Cant.</label>
+            <input type="number" id="cant" placeholder="1" min="1" value="1">
+          </div>
+        </div>
+        <button class="btn btn-add" onclick="addCable()">+ AGREGAR CABLE</button>
+      </div>
+
     </div>
 
     <!-- CABLE TABLE FULL WIDTH -->
@@ -690,12 +758,337 @@
   </div>
 
   <footer>
-    JULIO PROYECTISTA · CALCULADORA LLENADO ESCALERILLA
+    CALCULADORA LLENADO ESCALERILLA
   </footer>
 
 </div>
 
 <script>
+// ─── CABLE CATALOG ────────────────────────────────────────────────────────
+const TABS = [
+  { id:'alumbrado', label:'Alumbrado', sections:[
+    { name:'THHN — Monoconductores', cables:[
+      {cal:'12 AWG',tipo:'1C',diam:3.6},{cal:'10 AWG',tipo:'1C',diam:4.3},
+      {cal:'8 AWG',tipo:'1C',diam:5.6},{cal:'6 AWG',tipo:'1C',diam:6.6},
+      {cal:'4 AWG',tipo:'1C',diam:8.4},{cal:'2 AWG',tipo:'1C',diam:9.7},
+      {cal:'1/0 AWG',tipo:'1C',diam:12.4},{cal:'2/0 AWG',tipo:'1C',diam:13.5},
+      {cal:'3/0 AWG',tipo:'1C',diam:14.7},{cal:'4/0 AWG',tipo:'1C',diam:16.3},
+      {cal:'250 kcmil',tipo:'1C',diam:18},{cal:'350 kcmil',tipo:'1C',diam:20.6},
+      {cal:'500 kcmil',tipo:'1C',diam:23.9},
+    ]}
+  ]},
+  { id:'instrumento', label:'Instrumentación', sections:[
+    { name:'Instrumentación — Multipares', cables:[
+      {cal:'N° 16 Awg',tipo:'1P',diam:7.5},{cal:'N° 16 Awg',tipo:'2P',diam:13},
+      {cal:'N° 16 Awg',tipo:'4P',diam:16},{cal:'N° 16 Awg',tipo:'6P',diam:19},
+      {cal:'N° 16 Awg',tipo:'8T',diam:30},{cal:'N° 16 Awg',tipo:'2T',diam:15},
+    ]}
+  ]},
+  { id:'control', label:'Control', sections:[
+    { name:'THHN — Control Multiconductor', cables:[
+      {cal:'N° 14 Awg',tipo:'3/C',diam:10},{cal:'N° 14 Awg',tipo:'5/C',diam:12},
+      {cal:'N° 14 Awg',tipo:'7/C',diam:13},{cal:'N° 14 Awg',tipo:'9/C',diam:17},
+      {cal:'N° 14 Awg',tipo:'12/C',diam:18},{cal:'N° 14 Awg',tipo:'19/C',diam:21},
+    ]}
+  ]},
+  { id:'mezcla', label:'Mezcla 600V', sections:[
+    { name:'Multiconductores 3C+G', cables:[
+      {cal:'12 AWG',tipo:'3C+G',diam:12},{cal:'10 AWG',tipo:'3C+G',diam:13},
+      {cal:'8 AWG',tipo:'3C+G',diam:18},{cal:'6 AWG',tipo:'3C+G',diam:20},
+      {cal:'4 AWG',tipo:'3C+G',diam:24},{cal:'2 AWG',tipo:'3C+G',diam:27},
+      {cal:'1/0 AWG',tipo:'3C+G',diam:33},{cal:'2/0 AWG',tipo:'3C+G',diam:35},
+    ]},
+    { name:'Multiconductores 4C+G', cables:[
+      {cal:'10 AWG',tipo:'4C+G',diam:16},{cal:'8 AWG',tipo:'4C+G',diam:20},
+      {cal:'6 AWG',tipo:'4C+G',diam:24},{cal:'2 AWG',tipo:'4C+G',diam:31},
+    ]},
+    { name:'Monoconductores', cables:[
+      {cal:'12 AWG',tipo:'5C',diam:14},{cal:'2/0 AWG',tipo:'1C',diam:14},
+      {cal:'4/0 AWG',tipo:'1C',diam:17},{cal:'250 kcmil',tipo:'1C',diam:18},
+      {cal:'350 kcmil',tipo:'1C',diam:21},{cal:'500 kcmil',tipo:'1C',diam:25},
+      {cal:'2 AWG (Grd)',tipo:'1C',diam:10},{cal:'1/0 AWG (Grd)',tipo:'1C',diam:13},
+    ]},
+    { name:'Control 14 AWG', cables:[
+      {cal:'N° 14 Awg',tipo:'3/C',diam:10},{cal:'N° 14 Awg',tipo:'5/C',diam:12},
+      {cal:'N° 14 Awg',tipo:'7/C',diam:13},{cal:'N° 14 Awg',tipo:'9/C',diam:17},
+      {cal:'N° 14 Awg',tipo:'12/C',diam:18},{cal:'N° 14 Awg',tipo:'19/C',diam:21},
+    ]}
+  ]},
+  { id:'cables600', label:'Cables 600V', sections:[
+    { name:'XTU — Monoconductores', cables:[
+      {cal:'14 AWG',tipo:'1C',diam:5.2},{cal:'12 AWG',tipo:'1C',diam:5.7},
+      {cal:'10 AWG',tipo:'1C',diam:6.3},{cal:'8 AWG',tipo:'1C',diam:7.7},
+      {cal:'6 AWG',tipo:'1C',diam:8.6},{cal:'4 AWG',tipo:'1C',diam:9.8},
+      {cal:'2 AWG',tipo:'1C',diam:11.2},{cal:'1 AWG',tipo:'1C',diam:13.4},
+      {cal:'1/0 AWG',tipo:'1C',diam:14.4},{cal:'2/0 AWG',tipo:'1C',diam:15.5},
+      {cal:'3/0 AWG',tipo:'1C',diam:16.7},{cal:'4/0 AWG',tipo:'1C',diam:18},
+      {cal:'250MCM',tipo:'1C',diam:19.7},{cal:'350MCM',tipo:'1C',diam:23.2},
+      {cal:'500MCM',tipo:'1C',diam:26.4},{cal:'750MCM',tipo:'1C',diam:31.6},
+      {cal:'1000MCM',tipo:'1C',diam:35.9},
+    ]},
+    { name:'XTMU — 3 Conductores (1x3C)', cables:[
+      {cal:'14 AWG',tipo:'3C',diam:10.2},{cal:'12 AWG',tipo:'3C',diam:11.2},
+      {cal:'10 AWG',tipo:'3C',diam:12.5},{cal:'8 AWG',tipo:'3C',diam:16.4},
+      {cal:'6 AWG',tipo:'3C',diam:18.3},{cal:'4 AWG',tipo:'3C',diam:21},
+      {cal:'2 AWG',tipo:'3C',diam:25.3},{cal:'1 AWG',tipo:'3C',diam:28.3},
+      {cal:'1/0 AWG',tipo:'3C',diam:30.4},{cal:'2/0 AWG',tipo:'3C',diam:32.08},
+      {cal:'3/0 AWG',tipo:'3C',diam:35.4},{cal:'4/0 AWG',tipo:'3C',diam:38.5},
+      {cal:'250MCM',tipo:'3C',diam:42.1},{cal:'350MCM',tipo:'3C',diam:49},
+      {cal:'500MCM',tipo:'3C',diam:56.3},{cal:'750MCM',tipo:'3C',diam:67.7},
+    ]},
+    { name:'XTMU — 4 Conductores (1x4C)', cables:[
+      {cal:'14 AWG',tipo:'4C',diam:11.4},{cal:'12 AWG',tipo:'4C',diam:12.4},
+      {cal:'10 AWG',tipo:'4C',diam:14},{cal:'8 AWG',tipo:'4C',diam:18.3},
+      {cal:'6 AWG',tipo:'4C',diam:20.5},{cal:'4 AWG',tipo:'4C',diam:24.7},
+      {cal:'2 AWG',tipo:'4C',diam:28.4},{cal:'1 AWG',tipo:'4C',diam:31.8},
+      {cal:'1/0 AWG',tipo:'4C',diam:34.2},{cal:'2/0 AWG',tipo:'4C',diam:36.9},
+      {cal:'3/0 AWG',tipo:'4C',diam:39.9},{cal:'4/0 AWG',tipo:'4C',diam:43.4},
+      {cal:'250MCM',tipo:'4C',diam:49.2},
+    ]}
+  ]},
+  { id:'c5kv', label:'5 kV', sections:[
+    { name:'XAT — Monoconductor 5 kV', cables:[
+      {cal:'6 AWG',tipo:'1C',diam:15.9},{cal:'4 AWG',tipo:'1C',diam:17.1},
+      {cal:'2 AWG',tipo:'1C',diam:18.5},{cal:'1 AWG',tipo:'1C',diam:19.3},
+      {cal:'1/0 AWG',tipo:'1C',diam:20.4},{cal:'2/0 AWG',tipo:'1C',diam:21.4},
+      {cal:'3/0 AWG',tipo:'1C',diam:23.6},{cal:'4/0 AWG',tipo:'1C',diam:25},
+      {cal:'250 MCM',tipo:'1C',diam:25.9},{cal:'350 MCM',tipo:'1C',diam:28.3},
+      {cal:'500 MCM',tipo:'1C',diam:31.8},{cal:'750 MCM',tipo:'1C',diam:36.7},
+      {cal:'1000 MCM',tipo:'1C',diam:40.8},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 5 kV', cables:[
+      {cal:'6 AWG',tipo:'3C',diam:31},{cal:'4 AWG',tipo:'3C',diam:33.4},
+      {cal:'2 AWG',tipo:'3C',diam:36.6},{cal:'1 AWG',tipo:'3C',diam:38.3},
+      {cal:'1/0 AWG',tipo:'3C',diam:40.6},{cal:'2/0 AWG',tipo:'3C',diam:42.8},
+      {cal:'3/0 AWG',tipo:'3C',diam:47.5},{cal:'4/0 AWG',tipo:'3C',diam:50.5},
+      {cal:'250 MCM',tipo:'3C',diam:52.6},{cal:'350 MCM',tipo:'3C',diam:57.7},
+      {cal:'500 MCM',tipo:'3C',diam:65.1},{cal:'750 MCM',tipo:'3C',diam:77.2},
+      {cal:'1000 MCM',tipo:'3C',diam:86.1},
+    ]}
+  ]},
+  { id:'c8kv100', label:'8 kV 100%', sections:[
+    { name:'XAT — Monoconductor 8 kV 100%', cables:[
+      {cal:'6 AWG',tipo:'1C',diam:17.2},{cal:'4 AWG',tipo:'1C',diam:18.4},
+      {cal:'2 AWG',tipo:'1C',diam:19.8},{cal:'1 AWG',tipo:'1C',diam:20.6},
+      {cal:'1/0 AWG',tipo:'1C',diam:21.7},{cal:'2/0 AWG',tipo:'1C',diam:23.5},
+      {cal:'3/0 AWG',tipo:'1C',diam:24.9},{cal:'4/0 AWG',tipo:'1C',diam:26.3},
+      {cal:'250 MCM',tipo:'1C',diam:27.2},{cal:'350 MCM',tipo:'1C',diam:29.6},
+      {cal:'500 MCM',tipo:'1C',diam:33.5},{cal:'750 MCM',tipo:'1C',diam:38},
+      {cal:'1000 MCM',tipo:'1C',diam:42.1},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 8 kV 100%', cables:[
+      {cal:'6 AWG',tipo:'3C',diam:33.8},{cal:'4 AWG',tipo:'3C',diam:36.2},
+      {cal:'2 AWG',tipo:'3C',diam:39.4},{cal:'1 AWG',tipo:'3C',diam:41.1},
+      {cal:'1/0 AWG',tipo:'3C',diam:43.4},{cal:'2/0 AWG',tipo:'3C',diam:47.2},
+      {cal:'3/0 AWG',tipo:'3C',diam:50.3},{cal:'4/0 AWG',tipo:'3C',diam:53.3},
+      {cal:'250 MCM',tipo:'3C',diam:55.4},{cal:'350 MCM',tipo:'3C',diam:60.5},
+      {cal:'500 MCM',tipo:'3C',diam:68.8},{cal:'750 MCM',tipo:'3C',diam:80},
+      {cal:'1000 MCM',tipo:'3C',diam:88.9},
+    ]}
+  ]},
+  { id:'c8kv133', label:'8 kV 133%', sections:[
+    { name:'XAT — Monoconductor 8 kV 133%', cables:[
+      {cal:'6 AWG',tipo:'1C',diam:18.6},{cal:'4 AWG',tipo:'1C',diam:19.7},
+      {cal:'2 AWG',tipo:'1C',diam:21.2},{cal:'1 AWG',tipo:'1C',diam:22},
+      {cal:'1/0 AWG',tipo:'1C',diam:23.8},{cal:'2/0 AWG',tipo:'1C',diam:24.8},
+      {cal:'3/0 AWG',tipo:'1C',diam:26.2},{cal:'4/0 AWG',tipo:'1C',diam:27.6},
+      {cal:'250 MCM',tipo:'1C',diam:28.6},{cal:'350 MCM',tipo:'1C',diam:31},
+      {cal:'500 MCM',tipo:'1C',diam:34.8},{cal:'750 MCM',tipo:'1C',diam:38},
+      {cal:'1000 MCM',tipo:'1C',diam:42.1},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 8 kV 133%', cables:[
+      {cal:'6 AWG',tipo:'3C',diam:36.6},{cal:'4 AWG',tipo:'3C',diam:39.1},
+      {cal:'2 AWG',tipo:'3C',diam:42.2},{cal:'1 AWG',tipo:'3C',diam:45.6},
+      {cal:'1/0 AWG',tipo:'3C',diam:47.9},{cal:'2/0 AWG',tipo:'3C',diam:50.1},
+      {cal:'3/0 AWG',tipo:'3C',diam:53.1},{cal:'4/0 AWG',tipo:'3C',diam:56.2},
+      {cal:'250 MCM',tipo:'3C',diam:58.2},{cal:'350 MCM',tipo:'3C',diam:63.4},
+      {cal:'500 MCM',tipo:'3C',diam:68.8},{cal:'750 MCM',tipo:'3C',diam:80},
+      {cal:'1000 MCM',tipo:'3C',diam:88.9},
+    ]}
+  ]},
+  { id:'c15kv100', label:'15 kV 100%', sections:[
+    { name:'XAT — Monoconductor 15 kV 100%', cables:[
+      {cal:'2 AWG',tipo:'1C',diam:23.8},{cal:'1 AWG',tipo:'1C',diam:24.6},
+      {cal:'1/0 AWG',tipo:'1C',diam:25.6},{cal:'2/0 AWG',tipo:'1C',diam:26.6},
+      {cal:'3/0 AWG',tipo:'1C',diam:28},{cal:'4/0 AWG',tipo:'1C',diam:29.5},
+      {cal:'250 MCM',tipo:'1C',diam:30.4},{cal:'350 MCM',tipo:'1C',diam:33.2},
+      {cal:'500 MCM',tipo:'1C',diam:36.6},{cal:'750 MCM',tipo:'1C',diam:41.2},
+      {cal:'1000 MCM',tipo:'1C',diam:46.9},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 15 kV 100%', cables:[
+      {cal:'2 AWG',tipo:'3C',diam:47.9},{cal:'1 AWG',tipo:'3C',diam:49.6},
+      {cal:'1/0 AWG',tipo:'3C',diam:51.8},{cal:'2/0 AWG',tipo:'3C',diam:54},
+      {cal:'3/0 AWG',tipo:'3C',diam:57.1},{cal:'4/0 AWG',tipo:'3C',diam:60.1},
+      {cal:'250 MCM',tipo:'3C',diam:62.2},{cal:'350 MCM',tipo:'3C',diam:68.2},
+      {cal:'500 MCM',tipo:'3C',diam:77.1},{cal:'750 MCM',tipo:'3C',diam:86.9},
+      {cal:'1000 MCM',tipo:'3C',diam:95.7},
+    ]}
+  ]},
+  { id:'c15kv133', label:'15 kV 133%', sections:[
+    { name:'XAT — Monoconductor 15 kV 133%', cables:[
+      {cal:'2 AWG',tipo:'1C',diam:26.1},{cal:'1 AWG',tipo:'1C',diam:26.9},
+      {cal:'1/0 AWG',tipo:'1C',diam:28},{cal:'2/0 AWG',tipo:'1C',diam:29},
+      {cal:'3/0 AWG',tipo:'1C',diam:30.4},{cal:'4/0 AWG',tipo:'1C',diam:31.8},
+      {cal:'250 MCM',tipo:'1C',diam:33.2},{cal:'350 MCM',tipo:'1C',diam:35.5},
+      {cal:'500 MCM',tipo:'1C',diam:39},{cal:'750 MCM',tipo:'1C',diam:43.5},
+      {cal:'1000 MCM',tipo:'1C',diam:49.7},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 15 kV 133%', cables:[
+      {cal:'2 AWG',tipo:'3C',diam:52.9},{cal:'1 AWG',tipo:'3C',diam:54.7},
+      {cal:'1/0 AWG',tipo:'3C',diam:56.9},{cal:'2/0 AWG',tipo:'3C',diam:59.1},
+      {cal:'3/0 AWG',tipo:'3C',diam:62.1},{cal:'4/0 AWG',tipo:'3C',diam:65.2},
+      {cal:'250 MCM',tipo:'3C',diam:68.1},{cal:'350 MCM',tipo:'3C',diam:74.7},
+      {cal:'500 MCM',tipo:'3C',diam:82.1},{cal:'750 MCM',tipo:'3C',diam:91.9},
+      {cal:'1000 MCM',tipo:'3C',diam:101.6},
+    ]}
+  ]},
+  { id:'c25kv100', label:'25 kV 100%', sections:[
+    { name:'XAT — Monoconductor 25 kV 100%', cables:[
+      {cal:'1 AWG',tipo:'1C',diam:29},{cal:'1/0 AWG',tipo:'1C',diam:30},
+      {cal:'2/0 AWG',tipo:'1C',diam:31.1},{cal:'3/0 AWG',tipo:'1C',diam:32.5},
+      {cal:'4/0 AWG',tipo:'1C',diam:34.3},{cal:'250 MCM',tipo:'1C',diam:35.2},
+      {cal:'350 MCM',tipo:'1C',diam:37.6},{cal:'500 MCM',tipo:'1C',diam:41.1},
+      {cal:'750 MCM',tipo:'1C',diam:47.2},{cal:'1000 MCM',tipo:'1C',diam:51.7},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 25 kV 100%', cables:[
+      {cal:'2 AWG',tipo:'3C',diam:59.4},{cal:'1 AWG',tipo:'3C',diam:59.2},
+      {cal:'1/0 AWG',tipo:'3C',diam:61.4},{cal:'2/0 AWG',tipo:'3C',diam:63.6},
+      {cal:'3/0 AWG',tipo:'3C',diam:66.6},{cal:'4/0 AWG',tipo:'3C',diam:70.6},
+      {cal:'250 MCM',tipo:'3C',diam:74.1},{cal:'350 MCM',tipo:'3C',diam:79.2},
+      {cal:'500 MCM',tipo:'3C',diam:86.6},{cal:'750 MCM',tipo:'3C',diam:96.4},
+      {cal:'1000 MCM',tipo:'3C',diam:106.1},
+    ]}
+  ]},
+  { id:'c25kv133', label:'25 kV 133%', sections:[
+    { name:'XAT — Monoconductor 25 kV 133%', cables:[
+      {cal:'1 AWG',tipo:'1C',diam:32.6},{cal:'1/0 AWG',tipo:'1C',diam:33.6},
+      {cal:'2/0 AWG',tipo:'1C',diam:34.6},{cal:'3/0 AWG',tipo:'1C',diam:36},
+      {cal:'4/0 AWG',tipo:'1C',diam:37.5},{cal:'250 MCM',tipo:'1C',diam:38.4},
+      {cal:'350 MCM',tipo:'1C',diam:40.8},{cal:'500 MCM',tipo:'1C',diam:45.9},
+      {cal:'750 MCM',tipo:'1C',diam:50.8},{cal:'1000 MCM',tipo:'1C',diam:54.9},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 25 kV 133%', cables:[
+      {cal:'2 AWG',tipo:'3C',diam:67.1},{cal:'1 AWG',tipo:'3C',diam:66.9},
+      {cal:'1/0 AWG',tipo:'3C',diam:69.1},{cal:'2/0 AWG',tipo:'3C',diam:71.3},
+      {cal:'3/0 AWG',tipo:'3C',diam:75.8},{cal:'4/0 AWG',tipo:'3C',diam:78.8},
+      {cal:'250 MCM',tipo:'3C',diam:80.9},{cal:'350 MCM',tipo:'3C',diam:86},
+      {cal:'500 MCM',tipo:'3C',diam:93.4},{cal:'750 MCM',tipo:'3C',diam:104.1},
+    ]}
+  ]},
+  { id:'c35kv100', label:'35 kV 100%', sections:[
+    { name:'XAT — Monoconductor 35 kV 100%', cables:[
+      {cal:'1/0 AWG',tipo:'1C',diam:33.9},{cal:'2/0 AWG',tipo:'1C',diam:34.9},
+      {cal:'3/0 AWG',tipo:'1C',diam:36.2},{cal:'4/0 AWG',tipo:'1C',diam:37.6},
+      {cal:'250 MCM',tipo:'1C',diam:38.5},{cal:'350 MCM',tipo:'1C',diam:40.9},
+      {cal:'500 MCM',tipo:'1C',diam:45.8},{cal:'750 MCM',tipo:'1C',diam:50.6},
+      {cal:'1000 MCM',tipo:'1C',diam:54.5},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 35 kV 100%', cables:[
+      {cal:'1/0 AWG',tipo:'3C',diam:73.3},{cal:'2/0 AWG',tipo:'3C',diam:75.6},
+      {cal:'3/0 AWG',tipo:'3C',diam:78.6},{cal:'4/0 AWG',tipo:'3C',diam:81.6},
+      {cal:'250 MCM',tipo:'3C',diam:83.7},{cal:'350 MCM',tipo:'3C',diam:88.8},
+      {cal:'500 MCM',tipo:'3C',diam:96.2},{cal:'750 MCM',tipo:'3C',diam:103.8},
+    ]}
+  ]},
+  { id:'c35kv133', label:'35 kV 133%', sections:[
+    { name:'XAT — Monoconductor 35 kV 133%', cables:[
+      {cal:'1/0 AWG',tipo:'1C',diam:37.8},{cal:'2/0 AWG',tipo:'1C',diam:38.8},
+      {cal:'3/0 AWG',tipo:'1C',diam:40.1},{cal:'4/0 AWG',tipo:'1C',diam:41.5},
+      {cal:'250 MCM',tipo:'1C',diam:44},{cal:'350 MCM',tipo:'1C',diam:47},
+      {cal:'500 MCM',tipo:'1C',diam:51.6},{cal:'750 MCM',tipo:'1C',diam:56.6},
+      {cal:'1000 MCM',tipo:'1C',diam:60.7},
+    ]},
+    { name:'XAT — Multiconductor 1x3C 35 kV 133%', cables:[
+      {cal:'1/0 AWG',tipo:'3C',diam:80.1},{cal:'2/0 AWG',tipo:'3C',diam:82.4},
+      {cal:'3/0 AWG',tipo:'3C',diam:85.4},{cal:'4/0 AWG',tipo:'3C',diam:90.4},
+      {cal:'250 MCM',tipo:'3C',diam:93.2},{cal:'350 MCM',tipo:'3C',diam:99.6},
+      {cal:'500 MCM',tipo:'3C',diam:107},{cal:'750 MCM',tipo:'3C',diam:116.2},
+    ]}
+  ]},
+];
+
+// ─── CATALOG UI ───────────────────────────────────────────────────────────
+function setMode(mode) {
+  document.getElementById('panel-catalog').style.display = mode === 'catalog' ? '' : 'none';
+  document.getElementById('panel-manual').style.display = mode === 'manual' ? '' : 'none';
+  document.getElementById('btn-mode-catalog').className = 'btn mode-btn' + (mode === 'catalog' ? ' mode-btn-active' : '');
+  document.getElementById('btn-mode-manual').className = 'btn mode-btn' + (mode === 'manual' ? ' mode-btn-active' : '');
+}
+
+function initCatalog() {
+  const sel = document.getElementById('cat-select');
+  sel.innerHTML = '<option value="">— Seleccionar categoría —</option>';
+  TABS.forEach((tab, i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = tab.label; sel.appendChild(opt);
+  });
+}
+
+function renderSectionSelect() {
+  const catIdx = document.getElementById('cat-select').value;
+  const secSel = document.getElementById('sec-select');
+  const cableSel = document.getElementById('cable-select');
+  secSel.innerHTML = '<option value="">— Seleccionar sección —</option>';
+  cableSel.innerHTML = '<option value="">— Seleccionar cable —</option>';
+  document.getElementById('diam-cat').value = '';
+  document.getElementById('catalog-info').style.display = 'none';
+  if (catIdx === '') return;
+  TABS[+catIdx].sections.forEach((sec, i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = sec.name; secSel.appendChild(opt);
+  });
+}
+
+function renderCableSelect() {
+  const catIdx = document.getElementById('cat-select').value;
+  const secIdx = document.getElementById('sec-select').value;
+  const cableSel = document.getElementById('cable-select');
+  cableSel.innerHTML = '<option value="">— Seleccionar cable —</option>';
+  document.getElementById('diam-cat').value = '';
+  document.getElementById('catalog-info').style.display = 'none';
+  if (catIdx === '' || secIdx === '') return;
+  TABS[+catIdx].sections[+secIdx].cables.forEach((c, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = c.cal + ' [' + c.tipo + '] — Ø' + c.diam + ' mm';
+    cableSel.appendChild(opt);
+  });
+}
+
+function onCableSelectChange() {
+  const catIdx = document.getElementById('cat-select').value;
+  const secIdx = document.getElementById('sec-select').value;
+  const cableIdx = document.getElementById('cable-select').value;
+  const infoBox = document.getElementById('catalog-info');
+  document.getElementById('diam-cat').value = '';
+  infoBox.style.display = 'none';
+  if (catIdx === '' || secIdx === '' || cableIdx === '') return;
+  const cable = TABS[+catIdx].sections[+secIdx].cables[+cableIdx];
+  document.getElementById('diam-cat').value = cable.diam;
+  infoBox.style.display = 'block';
+  infoBox.innerHTML = 'Ø ' + cable.diam + ' mm &nbsp;│&nbsp; ' + cable.cal + ' ' + cable.tipo + ' &nbsp;│&nbsp; ' + TABS[+catIdx].label;
+  document.getElementById('cant-cat').focus();
+}
+
+function addCableFromCatalog() {
+  const catIdx = document.getElementById('cat-select').value;
+  const secIdx = document.getElementById('sec-select').value;
+  const cableIdx = document.getElementById('cable-select').value;
+  if (catIdx === '' || secIdx === '' || cableIdx === '') { shake('cable-select'); return; }
+  const cable = TABS[+catIdx].sections[+secIdx].cables[+cableIdx];
+  const cant = parseInt(document.getElementById('cant-cat').value) || 1;
+  const area = Math.PI * Math.pow(cable.diam / 2, 2);
+  const label = cable.cal + ' ' + cable.tipo + ' [' + TABS[+catIdx].label + ']';
+  cables.push({ diam: cable.diam, cant, area, triada: false, label });
+  renderTabla();
+  document.getElementById('cant-cat').value = '1';
+  document.getElementById('cable-select').value = '';
+  document.getElementById('diam-cat').value = '';
+  document.getElementById('catalog-info').style.display = 'none';
+}
+
+window.addEventListener('DOMContentLoaded', initCatalog);
+
 let cables = [];
 
 function addPreset(diam, nombre) {
@@ -737,6 +1130,7 @@ function renderTabla() {
 
   let rows = cables.map((c, i) => {
     const aTotal = (c.area * c.cant).toFixed(1);
+    const label = c.label || ('Ø ' + c.diam + ' mm manual');
     const esMultiplo3 = c.cant % 3 === 0 && c.cant >= 3;
     const triadaBtn = esMultiplo3
       ? `<button class="btn ${c.triada ? 'btn-triada-on' : 'btn-triada-off'}" onclick="toggleTriada(${i})" title="Agrupar en triadas (2 abajo + 1 arriba)">
@@ -744,9 +1138,9 @@ function renderTabla() {
          </button>`
       : `<span style="font-family:var(--mono);font-size:0.6rem;color:var(--border);">—</span>`;
     return `<tr>
-      <td>Ø ${c.diam} mm</td>
+      <td title="Ø${c.diam}mm">${c.label ? '<span style="font-size:0.75rem;color:var(--accent2);">' + c.label + '</span>' : 'Ø ' + c.diam + ' mm'}</td>
       <td>${c.cant}</td>
-      <td>${c.area.toFixed(1)} mm²</td>
+      <td><span style="color:var(--muted);font-size:0.7rem;">Ø${c.diam}mm</span><br>${c.area.toFixed(1)} mm²</td>
       <td class="area-col">${aTotal} mm²</td>
       <td>${triadaBtn}</td>
       <td><button class="btn btn-delete" onclick="deleteCable(${i})">✕</button></td>
@@ -757,7 +1151,7 @@ function renderTabla() {
     <table class="cables-table">
       <thead>
         <tr>
-          <th>Diámetro</th>
+          <th>Cable / Diámetro</th>
           <th>Cant.</th>
           <th>Área/cable</th>
           <th>Área total</th>
@@ -1123,4 +1517,3 @@ document.addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
-
