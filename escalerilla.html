@@ -682,12 +682,12 @@
 
       <div class="field">
         <label>Ancho (mm)</label>
-        <input type="number" id="ancho" placeholder="Ej: 300" min="1">
+        <input type="number" id="ancho" value="300" min="1" oninput="syncSepDefault()">
       </div>
 
       <div class="field">
         <label>Altura útil (mm)</label>
-        <input type="number" id="altura" placeholder="Ej: 75" min="1">
+        <input type="number" id="altura" value="100" min="1">
       </div>
 
       <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">Cables tangenciales · contacto directo</div>
@@ -700,7 +700,7 @@
         <div id="sep-panel" class="sep-panel" style="display:none;">
           <div class="field">
             <label>Posici&oacute;n del separador (mm desde izquierda)</label>
-            <input type="number" id="sep-pos" placeholder="Ej: 200" min="1" step="1">
+            <input type="number" id="sep-pos" min="1" step="1">
           </div>
           <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);letter-spacing:1px;margin-top:4px;">
             &#9632; FUERZA &nbsp;(izquierda) &nbsp;&nbsp; &#9632; CTRL/INST &nbsp;(derecha)
@@ -759,7 +759,7 @@
           </div>
           <input type="hidden" id="zona-cat" value="fuerza">
         </div>
-        <button class="btn btn-add" onclick="addCableFromCatalog()">+ AGREGAR DEL CAT&Aacute;LOGO</button>
+        <button class="btn btn-add" onclick="addCableFromCatalog()">+ AGREGAR CABLE</button>
       </div>
 
       <!-- MANUAL MODE -->
@@ -1195,11 +1195,26 @@ function toggleSeparador() {
   if (event && event.target !== chk) chk.checked = !chk.checked;
   const active = chk.checked;
   panel.style.display = active ? '' : 'none';
+  if (active) {
+    const sepPos = document.getElementById('sep-pos');
+    if (!sepPos.value) {
+      const ancho = parseFloat(document.getElementById('ancho').value) || 0;
+      if (ancho > 0) sepPos.value = Math.round(ancho / 2);
+    }
+  }
   ['zona-cat-wrap', 'zona-manual-wrap'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = active ? '' : 'none';
   });
   renderTabla();
+}
+
+function syncSepDefault() {
+  const chk = document.getElementById('chk-sep');
+  if (!chk || !chk.checked) return;
+  const sepPos = document.getElementById('sep-pos');
+  const ancho = parseFloat(document.getElementById('ancho').value) || 0;
+  if (ancho > 0) sepPos.value = Math.round(ancho / 2);
 }
 
 function setZona(panel, zona) {
