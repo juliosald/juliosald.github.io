@@ -27,8 +27,8 @@
     --accent4: #f59e0b;
     --red: #ef4444;
     --green: #00c896;
-    --col-w: 90px;
-    --col-h: 320px;
+    --col-w: 135px;
+    --col-h: 480px;
     --font-display: 'Bebas Neue', sans-serif;
     --font-mono: 'DM Mono', monospace;
     --font-body: 'DM Sans', sans-serif;
@@ -419,10 +419,49 @@
   .cub-pos    { font-family: var(--mono); font-size: 0.55rem; color: var(--warn); }
   .cub-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
 
-  .cub-regular           { background: rgba(0,200,150,.07); }
-  .cub-regular:hover     { background: rgba(0,200,150,.13); }
-  .cub-fixed-highlight   { background: rgba(245,158,11,.06); }
-  .cub-fixed-highlight:hover { background: rgba(245,158,11,.11); }
+  /* Colores por size — 12 tonos distribuidos en el espectro */
+  .cub-s1x  { background: rgba(0,200,150,.10); }   /* verde esmeralda */
+  .cub-s2x  { background: rgba(14,165,233,.10); }  /* azul cielo */
+  .cub-s3x  { background: rgba(139,92,246,.10); }  /* violeta */
+  .cub-s4x  { background: rgba(236,72,153,.10); }  /* rosa */
+  .cub-s5x  { background: rgba(245,158,11,.10); }  /* ámbar */
+  .cub-s6x  { background: rgba(239,68,68,.10); }   /* rojo */
+  .cub-s7x  { background: rgba(6,182,212,.10); }   /* cian */
+  .cub-s8x  { background: rgba(168,85,247,.10); }  /* púrpura */
+  .cub-s9x  { background: rgba(34,197,94,.10); }   /* verde lima */
+  .cub-s10x { background: rgba(249,115,22,.10); }  /* naranja */
+  .cub-s11x { background: rgba(20,184,166,.10); }  /* teal */
+  .cub-s12x { background: rgba(99,102,241,.10); }  /* índigo */
+
+  .cub-s1x:hover  { background: rgba(0,200,150,.18); }
+  .cub-s2x:hover  { background: rgba(14,165,233,.18); }
+  .cub-s3x:hover  { background: rgba(139,92,246,.18); }
+  .cub-s4x:hover  { background: rgba(236,72,153,.18); }
+  .cub-s5x:hover  { background: rgba(245,158,11,.18); }
+  .cub-s6x:hover  { background: rgba(239,68,68,.18); }
+  .cub-s7x:hover  { background: rgba(6,182,212,.18); }
+  .cub-s8x:hover  { background: rgba(168,85,247,.18); }
+  .cub-s9x:hover  { background: rgba(34,197,94,.18); }
+  .cub-s10x:hover { background: rgba(249,115,22,.18); }
+  .cub-s11x:hover { background: rgba(20,184,166,.18); }
+  .cub-s12x:hover { background: rgba(99,102,241,.18); }
+
+  /* Borde izquierdo de color como acento adicional */
+  .cub-s1x  { border-left: 2px solid rgba(0,200,150,.5); }
+  .cub-s2x  { border-left: 2px solid rgba(14,165,233,.5); }
+  .cub-s3x  { border-left: 2px solid rgba(139,92,246,.5); }
+  .cub-s4x  { border-left: 2px solid rgba(236,72,153,.5); }
+  .cub-s5x  { border-left: 2px solid rgba(245,158,11,.5); }
+  .cub-s6x  { border-left: 2px solid rgba(239,68,68,.5); }
+  .cub-s7x  { border-left: 2px solid rgba(6,182,212,.5); }
+  .cub-s8x  { border-left: 2px solid rgba(168,85,247,.5); }
+  .cub-s9x  { border-left: 2px solid rgba(34,197,94,.5); }
+  .cub-s10x { border-left: 2px solid rgba(249,115,22,.5); }
+  .cub-s11x { border-left: 2px solid rgba(20,184,166,.5); }
+  .cub-s12x { border-left: 2px solid rgba(99,102,241,.5); }
+
+  /* Fijo: mantiene color del size pero con tinte ámbar en el borde */
+  .cub-fixed .cub-nema { opacity: .85; }
 
   .cub-reserved {
     background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(239,68,68,.06) 4px, rgba(239,68,68,.06) 5px);
@@ -706,7 +745,7 @@ R3X ; Reserva ; 1C
 const COL_MAX  = 1800;
 const COL_W_MM = 508;
 const ROW_MM   = 75;
-const COL_H_PX = 320;
+const COL_H_PX = 480;
 const LETTERS  = 'ABCDEFGHIJKLMNOPQRSTUVWX';
 const rowPx    = COL_H_PX / (COL_MAX / ROW_MM);
 
@@ -920,12 +959,14 @@ function renderCCM(){
         div.className=`cub ${u._free?'cub-free':'cub-gap'}`;
         div.innerHTML=`<span class="cub-nema">${u._free?'Libre':'Gap'} ${Math.round(h)}mm</span>`;
       } else {
-        div.className=`cub ${u.reservado?'cub-reserved':u.posFixed?'cub-fixed-highlight':'cub-regular'}`;
+        const sizeClass = 'cub-s' + u.nema.toLowerCase().replace('x','') + 'x';
+        const fixedClass = u.posFixed ? ' cub-fixed' : '';
+        div.className=`cub ${u.reservado ? 'cub-reserved' : sizeClass + fixedClass}`;
         div.dataset.uid=u.id;div.dataset.colidx=ci;
         const posLetter=calcPosBadge(acc);
         const posBadge=`${ci+1}${posLetter}`;
         let badges='';
-        if(u.posFixed)badges+=`<span class="badge badge-fixed">● FIJO</span>`;
+
         if(u.reservado)badges+=`<span class="badge badge-reserved">RSRV</span>`;
         div.innerHTML=`
           <div class="cub-nema">${u.nema}</div>
