@@ -684,6 +684,20 @@ R3X ; Reserva ; 1C
 
 
 
+<!-- LISTA COPIABLE -->
+<div class="card" style="animation-delay:.25s;padding:1.75rem;margin-top:1.5rem;" id="lista-card">
+  <div class="card-label">
+    Lista copiable
+    <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-left:auto;">Pega en modo Lista para reproducir este layout</span>
+  </div>
+  <div class="section-label">FORMAT: SIZE ; TAG ; POSICIÓN</div>
+  <pre id="lista-copiable" style="font-family:var(--mono);font-size:0.8rem;line-height:2;color:var(--text);background:var(--bg);border:1px solid var(--border);padding:1rem 1.25rem;white-space:pre;overflow-x:auto;margin-bottom:0.75rem;">—</pre>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="btn btn-primary btn-sm" onclick="copiarLista()">⎘ Copiar</button>
+    <span id="copy-feedback" style="font-family:var(--mono);font-size:0.65rem;color:var(--accent);opacity:0;transition:opacity .3s;"></span>
+  </div>
+</div>
+
 <footer>CCM LAYOUT · CALCULADORA DE DISTRIBUCIÓN · julioproyectista.cl</footer>
 
 </div>
@@ -752,7 +766,7 @@ function importarLista() {
 function limpiarTodo() {
   if(!confirm('¿Limpiar todas las unidades y el layout?'))return;
   units=[];columns=[];
-  renderPending();renderTable();renderCCM();updateStats();clearAlerts();
+  renderPending();renderTable();renderCCM();updateStats();clearAlerts();renderListaCopiable();
 }
 
 function renderPending() {
@@ -853,7 +867,7 @@ function calcular() {
 
   alerts.forEach(a=>showAlert(a,'warn'));
   if(!alerts.length)showAlert(`Layout generado: ${columns.length} columna${columns.length>1?'s':''}`, 'info');
-  renderCCM();renderTable();updateStats();
+  renderCCM();renderTable();updateStats();renderListaCopiable();
 }
 
 function mmToPx(mm){return(mm/COL_MAX)*COL_H_PX;}
@@ -925,6 +939,7 @@ function renderCCM(){
     });
   });
   initMouseDrag();
+  renderListaCopiable();
 }
 
 // DRAG & DROP
@@ -1101,7 +1116,7 @@ function findUnitById(id){
 function delUnitFromAll(id){
   units=units.filter(u=>u.id!==id);
   columns.forEach(col=>{col.units=col.units.filter(u=>u.id!==id);});
-  recomputeFreeGaps();renderPending();renderTable();renderCCM();updateStats();
+  recomputeFreeGaps();renderPending();renderTable();renderCCM();updateStats();renderListaCopiable();
 }
 
 function updateStats(){
@@ -1109,6 +1124,68 @@ function updateStats(){
   document.getElementById('stat-units').textContent=total;
   document.getElementById('stat-cols').textContent=columns.length;
   document.getElementById('stat-width').textContent=columns.length?(columns.length*COL_W_MM)+'mm':'—';
+}
+
+// Almacena el texto de la lista para copiado seguro
+let _listaTexto = '';
+
+function renderListaCopiable() {
+  const el = document.getElementById('lista-copiable');
+  if (!el) return;
+  let list = '';
+  if (columns.length) {
+    columns.forEach((col, ci) => {
+      let acc = 0;
+      col.units.forEach(u => {
+        if (!u._gap) {
+          const pos = `${ci+1}${calcPosBadge(acc)}`;
+          list += `${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+        }
+        acc += u._gap ? u._gapMm : nemaMm(u.nema);
+      });
+    });
+  } else if (units.length) {
+    units.forEach(u => {
+      const pos = u.posFixed ? `${u.posFixed.col}${u.posFixed.letra}` : '';
+      list += `${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+    });
+  }
+  _listaTexto = list.trim();
+  el.textContent = _listaTexto || '—';
+}
+
+function copiarLista() {
+  if (!_listaTexto) return;
+  const fb = document.getElementById('copy-feedback');
+  // Método principal: clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(_listaTexto).then(() => {
+      fb.textContent = '✓ copiado';
+      fb.style.opacity = '1';
+      setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+    }).catch(() => fallbackCopy());
+  } else {
+    fallbackCopy();
+  }
+  function fallbackCopy() {
+    const ta = document.createElement('textarea');
+    ta.value = _listaTexto;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      fb.textContent = '✓ copiado';
+      fb.style.opacity = '1';
+      setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+    } catch(e) {
+      fb.textContent = '✗ error al copiar';
+      fb.style.opacity = '1';
+      setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+    }
+    document.body.removeChild(ta);
+  }
 }
 
 function showAlert(msg,type='info'){
