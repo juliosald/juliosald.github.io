@@ -1216,19 +1216,60 @@ function calcular() {
     cols[ci].units.push({ ...u, startMm });
   });
 
-  // ── 3. Distribuir libres con First Fit Decreasing ──
+  // ── 3. Distribuir libres con First Fit Decreasing considerando huecos ──
+
+  // Calcula todos los huecos disponibles en una columna (lista de {startMm, size} disponibles)
+  function getHuecos(col) {
+    const huecos = [];
+    let cursor = 0;
+    col.units.forEach(u => {
+      const start = (u.startMm !== undefined && u.startMm > cursor) ? u.startMm : cursor;
+      // Hueco antes de esta unidad
+      if (start > cursor) huecos.push({ desde: cursor, size: start - cursor });
+      cursor = start + NEMA_H[u.nema];
+    });
+    // Hueco al final
+    if (COL_MAX > cursor) huecos.push({ desde: cursor, size: COL_MAX - cursor });
+    return huecos;
+  }
+
+  // Inserta una unidad libre en el mejor hueco de la columna
+  function insertarEnHueco(col, u, hueco) {
+    // Buscar la posición correcta en el array según hueco.desde
+    let cursor = 0;
+    let insertIdx = col.units.length;
+    for (let i = 0; i < col.units.length; i++) {
+      const uStart = (col.units[i].startMm !== undefined) ? col.units[i].startMm : cursor;
+      if (uStart >= hueco.desde + NEMA_H[u.nema]) {
+        insertIdx = i;
+        break;
+      }
+      cursor = uStart + NEMA_H[col.units[i].nema];
+    }
+    col.units.splice(insertIdx, 0, { ...u });
+  }
+
   libres.forEach(u => {
     const h = NEMA_H[u.nema];
-    let bestIdx = -1;
-    let bestRem = COL_MAX + 1;
+
+    // Buscar la columna+hueco con menor espacio sobrante que aún quepa
+    let bestCol = -1, bestHueco = null, bestRem = COL_MAX + 1;
     cols.forEach((col, i) => {
-      const r = COL_MAX - colMm(col);
-      if (r >= h && r < bestRem) { bestRem = r; bestIdx = i; }
+      const huecos = getHuecos(col);
+      huecos.forEach(hq => {
+        if (hq.size >= h && hq.size < bestRem) {
+          bestRem  = hq.size;
+          bestCol  = i;
+          bestHueco = hq;
+        }
+      });
     });
-    if (bestIdx === -1) {
+
+    if (bestCol === -1) {
+      // No cabe en ningún hueco → nueva columna
       cols.push({ id: cid++, units: [{ ...u }] });
     } else {
-      cols[bestIdx].units.push({ ...u });
+      insertarEnHueco(cols[bestCol], u, bestHueco);
     }
   });
 
@@ -1269,7 +1310,7 @@ function updateStats(updateAdvice = true) {
   if (updateAdvice) {
     document.getElementById('advice-box').innerHTML =
       `CCM generado con <strong style="color:var(--accent)">${ncols} columna${ncols!==1?'s':''}</strong> para ${total} unidad${total!==1?'es':''}. 
-      Espacio total utilizado: <strong style="color:var(--accent2)">${mmUsado} mm</strong> de ${mmTotal} mm disponibles. 
+      Espacio total utilizado: <strong style="color:var(--accent2)">${mmUsado} mm</strong>. Ancho total CCM: <strong style="color:var(--accent)">${anchoTotal} mm</strong>. 
       Arrastra los cubículos para reorganizar manualmente el layout.`;
   }
 }
@@ -1405,10 +1446,12 @@ function renderCCM() {
     wrap.appendChild(colEl);
   });
 
-  // Botón + columna
+  // Botones + columna y - columna
   const addColBtn = document.createElement('div');
-  addColBtn.style.cssText = 'flex-shrink:0;width:50px;display:flex;align-items:center;justify-content:center;';
-  addColBtn.innerHTML = `<button class="btn btn-add2" style="width:50px;height:80px;flex-direction:column;font-size:1.2rem;letter-spacing:0;padding:0;" onclick="addColumn()">+<span style="font-size:0.5rem;letter-spacing:1px;margin-top:2px;">COL</span></button>`;
+  addColBtn.style.cssText = 'flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;';
+  addColBtn.innerHTML = `
+    <button class="btn btn-add2" style="width:50px;height:37px;font-size:1.2rem;letter-spacing:0;padding:0;" onclick="addColumn()" title="Agregar columna">+</button>
+    <button class="btn btn-delete" style="width:50px;height:37px;font-size:1.2rem;letter-spacing:0;padding:0;" onclick="removeLastColumn()" title="Eliminar última columna">−</button>`;
   wrap.appendChild(addColBtn);
 
   bindDrag();
@@ -1442,58 +1485,136 @@ function canDrop(src, tci) {
   if (src.ci === tci) return true;
   const unit = cols[src.ci].units[src.ui];
   const h = NEMA_H[unit.nema];
-  // Espacio libre real = COL_MAX menos lo que ocupan las unidades reales (sin contar gaps de startMm)
   const realUsed = cols[tci].units.reduce((s,u) => s + NEMA_H[u.nema], 0);
   return h <= (COL_MAX - realUsed);
 }
 
-function bindDrag() {
-  document.querySelectorAll('.unit-block[draggable]').forEach(el => {
-    el.addEventListener('dragstart', e => {
-      dragSrc = { ci: +el.dataset.ci, ui: +el.dataset.ui };
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    el.addEventListener('dragend', () => {
-      document.querySelectorAll('.drop-slot').forEach(s => s.classList.remove('active'));
-    });
-  });
-}
+function bindDrag() {} // no-op, usamos mouse drag
+function bindDropSlots() {} // no-op
 
-function bindDropSlots() {
-  document.querySelectorAll('.drop-slot').forEach(slot => {
-    const isGap = slot.classList.contains('gap-slot');
+// ─── MOUSE DRAG ──────────────────────────────────────────────────────────────
+(function initMouseDrag() {
+  let ghost = null;
+  let src   = null; // {ci, ui}
+  let insertMark = null;
 
-    slot.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (!dragSrc) return;
-      const tci = +slot.dataset.ci;
-      const allow = dragSrc.ci === tci || canDrop(dragSrc, tci);
-      if (allow) {
-        document.querySelectorAll('.drop-slot').forEach(s => s.classList.remove('active'));
-        slot.classList.add('active');
-        e.dataTransfer.dropEffect = 'move';
-      } else {
-        e.dataTransfer.dropEffect = 'none';
+  function createGhost(el, x, y) {
+    ghost = el.cloneNode(true);
+    const r = el.getBoundingClientRect();
+    ghost.style.cssText = `
+      position:fixed; z-index:9999; pointer-events:none;
+      width:${r.width}px; height:${r.height}px;
+      left:${r.left}px; top:${r.top}px;
+      opacity:0.75; box-shadow:0 8px 24px rgba(0,0,0,0.5);
+      transition:none;
+    `;
+    document.body.appendChild(ghost);
+  }
+
+  function moveGhost(x, y) {
+    if (!ghost) return;
+    const r = ghost.getBoundingClientRect();
+    ghost.style.left = (x - r.width / 2) + 'px';
+    ghost.style.top  = (y - r.height / 2) + 'px';
+  }
+
+  function removeGhost() {
+    if (ghost) { ghost.remove(); ghost = null; }
+  }
+
+  function getInsertTarget(x, y) {
+    // Encontrar qué columna está bajo el cursor
+    const colEls = document.querySelectorAll('.ccm-col');
+    let targetCol = null, tci = -1;
+    colEls.forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      if (x >= r.left && x <= r.right) { targetCol = el; tci = i; }
+    });
+    if (!targetCol || tci < 0) return null;
+
+    // Encontrar posición de inserción dentro de la columna
+    const body = targetCol.querySelector('.ccm-col-body');
+    if (!body) return null;
+    const bodyR = body.getBoundingClientRect();
+    const relY  = y - bodyR.top;
+
+    const blocks = body.querySelectorAll('.unit-block');
+    let tui = cols[tci].units.length; // por defecto al final
+    let insertY = bodyR.bottom;
+
+    for (let i = 0; i < blocks.length; i++) {
+      const br = blocks[i].getBoundingClientRect();
+      const mid = br.top + br.height / 2 - bodyR.top;
+      if (relY < mid) {
+        tui = +blocks[i].dataset.ui;
+        insertY = br.top;
+        break;
       }
-    });
+    }
+    return { tci, tui, insertY, colEl: targetCol };
+  }
 
-    slot.addEventListener('drop', e => {
-      e.preventDefault();
-      if (dragSrc === null) return;
-      const tci = +slot.dataset.ci;
-      if (dragSrc.ci !== tci && !canDrop(dragSrc, tci)) return;
-      let tui = +slot.dataset.ui;
-      const [unit] = cols[dragSrc.ci].units.splice(dragSrc.ui, 1);
-      // Al arrastrar manualmente, eliminar posición fija (el usuario la reubica libremente)
+  function showInsertMark(y, colEl) {
+    removeInsertMark();
+    insertMark = document.createElement('div');
+    insertMark.style.cssText = `
+      position:fixed; left:${colEl.getBoundingClientRect().left + 2}px;
+      top:${y - 1}px;
+      width:${colEl.getBoundingClientRect().width - 4}px;
+      height:2px; background:var(--accent);
+      z-index:9998; pointer-events:none;
+      box-shadow:0 0 6px rgba(0,200,150,0.6);
+    `;
+    document.body.appendChild(insertMark);
+  }
+
+  function removeInsertMark() {
+    if (insertMark) { insertMark.remove(); insertMark = null; }
+  }
+
+  document.addEventListener('mousedown', e => {
+    const block = e.target.closest('.unit-block');
+    // No iniciar si es el botón eliminar
+    if (!block || e.target.closest('.rm-u')) return;
+    e.preventDefault();
+    src = { ci: +block.dataset.ci, ui: +block.dataset.ui };
+    createGhost(block, e.clientX, e.clientY);
+    block.style.opacity = '0.3';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!src) return;
+    moveGhost(e.clientX, e.clientY);
+    const target = getInsertTarget(e.clientX, e.clientY);
+    if (target && canDrop(src, target.tci)) {
+      showInsertMark(target.insertY, target.colEl);
+    } else {
+      removeInsertMark();
+    }
+  });
+
+  document.addEventListener('mouseup', e => {
+    if (!src) return;
+    removeGhost();
+    removeInsertMark();
+
+    // Restaurar opacidad del original
+    const origBlock = document.querySelector(`.unit-block[data-ci="${src.ci}"][data-ui="${src.ui}"]`);
+    if (origBlock) origBlock.style.opacity = '';
+
+    const target = getInsertTarget(e.clientX, e.clientY);
+    if (target && canDrop(src, target.tci)) {
+      let { tci, tui } = target;
+      const [unit] = cols[src.ci].units.splice(src.ui, 1);
       delete unit.startMm;
-      if (dragSrc.ci === tci && tui > dragSrc.ui) tui--;
+      if (src.ci === tci && tui > src.ui) tui--;
       cols[tci].units.splice(tui, 0, unit);
-      dragSrc = null;
       updateStats();
       renderCCM();
-    });
+    }
+    src = null;
   });
-}
+})();
 
 function removeFromCol(ci, ui) {
   cols[ci].units.splice(ui, 1);
@@ -1504,6 +1625,17 @@ function removeFromCol(ci, ui) {
 
 function addColumn() {
   cols.push({ id: cid++, units: [] });
+  updateStats();
+  renderCCM();
+}
+
+function removeLastColumn() {
+  if (cols.length === 0) return;
+  const last = cols[cols.length - 1];
+  if (last.units.length > 0) {
+    if (!confirm(`La columna ${cols.length} tiene ${last.units.length} unidad${last.units.length!==1?'es':''}. ¿Eliminarla de todas formas?`)) return;
+  }
+  cols.pop();
   updateStats();
   renderCCM();
 }
