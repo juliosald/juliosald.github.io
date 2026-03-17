@@ -692,8 +692,8 @@
 
       <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">Cables tangenciales · contacto directo</div>
       <div style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;">
-        <label class="sep-toggle" onclick="toggleSeparador()">
-          <input type="checkbox" id="chk-sep" onclick="event.stopPropagation();toggleSeparador()">
+        <label class="sep-toggle" for="chk-sep">
+          <input type="checkbox" id="chk-sep" onchange="toggleSeparador()">
           <span class="sep-toggle-label">&#9135; SEPARADOR VERTICAL</span>
           <span style="font-family:var(--mono);font-size:0.6rem;color:var(--accent2);letter-spacing:1px;">Fuerza / Control</span>
         </label>
@@ -1192,7 +1192,6 @@ window.addEventListener('DOMContentLoaded', initCatalog);
 function toggleSeparador() {
   const chk = document.getElementById('chk-sep');
   const panel = document.getElementById('sep-panel');
-  if (event && event.target !== chk) chk.checked = !chk.checked;
   const active = chk.checked;
   panel.style.display = active ? '' : 'none';
   if (active) {
