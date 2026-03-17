@@ -3,1718 +3,1160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora CCM — Centro Control de Motores</title>
+<title>CCM Layout · Centro Control de Motores</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0a0e14;
-  --surface: #111720;
-  --surface2: #161d29;
-  --border: #1e2a3a;
-  --accent: #00c896;
-  --accent2: #0ea5e9;
-  --warn: #f59e0b;
-  --danger: #ef4444;
-  --text: #e2e8f0;
-  --muted: #64748b;
-  --mono: 'DM Mono', monospace;
-  --sans: 'DM Sans', sans-serif;
-  --display: 'Bebas Neue', sans-serif;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.container {
-  position: relative;
-  z-index: 1;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-}
-
-/* HEADER */
-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 3rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  animation: fadeDown 0.6s ease both;
-}
-
-.brand h1 {
-  font-family: var(--display);
-  font-size: 3rem;
-  letter-spacing: 2px;
-  color: var(--accent);
-  line-height: 1;
-}
-
-.brand p {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  color: var(--muted);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-.nec-badge {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--accent2);
-  border: 1px solid var(--accent2);
-  padding: 4px 10px;
-  letter-spacing: 2px;
-  opacity: 0.8;
-}
-
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-@media (max-width: 640px) {
-  .grid { grid-template-columns: 1fr; }
-  .brand h1 { font-size: 2rem; }
-}
-
-/* CARDS */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 1.75rem;
-  position: relative;
-  overflow: hidden;
-  animation: fadeUp 0.6s ease both;
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-}
-
-.card:nth-child(2)::before {
-  background: linear-gradient(90deg, var(--accent2), transparent);
-}
-
-.card-label {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-/* INPUTS */
-.field { margin-bottom: 1rem; }
-
-.field label {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--muted);
-  margin-bottom: 6px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.field input, .field select {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 1rem;
-  padding: 10px 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.field input:focus, .field select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0,200,150,0.1);
-}
-
-/* BUTTONS */
-.btn {
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  border: none;
-  cursor: pointer;
-  padding: 10px 18px;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-add {
-  background: rgba(0,200,150,0.1);
-  color: var(--accent);
-  border: 1px solid rgba(0,200,150,0.3);
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-.btn-add:hover {
-  background: rgba(0,200,150,0.2);
-  border-color: var(--accent);
-}
-
-.btn-add2 {
-  background: rgba(14,165,233,0.1);
-  color: var(--accent2);
-  border: 1px solid rgba(14,165,233,0.3);
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-.btn-add2:hover {
-  background: rgba(14,165,233,0.2);
-  border-color: var(--accent2);
-}
-
-.btn-delete {
-  background: rgba(239,68,68,0.08);
-  color: var(--danger);
-  border: 1px solid rgba(239,68,68,0.2);
-  padding: 4px 8px;
-  font-size: 0.65rem;
-  cursor: pointer;
-}
-.btn-delete:hover { background: rgba(239,68,68,0.18); }
-
-.btn-calc {
-  background: var(--accent);
-  color: #000;
-  font-weight: 600;
-  font-size: 0.9rem;
-  width: 100%;
-  justify-content: center;
-  padding: 14px;
-  letter-spacing: 2px;
-  margin-top: 1.5rem;
-  animation: fadeUp 0.6s 0.3s ease both;
-}
-.btn-calc:hover {
-  background: #00e6ad;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 30px rgba(0,200,150,0.3);
-}
-.btn-calc:active { transform: translateY(0); }
-
-/* UNIT LIST TABLE */
-.units-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 0.5rem;
-}
-.units-table th {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 8px 10px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-.units-table td {
-  font-family: var(--mono);
-  font-size: 0.85rem;
-  padding: 9px 10px;
-  border-bottom: 1px solid rgba(30,42,58,0.5);
-  color: var(--text);
-}
-.units-table tr:last-child td { border-bottom: none; }
-.units-table tr:hover td { background: rgba(255,255,255,0.02); }
-.nema-col { color: var(--accent); }
-.h-col { color: var(--accent2); }
-
-.empty-state {
-  text-align: center;
-  padding: 2rem;
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--muted);
-  letter-spacing: 1px;
-  border: 1px dashed var(--border);
-}
-
-/* STATS GRID */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-@media (max-width: 500px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
-
-.stat {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  padding: 1rem;
-}
-.stat-val {
-  font-family: var(--mono);
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--text);
-  display: block;
-  margin-bottom: 4px;
-}
-.stat-lbl {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  color: var(--muted);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-/* CCM LAYOUT VISUAL */
-.ccm-wrap {
-  display: none;
-  margin-top: 1.5rem;
-  animation: fadeUp 0.5s ease both;
-}
-.ccm-wrap.visible { display: block; }
-
-.ccm-layout-wrap {
-  display: flex;
-  gap: 0;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-top: 1rem;
-  align-items: flex-start;
-}
-
-.ccm-row-labels {
-  flex-shrink: 0;
-  width: 18px;
-  margin-top: 0;
-}
-
-.ccm-row-label-spacer {
-  height: 31px; /* header (~22px) + col-progress (~9px) */
-}
-
-.ccm-row-label-body {
-  height: 320px;
-  position: relative;
-  overflow: hidden;
-}
-
-.ccm-row-label {
-  position: absolute;
-  left: 0;
-  width: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  font-family: var(--mono);
-  font-size: 0.5rem;
-  color: var(--muted);
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid rgba(30,42,58,0.4);
-  padding-top: 1px;
-}
-
-.ccm-columns {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-}
-
-.ccm-col {
-  flex-shrink: 0;
-  width: 90px;
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  cursor: grab;
-  user-select: none;
-}
-.ccm-col.drag-over   { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,200,150,0.2); }
-.ccm-col.drag-reject { border-color: var(--danger); box-shadow: 0 0 0 2px rgba(239,68,68,0.15); cursor: not-allowed; }
-
-.ccm-col-header {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  letter-spacing: 2px;
-  color: var(--muted);
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
-  background: var(--surface);
-}
-
-.ccm-col-body {
-  padding: 3px;
-  position: relative;
-  height: 320px;
-  overflow: hidden;
-}
-
-.ccm-col-footer {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  color: var(--muted);
-  padding: 5px 8px;
-  border-top: 1px solid var(--border);
-  text-align: right;
-  letter-spacing: 1px;
-}
-.ccm-col-footer.overflow { color: var(--danger); }
-
-/* UNIT BLOCK */
-.unit-block {
-  width: 100%;
-  border-left: 3px solid;
-  border-bottom: 1px solid rgba(30,42,58,0.4);
-  padding: 4px 7px;
-  margin: 0;
-  cursor: grab;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.unit-block:active { opacity: 0.6; cursor: grabbing; }
-.unit-block .u-nema {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  font-weight: 500;
-}
-.unit-block .u-tag {
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  opacity: 0.6;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.unit-block .u-h {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  opacity: 0.5;
-}
-.unit-block .rm-u {
-  position: absolute;
-  right: 4px; top: 50%;
-  transform: translateY(-50%);
-  opacity: 0;
-  background: none;
-  border: none;
-  color: var(--danger);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  font-family: var(--mono);
-}
-.unit-block:hover .rm-u { opacity: 0.7; }
-
-.drop-slot {
-  height: 0;
-  margin: 0;
-  border-radius: 0;
-  transition: height 0.12s, background 0.12s;
-}
-.drop-slot.active {
-  height: 14px;
-  background: rgba(0,200,150,0.15);
-  border: 1px dashed rgba(0,200,150,0.4);
-}
-/* Drop-slot absoluto dentro de gap: cuando activo muestra overlay verde */
-[style*="position:relative"] > .drop-slot.active {
-  height: auto !important;
-  background: rgba(0,200,150,0.18);
-  border: 2px dashed rgba(0,200,150,0.6);
-}
-
-/* Slot de gap libre entre cubículos fijos — siempre visible, contiene drop-slot invisible */
-.gap-slot {
-  width: 100%;
-  border: 1px dashed rgba(30,42,58,0.8);
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 6px,
-    rgba(30,42,58,0.4) 6px,
-    rgba(30,42,58,0.4) 7px
-  );
-  gap: 2px;
-  transition: background 0.12s, border-color 0.12s;
-}
-.gap-slot:has(.drop-slot.active) {
-  background: rgba(0,200,150,0.12);
-  border-color: rgba(0,200,150,0.5);
-}
-.gap-slot .free-label {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  letter-spacing: 1.5px;
-  color: var(--muted);
-  opacity: 0.6;
-  text-transform: uppercase;
-}
-.gap-slot .free-mm {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  color: var(--muted);
-  opacity: 0.5;
-}
-
-.ccm-empty {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  color: var(--muted);
-  text-align: center;
-  padding: 12px 4px;
-  letter-spacing: 1px;
-  opacity: 0.5;
-}
-
-/* PROGRESS BAR INSIDE COLUMN */
-.col-progress {
-  height: 4px;
-  background: var(--border);
-  margin: 2px 3px 3px;
-}
-.col-progress-fill {
-  height: 100%;
-  transition: width 0.4s, background 0.3s;
-}
-
-/* ADVICE BOX */
-.advice {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  padding: 12px 16px;
-  border-left: 3px solid var(--accent);
-  background: rgba(0,200,150,0.05);
-  color: var(--muted);
-  line-height: 1.6;
-  margin-top: 1.25rem;
-}
-
-/* NEMA SIZE REF TABLE */
-.ref-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.ref-table td, .ref-table th {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  padding: 6px 10px;
-  border-bottom: 1px solid rgba(30,42,58,0.5);
-  color: var(--muted);
-}
-.ref-table th { letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-.ref-table tr:last-child td { border-bottom: none; }
-.ref-table .hl { color: var(--accent); }
-
-/* LIST IMPORT */
-.list-area {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  padding: 10px 14px;
-  outline: none;
-  resize: vertical;
-  min-height: 90px;
-  transition: border-color 0.2s;
-}
-.list-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
-.list-hint { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); margin-top: 6px; letter-spacing: 0.5px; line-height: 1.6; }
-
-/* MODE TOGGLE */
-.mode-row { display: flex; gap: 6px; margin-bottom: 1rem; }
-.mode-btn {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 1px;
-  padding: 7px 14px;
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.2s;
-  flex: 1;
-  text-align: center;
-}
-.mode-btn:hover { border-color: var(--accent); color: var(--accent); }
-.mode-btn.active {
-  background: rgba(0,200,150,0.12);
-  color: var(--accent);
-  border-color: rgba(0,200,150,0.4);
-}
-
-/* RESULT CARD */
-.result-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 2rem;
-  display: none;
-  animation: fadeUp 0.5s ease both;
-  margin-top: 1.5rem;
-  position: relative;
-}
-.result-card.visible { display: block; }
-.result-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--warn), var(--accent));
-}
-
-/* ANIMATIONS */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.card:nth-child(1) { animation-delay: 0.1s; }
-.card:nth-child(2) { animation-delay: 0.2s; }
-
-footer {
-  text-align: center;
-  margin-top: 3rem;
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--muted);
-  letter-spacing: 2px;
-  opacity: 0.5;
-}
-
-.editable-cell {
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.editable-cell:hover {
-  background: rgba(0,200,150,0.06);
-  outline: 1px dashed rgba(0,200,150,0.3);
-  outline-offset: -2px;
-}
-
-.inline-edit {
-  background: var(--surface2);
-  border: 1px solid var(--accent);
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 0.85rem;
-  padding: 4px 8px;
-  outline: none;
-  width: 100%;
-  box-shadow: 0 0 0 2px rgba(0,200,150,0.15);
-}
-.inline-edit:focus { border-color: var(--accent); }
-
-/* ESPACIO LIBRE */
-.free-block {
-  width: 100%;
-  border: 1px dashed rgba(30,42,58,0.8);
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 6px,
-    rgba(30,42,58,0.4) 6px,
-    rgba(30,42,58,0.4) 7px
-  );
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  margin-bottom: 2px;
-}
-.free-block .free-label {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  letter-spacing: 1.5px;
-  color: var(--muted);
-  opacity: 0.6;
-  text-transform: uppercase;
-}
-.free-block .free-mm {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  color: var(--muted);
-  opacity: 0.5;
-}
-
-/* Size X color ramp */
-.nema-1X  { border-color: #00c896; background: rgba(0,200,150,0.08);   color: var(--text); }
-.nema-2X  { border-color: #0ea5e9; background: rgba(14,165,233,0.08);  color: var(--text); }
-.nema-3X  { border-color: #a78bfa; background: rgba(167,139,250,0.08); color: var(--text); }
-.nema-4X  { border-color: #f59e0b; background: rgba(245,158,11,0.08);  color: var(--text); }
-.nema-5X  { border-color: #f97316; background: rgba(249,115,22,0.08);  color: var(--text); }
-.nema-6X  { border-color: #ef4444; background: rgba(239,68,68,0.08);   color: var(--text); }
-.nema-7X  { border-color: #ec4899; background: rgba(236,72,153,0.08);  color: var(--text); }
-.nema-8X  { border-color: #14b8a6; background: rgba(20,184,166,0.08);  color: var(--text); }
-.nema-9X  { border-color: #84cc16; background: rgba(132,204,22,0.08);  color: var(--text); }
-.nema-10X { border-color: #6366f1; background: rgba(99,102,241,0.08);  color: var(--text); }
-.nema-11X { border-color: #f43f5e; background: rgba(244,63,94,0.08);   color: var(--text); }
-.nema-12X { border-color: #64748b; background: rgba(100,116,139,0.08); color: var(--text); }
-
-/* ESPACIO RESERVADO */
-.unit-block.reservado {
-  border-left: 3px dashed #334155;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 5px,
-    rgba(51,65,85,0.2) 5px,
-    rgba(51,65,85,0.2) 6px
-  );
-}
-.unit-block.reservado .u-nema { color: var(--muted); }
-.unit-block.reservado .u-tag  { color: var(--muted); opacity: 0.5; }
-.unit-block.reservado .u-h    { color: var(--muted); }
-.reservado-badge {
-  display: inline-block;
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  background: rgba(51,65,85,0.3);
-  color: var(--muted);
-  border: 1px solid #334155;
-  padding: 1px 6px;
-  letter-spacing: 1px;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-  /* ── PRINT / PDF — blanco y negro estricto ── */
-  @media print {
-    @page { margin: 12mm 10mm; size: A4 landscape; }
-
-    * { color: #000 !important; background: #fff !important;
-        border-color: #999 !important; box-shadow: none !important; }
-
-    body::before { display: none; }
-    .container { padding: 0; max-width: 100%; }
-
-    /* Ocultar todo excepto resultado */
-    header, .grid, .btn-calc, footer, .advice,
-    .ccm-wrap > div:last-child, button,
-    .card-label, .col-progress { display: none !important; }
-
-    .result-card {
-      display: flex !important;
-      flex-direction: column !important;
-      border: none !important;
-      padding: 0 !important;
-    }
-    .result-card::before { display: none; }
-    .result-card > div:first-child { display: none !important; } /* header con botón */
-
-    #print-header  { order: 1; display: block !important; margin-bottom: 5mm; }
-    .stats-grid    { order: 2; }
-    #ccm-wrap      { order: 3; page-break-after: always; }
-    #print-table   { order: 4; display: block !important; margin-bottom: 6mm; }
-    #print-list-block { order: 5; display: block !important; margin-bottom: 6mm; }
-
-    /* Stats */
-    .stats-grid { display: flex !important; gap: 8px; margin-bottom: 6mm; }
-    .stat { border: 1px solid #999 !important; padding: 4px 8px; flex: 1; }
-    .stat-val { font-size: 0.95rem !important; }
-
-    /* Tabla */
-    #print-table table { width: 100%; border-collapse: collapse; font-size: 8pt; }
-    #print-table th {
-      border: 1px solid #000 !important;
-      background: #000 !important; color: #fff !important;
-      padding: 3px 7px; font-family: monospace;
-      font-size: 7pt; letter-spacing: 1px; text-transform: uppercase;
-    }
-    #print-table td {
-      border: 1px solid #ccc !important;
-      padding: 2px 7px; font-family: monospace; font-size: 8pt;
-    }
-    #print-table tr:nth-child(even) td { background: #f5f5f5 !important; }
-
-    /* Lista copiable */
-    #print-list-block pre {
-      font-family: monospace; font-size: 8pt;
-      border: 1px solid #999 !important;
-      padding: 6px 10px; line-height: 1.6;
-      white-space: pre-wrap; background: #fafafa !important;
-    }
-
-    /* Layout CCM */
-    .ccm-layout-wrap { overflow: visible !important; }
-    .ccm-row-label-body, .ccm-col-body { overflow: visible !important; }
-
-    .ccm-col { border: 1px solid #000 !important; background: #fff !important; break-inside: avoid; }
-    .ccm-col-header { background: #e8e8e8 !important; border-bottom: 1px solid #000 !important; font-size: 7pt; }
-    .ccm-col-footer { border-top: 1px solid #000 !important; font-size: 6pt; }
-    .ccm-col-footer.overflow { color: #000 !important; font-weight: bold; }
-
-    /* Todos los unit-block en B&N */
-    .unit-block {
-      border-left: 3px solid #000 !important;
-      border-bottom: 1px solid #ccc !important;
-      background: #fff !important;
-    }
-    .unit-block.reservado {
-      background: #efefef !important;
-      border-left: 3px dashed #555 !important;
-    }
-    .unit-block .u-nema { color: #000 !important; }
-    .unit-block .u-tag  { color: #333 !important; }
-    .unit-block .u-h    { color: #555 !important; }
-    .unit-block .u-h span { color: #000 !important; font-weight: bold; }
-    .rm-u { display: none !important; }
-
-    .free-block {
-      background: repeating-linear-gradient(
-        45deg, #fff, #fff 4px, #ddd 4px, #ddd 5px
-      ) !important;
-      border: 1px dashed #aaa !important;
-    }
-    .free-block .free-label, .free-block .free-mm { color: #666 !important; }
-
-    .ccm-row-label { color: #000 !important; border-bottom-color: #bbb !important; font-size: 6pt; }
-    .drop-slot { display: none !important; }
+  :root {
+    --bg: #0a0e14;
+    --surface: #111720;
+    --surface2: #161d29;
+    --border: #1e2a3a;
+    --accent: #00c896;
+    --accent2: #0ea5e9;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Bebas Neue', sans-serif;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --border2: #263040;
+    --accent3: #f59e0b;
+    --accent4: #f59e0b;
+    --red: #ef4444;
+    --green: #00c896;
+    --col-w: 160px;
+    --col-h: 320px;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
   }
 
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.6s ease both;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .brand h1 {
+    font-family: var(--display);
+    font-size: 3rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .brand p {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .back-btn {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--accent2);
+    text-decoration: none;
+    border: 1px solid var(--accent2);
+    padding: 4px 10px;
+    letter-spacing: 2px;
+    opacity: 0.8;
+    transition: opacity .2s;
+  }
+  .back-btn:hover { opacity: 1; }
+
+  .stat-pill {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-pill strong { color: var(--accent); }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+    .brand h1 { font-size: 2rem; }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .card.card-blue::before  { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .card.card-warn::before  { background: linear-gradient(90deg, var(--warn), var(--accent)); }
+  .card.card-plain::before { background: linear-gradient(90deg, var(--accent), transparent); }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; margin-bottom: 1.25rem; }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+  .tab-btn + .tab-btn { border-left: none; }
+  .tab-btn.active { background: rgba(0,200,150,.1); border-color: var(--accent); color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; animation: fadeUp .2s ease; }
+
+  /* INPUTS */
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  select, input[type=text], textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+  }
+  select:focus, input[type=text]:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,200,150,0.1);
+  }
+  select option { background: var(--surface2); }
+  textarea { width: 100%; min-height: 140px; resize: vertical; line-height: 1.6; font-size: 0.8rem; }
+
+  .field-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .field-row .field { margin-bottom: 0; }
+
+  /* BUTTONS */
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border: none;
+    cursor: pointer;
+    padding: 10px 18px;
+    transition: all .2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 0;
+  }
+  .btn-primary {
+    background: rgba(0,200,150,.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,200,150,.3);
+  }
+  .btn-primary:hover { background: rgba(0,200,150,.2); border-color: var(--accent); }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(14,165,233,.08); }
+
+  .btn-danger {
+    background: rgba(239,68,68,.08);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,.2);
+    padding: 6px 10px;
+    font-size: 0.7rem;
+  }
+  .btn-danger:hover { background: rgba(239,68,68,.18); }
+
+  .btn-warn {
+    background: rgba(245,158,11,.1);
+    color: var(--warn);
+    border: 1px solid rgba(245,158,11,.3);
+  }
+  .btn-warn:hover { background: rgba(245,158,11,.2); }
+
+  .btn-sm { padding: 6px 12px; font-size: 0.7rem; }
+
+  .btn-generate {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+    letter-spacing: 2px;
+    margin-top: 1.5rem;
+    font-family: var(--display);
+    font-size: 1.1rem;
+  }
+  .btn-generate:hover {
+    background: #00e6ad;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(0,200,150,.3);
+  }
+  .btn-generate:active { transform: translateY(0); }
+
+  /* BADGES */
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    padding: 2px 7px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .badge-fixed    { background: rgba(245,158,11,.12); color: var(--warn);   border: 1px solid rgba(245,158,11,.3); }
+  .badge-reserved { background: rgba(239,68,68,.1);  color: var(--danger);  border: 1px solid rgba(239,68,68,.25); }
+  .badge-free     { background: rgba(0,200,150,.1);  color: var(--accent);  border: 1px solid rgba(0,200,150,.25); }
+
+  /* UNIT LIST */
+  .unit-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+  .unit-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    transition: background .15s;
+  }
+  .unit-item:hover { background: rgba(255,255,255,.02); }
+  .unit-item-nema { font-family: var(--display); font-size: 14px; color: var(--accent); min-width: 36px; }
+  .unit-item-mm   { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); min-width: 44px; }
+  .unit-item-tag  { font-family: var(--mono); font-size: 0.75rem; color: var(--text); flex: 1; }
+  .unit-item-pos  { font-family: var(--mono); font-size: 0.65rem; color: var(--warn); }
+  .unit-item-del  { margin-left: auto; opacity: .35; transition: opacity .2s; cursor: pointer; font-size: 14px; background: none; border: none; color: var(--danger); }
+  .unit-item-del:hover { opacity: 1; }
+  .unit-item.reserved { border-color: rgba(239,68,68,.2); }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+
+  /* CCM VISUALIZER */
+  .ccm-wrapper { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+
+  .row-labels {
+    display: flex;
+    flex-direction: column;
+    padding-top: 35px;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .row-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1;
+    display: flex; align-items: flex-start;
+    padding-right: 6px;
+    border-right: 1px solid var(--border);
+  }
+
+  .ccm-cols { display: flex; gap: 8px; padding-left: 8px; }
+
+  .ccm-col {
+    flex-shrink: 0;
+    width: var(--col-w);
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp .5s ease both;
+  }
+  .ccm-col-header {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 6px 8px 5px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ccm-col-name {
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+  .ccm-col-prog-bar { height: 3px; background: var(--border); overflow: hidden; }
+  .ccm-col-prog-fill {
+    height: 100%;
+    transition: width .4s cubic-bezier(.34,1.56,.64,1), background .4s;
+  }
+  .ccm-col-body {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-bottom: none;
+    flex: 0 0 var(--col-h);
+    height: var(--col-h);
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+  }
+  .ccm-col-footer {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 5px 8px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  /* CUBICLES */
+  .cub {
+    position: absolute; left: 0; right: 0;
+    border-bottom: 1px solid rgba(30,42,58,.6);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 3px 6px;
+    overflow: hidden;
+    cursor: grab;
+    transition: background .15s;
+    user-select: none;
+  }
+  .cub:hover { z-index: 10; }
+
+  .cub-nema   { font-family: var(--display); font-size: 13px; letter-spacing: 1px; line-height: 1; }
+  .cub-tag    { font-family: var(--mono); font-size: 0.6rem; color: rgba(226,232,240,.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cub-mm     { font-family: var(--mono); font-size: 0.55rem; color: rgba(226,232,240,.3); }
+  .cub-pos    { font-family: var(--mono); font-size: 0.55rem; color: var(--warn); }
+  .cub-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
+
+  .cub-regular           { background: rgba(0,200,150,.07); }
+  .cub-regular:hover     { background: rgba(0,200,150,.13); }
+  .cub-fixed-highlight   { background: rgba(245,158,11,.06); }
+  .cub-fixed-highlight:hover { background: rgba(245,158,11,.11); }
+
+  .cub-reserved {
+    background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(239,68,68,.06) 4px, rgba(239,68,68,.06) 5px);
+    cursor: default;
+  }
+  .cub-gap, .cub-free {
+    background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(0,200,150,.04) 4px, rgba(0,200,150,.04) 5px);
+    cursor: default;
+  }
+  .cub-gap .cub-nema, .cub-free .cub-nema {
+    font-family: var(--display); font-size: 11px; letter-spacing: 1px; color: var(--muted);
+  }
+
+  /* TABLE */
+  .unit-table { width: 100%; border-collapse: collapse; }
+  .unit-table th {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .unit-table td {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(30,42,58,.5);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .unit-table tr:last-child td { border-bottom: none; }
+  .unit-table tr { transition: background .15s; }
+  .unit-table tr:hover td { background: rgba(255,255,255,.02); }
+  .unit-table .td-num  { color: var(--muted); }
+  .unit-table .td-nema { color: var(--accent); font-family: var(--display); font-size: 1rem; cursor: pointer; }
+  .unit-table .td-tag  { cursor: pointer; }
+  .unit-table .td-tag:hover, .unit-table .td-nema:hover { color: var(--accent); }
+
+  .inline-select, .inline-input {
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    outline: none;
+    border-radius: 0;
+  }
+
+  /* ALERTS */
+  .alerts { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+  .alert {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 10px 14px;
+    border-left: 3px solid;
+    line-height: 1.5;
+  }
+  .alert-warn  { background: rgba(245,158,11,.06); border-color: var(--warn);   color: var(--warn); }
+  .alert-error { background: rgba(239,68,68,.06);  border-color: var(--danger); color: var(--danger); }
+  .alert-info  { background: rgba(0,200,150,.05);  border-color: var(--accent); color: var(--muted); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 3rem 1.5rem; color: var(--muted); }
+  .empty-state-icon  { font-size: 2rem; margin-bottom: 12px; opacity: .3; }
+  .empty-state-title { font-family: var(--display); font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 6px; }
+  .empty-state-sub   { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; }
+
+  /* GHOST */
+  #drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 6px 10px;
+    opacity: .88;
+    box-shadow: 0 8px 24px rgba(0,200,150,.2);
+    display: none;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    opacity: .5;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card:nth-child(1) { animation-delay: .1s; }
+  .card:nth-child(2) { animation-delay: .2s; }
+
+  /* PRINT */
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    body::before { display: none; }
+    footer { display: none; }
+    .no-print { display: none !important; }
+    .card { border: 1px solid #ccc !important; background: #fff !important; break-inside: avoid; }
+    .cub-regular { background: #f0f0f0 !important; }
+    .cub-fixed-highlight { background: #f5f5e8 !important; }
+    .cub-reserved, .cub-gap, .cub-free {
+      background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(0,0,0,.1) 4px, rgba(0,0,0,.1) 5px) !important;
+    }
+    .ccm-col-body { border: 1px solid #ccc !important; }
+    * { color: #000 !important; -webkit-print-color-adjust: exact; }
+    #print-extra { display: block !important; }
+  }
+  #print-extra { display: none; }
 </style>
 </head>
 <body>
+
+<div id="drag-ghost"></div>
+
 <div class="container">
 
-  <header>
-    <div class="brand">
-      <h1>CCM LAYOUT</h1>
-      <p>Calculadora Centro Control de Motores</p>
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <h1>CCM LAYOUT</h1>
+    <p>Calculadora de layout · Centro Control de Motores</p>
+  </div>
+  <div class="header-right">
+    <div class="stat-pill">Unidades <strong id="stat-units">0</strong></div>
+    <div class="stat-pill">Columnas <strong id="stat-cols">0</strong></div>
+    <div class="stat-pill">Ancho <strong id="stat-width">—</strong></div>
+    <button class="btn btn-warn btn-sm no-print" onclick="exportarPDF()">↙ PDF</button>
+    <a href="index.html" class="back-btn">← INICIO</a>
+  </div>
+</header>
+
+<!-- GRID: INGRESO + PENDIENTES -->
+<div class="grid">
+
+  <!-- INGRESO -->
+  <div class="card">
+    <div class="card-label">Ingreso de unidades</div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('individual')">Individual</button>
+      <button class="tab-btn" onclick="switchTab('lista')">Lista</button>
     </div>
-    <div style="display:flex;align-items:center;gap:1rem;">
-      <a href="index.html" style="font-family:var(--mono);font-size:0.65rem;letter-spacing:2px;color:var(--muted);text-decoration:none;border:1px solid var(--border);padding:5px 12px;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">&#8592; INICIO</a>
-      <div class="nec-badge">NEMA ICS 2</div>
-    </div>
-  </header>
 
-  <div class="grid">
-
-    <!-- CARD 01: AGREGAR UNIDAD -->
-    <div class="card">
-      <div class="card-label">01 / Agregar unidad</div>
-
-      <div class="mode-row">
-        <button class="mode-btn active" id="btn-mode-single" onclick="setMode('single')">&#9998; INDIVIDUAL</button>
-        <button class="mode-btn" id="btn-mode-list" onclick="setMode('list')">&#9776; LISTA</button>
-      </div>
-
-      <!-- MODO INDIVIDUAL -->
-      <div id="panel-single">
+    <div class="tab-pane active" id="tab-individual">
+      <div class="field-row">
         <div class="field">
-          <label>NEMA Size</label>
-          <select id="sel-nema">
-            <option value="1X">1X — 150 mm</option>
-            <option value="2X" selected>2X — 300 mm</option>
-            <option value="3X">3X — 450 mm</option>
-            <option value="4X">4X — 600 mm</option>
-            <option value="5X">5X — 750 mm</option>
-            <option value="6X">6X — 900 mm</option>
-            <option value="7X">7X — 1050 mm</option>
-            <option value="8X">8X — 1200 mm</option>
-            <option value="9X">9X — 1350 mm</option>
-            <option value="10X">10X — 1500 mm</option>
-            <option value="11X">11X — 1650 mm</option>
-            <option value="12X">12X — 1800 mm</option>
+          <label>Size</label>
+          <select id="sel-size" style="width:115px">
+            <option value="1X">1X – 150mm</option>
+            <option value="2X" selected>2X – 300mm</option>
+            <option value="3X">3X – 450mm</option>
+            <option value="4X">4X – 600mm</option>
+            <option value="5X">5X – 750mm</option>
+            <option value="6X">6X – 900mm</option>
+            <option value="7X">7X – 1050mm</option>
+            <option value="8X">8X – 1200mm</option>
+            <option value="9X">9X – 1350mm</option>
+            <option value="10X">10X – 1500mm</option>
+            <option value="11X">11X – 1650mm</option>
+            <option value="12X">12X – 1800mm</option>
           </select>
         </div>
+        <div class="field" style="flex:1">
+          <label>Tag (opcional)</label>
+          <input type="text" id="inp-tag" placeholder="M-101, Bomba B..." style="width:100%">
+        </div>
         <div class="field">
-          <label>Tag / descripci&oacute;n (opcional)</label>
-          <input type="text" id="inp-tag" placeholder="Ej: M-101, Bomba A" />
+          <label>Pos. fija</label>
+          <input type="text" id="inp-pos" placeholder="1A…" style="width:68px">
         </div>
-        <button class="btn btn-add" onclick="addUnit()">+ AGREGAR UNIDAD</button>
-        <button class="btn" onclick="addReserved()" style="background:rgba(51,65,85,0.2);color:var(--muted);border:1px dashed #334155;width:100%;justify-content:center;margin-top:6px;">+ ESPACIO RESERVADO</button>
       </div>
-
-      <!-- MODO LISTA -->
-      <div id="panel-list" style="display:none;">
-        <div class="field">
-          <label>Lista de unidades</label>
-          <textarea class="list-area" id="inp-list" placeholder="1 ; M-101&#10;2 ; M-102&#10;1 ; M-103&#10;3 ; Compresor"></textarea>
-          <div class="list-hint">
-            Formato: &nbsp;<strong>SIZE ; tag ; posición</strong><br>
-            Ej: &nbsp;2X ; M-201 &nbsp;&nbsp;&#8212;&nbsp;&nbsp; 4X ; Bomba B ; 2C<br>
-            Reservado: &nbsp;<strong>R2X ; Futura ampliaci&oacute;n</strong><br>
-            Posici&oacute;n opcional: columna + letra &nbsp;<strong>1A, 2K, 3C...</strong>
-          </div>
-        </div>
-        <button class="btn btn-add" onclick="addFromList()">+ AGREGAR LISTA</button>
+      <div style="display:flex;gap:8px;margin-top:0.5rem;">
+        <button class="btn btn-primary" onclick="addUnit(false)">+ Agregar</button>
+        <button class="btn btn-ghost" onclick="addUnit(true)">▤ Reservado</button>
       </div>
     </div>
 
-    <!-- CARD 02: REFERENCIA NEMA -->
-    <div class="card">
-      <div class="card-label">02 / Referencia NEMA sizes</div>
-      <table class="ref-table">
-        <tr><th>Size</th><th>Altura (mm)</th></tr>
-        <tr><td class="hl">1X</td><td>150</td></tr>
-        <tr><td class="hl">2X</td><td>300</td></tr>
-        <tr><td class="hl">3X</td><td>450</td></tr>
-        <tr><td class="hl">4X</td><td>600</td></tr>
-        <tr><td class="hl">5X</td><td>750</td></tr>
-        <tr><td class="hl">6X</td><td>900</td></tr>
-        <tr><td class="hl">7X</td><td>1050</td></tr>
-        <tr><td class="hl">8X</td><td>1200</td></tr>
-        <tr><td class="hl">9X</td><td>1350</td></tr>
-        <tr><td class="hl">10X</td><td>1500</td></tr>
-        <tr><td class="hl">11X</td><td>1650</td></tr>
-        <tr><td class="hl">12X</td><td>1800</td></tr>
-      </table>
-      <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:12px;letter-spacing:0.5px;">
-        Columna est&aacute;ndar: 2000 mm total / <span style="color:var(--accent)">1800 mm &uacute;tiles</span>
-      </div>
-    </div>
-
-    <!-- CARD 03: LISTA DE UNIDADES (full width) -->
-    <div class="card" style="grid-column: 1 / -1; padding-top: 1.25rem;">
-      <div class="card-label">03 / Lista de unidades ingresadas</div>
-      <div id="tabla-wrap">
-        <div class="empty-state">Sin unidades &mdash; agrega desde el panel izquierdo</div>
-      </div>
-    </div>
-
-  </div>
-
-  <button class="btn btn-calc" onclick="calcular()">&#9654; GENERAR LAYOUT CCM</button>
-
-  <!-- RESULTADO -->
-  <div class="result-card" id="resultado">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem;">
-      <div class="card-label" style="margin-bottom:0;">Resultado / Layout generado</div>
-      <button class="btn" onclick="exportarPDF()" style="background:rgba(245,158,11,0.1);color:var(--warn);border:1px solid rgba(245,158,11,0.3);padding:7px 16px;font-size:0.75rem;">&#8659; EXPORTAR PDF</button>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat">
-        <span class="stat-val" id="s-units">0</span>
-        <span class="stat-lbl">Unidades totales</span>
-      </div>
-      <div class="stat">
-        <span class="stat-val" id="s-cols">0</span>
-        <span class="stat-lbl">Columnas</span>
-      </div>
-      <div class="stat">
-        <span class="stat-val" id="s-mm">0 mm</span>
-        <span class="stat-lbl">Ancho total CCM</span>
-      </div>
-    </div>
-
-    <div class="advice" id="advice-box"></div>
-
-    <!-- SECCIÓN SOLO PARA PDF (oculta en pantalla) -->
-    <div id="print-header" style="display:none;margin-bottom:6mm;">
-      <div style="font-family:monospace;font-size:16pt;font-weight:bold;letter-spacing:2px;border-bottom:2px solid #000;padding-bottom:4mm;margin-bottom:4mm;">CCM LAYOUT</div>
-      <div style="font-family:monospace;font-size:8pt;color:#555;" id="print-meta"></div>
-    </div>
-    <div id="print-list-block" style="display:none;"></div>
-    <div id="print-table" style="display:none;"></div>
-
-    <!-- LAYOUT VISUAL -->
-    <div class="ccm-wrap visible" id="ccm-wrap">
-      <div class="card-label" style="margin-bottom:0.5rem;">Layout interactivo &mdash; arrastra unidades entre columnas</div>
-      <div class="ccm-layout-wrap">
-        <div class="ccm-row-labels" id="ccm-row-labels">
-          <div class="ccm-row-label-spacer"></div>
-          <div class="ccm-row-label-body" id="ccm-row-label-body"></div>
-        </div>
-        <div class="ccm-columns" id="ccm-columns"></div>
-      </div>
-      <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:8px;letter-spacing:1px;">
-        * Arrastra los cubículos para reorganizar. La columna se recalcula en tiempo real.
+    <div class="tab-pane" id="tab-lista">
+      <div class="section-label">Formato: SIZE ; tag ; posición</div>
+      <textarea id="txt-lista" placeholder="2X ; M-101
+4X ; Bomba B ; 2K
+R2X ; Futura ampliación
+R3X ; Reserva ; 1C
+6X ; Compresor
+1X"></textarea>
+      <div style="display:flex;gap:8px;margin-top:0.75rem;">
+        <button class="btn btn-primary" onclick="importarLista()">↑ Importar</button>
+        <button class="btn btn-ghost btn-sm" onclick="limpiarTodo()">✕ Limpiar todo</button>
       </div>
     </div>
   </div>
 
-  <footer>CALCULADORA CCM &mdash; JULIOPROYECTISTA.CL</footer>
+  <!-- PENDIENTES -->
+  <div class="card card-blue">
+    <div class="card-label">
+      Unidades pendientes
+      <span id="pending-count" style="margin-left:auto;font-family:var(--mono);font-size:0.6rem;color:var(--accent)">0 uds</span>
+    </div>
+    <div class="section-label">Cola de distribución</div>
+    <div class="unit-list" id="pending-list">
+      <div class="empty-state" style="padding:1.5rem 0">
+        <div class="empty-state-icon">⬡</div>
+        <div class="empty-state-title">Sin unidades</div>
+        <div class="empty-state-sub">Agrega cubículos para comenzar</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-generate" onclick="calcular()">⚡ GENERAR LAYOUT CCM</button>
+    <div class="alerts" id="alerts-box"></div>
+  </div>
+
+</div>
+
+<!-- LAYOUT GRÁFICO -->
+<div class="card card-plain" style="animation-delay:.15s;margin-bottom:1.5rem;padding:1.75rem;">
+  <div class="card-label">
+    Layout gráfico
+    <span class="no-print" style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="addColumna()">＋ Columna</button>
+      <button class="btn btn-ghost btn-sm" onclick="delColumna()">－ Eliminar última</button>
+    </span>
+  </div>
+  <div style="overflow-x:auto;">
+    <div class="ccm-wrapper">
+      <div class="row-labels" id="row-labels"></div>
+      <div class="ccm-cols" id="ccm-cols">
+        <div class="empty-state" style="padding:3rem 2.5rem;min-width:280px;">
+          <div class="empty-state-icon">▦</div>
+          <div class="empty-state-title">Sin layout generado</div>
+          <div class="empty-state-sub">Agrega unidades y presiona Generar Layout CCM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLA -->
+<div class="card" style="animation-delay:.2s;padding:1.75rem;">
+  <div class="card-label">
+    Tabla de unidades
+    <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-left:auto;">Clic en size o tag para editar</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="unit-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Size</th><th>Altura</th><th>Tag</th><th>Posición</th><th>Tipo</th><th class="no-print"></th>
+        </tr>
+      </thead>
+      <tbody id="unit-table-body">
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;font-family:var(--mono);font-size:0.75rem;letter-spacing:1px;">Sin unidades aún</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PRINT ONLY -->
+<div id="print-extra">
+  <h2 style="margin-top:20px;font-family:var(--display);letter-spacing:2px;">LISTA COPIABLE</h2>
+  <pre id="print-list" style="font-size:10px;line-height:1.8;border:1px solid #ccc;padding:12px;margin-top:8px;"></pre>
+</div>
+
+<footer>CCM LAYOUT · CALCULADORA DE DISTRIBUCIÓN · julioproyectista.cl</footer>
 
 </div>
 
 <script>
-const NEMA_H = { '1X':150,'2X':300,'3X':450,'4X':600,'5X':750,'6X':900,'7X':1050,'8X':1200,'9X':1350,'10X':1500,'11X':1650,'12X':1800 };
-const COL_MAX = 1800;
-const NEMA_KEYS = ['1X','2X','3X','4X','5X','6X','7X','8X','9X','10X','11X','12X'];
+const COL_MAX  = 1800;
+const COL_W_MM = 508;
+const ROW_MM   = 75;
+const COL_H_PX = 320;
+const LETTERS  = 'ABCDEFGHIJKLMNOPQRSTUVWX';
+const rowPx    = COL_H_PX / (COL_MAX / ROW_MM);
 
-let units = [];   // [{id, nema, tag}]
-let cols = [];    // [{id, units:[...refs]}]
-let uid = 0;
-let cid = 0;
-let dragSrc = null; // {colIdx, unitIdx}
+const NEMA_H = {
+  '1X':150,'2X':300,'3X':450,'4X':600,'5X':750,'6X':900,
+  '7X':1050,'8X':1200,'9X':1350,'10X':1500,'11X':1650,'12X':1800
+};
+function nemaMm(n) { return NEMA_H[n]||300; }
 
-// ─── MODE TOGGLE ─────────────────────────────────────────────────────────────
-function setMode(m) {
-  document.getElementById('panel-single').style.display = m==='single' ? '' : 'none';
-  document.getElementById('panel-list').style.display   = m==='list'   ? '' : 'none';
-  document.getElementById('btn-mode-single').classList.toggle('active', m==='single');
-  document.getElementById('btn-mode-list').classList.toggle('active', m==='list');
+let units=[], columns=[], _uid=0, _cid=0;
+function uid(){ return ++_uid; }
+function cid(){ return ++_cid; }
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['individual','lista'][i]===name));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
 }
 
-// ─── ADD UNIT ────────────────────────────────────────────────────────────────
-function addUnit() {
-  const nema = document.getElementById('sel-nema').value;
-  const tag  = document.getElementById('inp-tag').value.trim();
-  units.push({ id: uid++, nema, tag, reservado: false });
-  document.getElementById('inp-tag').value = '';
-  renderTable();
+function parsePos(s) {
+  if(!s) return null;
+  s=s.trim().toUpperCase();
+  const m=s.match(/^(\d+)([A-X])$/);
+  return m?{col:parseInt(m[1]),letra:m[2]}:null;
 }
 
-function addReserved() {
-  const nema = document.getElementById('sel-nema').value;
-  units.push({ id: uid++, nema, tag: 'Espacio reservado', reservado: true });
-  renderTable();
+function addUnit(reservado) {
+  const nema=document.getElementById('sel-size').value;
+  const tag=document.getElementById('inp-tag').value.trim();
+  const posRaw=document.getElementById('inp-pos').value.trim();
+  const posFixed=parsePos(posRaw);
+  if(posRaw&&!posFixed){showAlert('Posición inválida. Formato: número+letra (ej. 1A, 2K)','warn');return;}
+  units.push({id:uid(),nema,tag,reservado,posFixed});
+  document.getElementById('inp-tag').value='';
+  document.getElementById('inp-pos').value='';
+  renderPending();renderTable();updateStats();
 }
 
-function addFromList() {
-  const raw = document.getElementById('inp-list').value.trim();
-  if (!raw) return;
-  raw.split('\n').forEach(line => {
-    line = line.trim();
-    if (!line) return;
-    const parts = line.split(';').map(s => s.trim());
-    let sizeRaw = (parts[0]||'').toUpperCase();
-    const reservado = sizeRaw.startsWith('R');
-    if (reservado) sizeRaw = sizeRaw.slice(1).trim();
-    if (!sizeRaw.endsWith('X')) sizeRaw = sizeRaw + 'X';
-    const tag = parts[1] || '';
-    // Tercer campo: posición fija ej. "1C", "2K"
-    const posRaw = (parts[2]||'').toUpperCase().trim();
-    const posFixed = parsePosFixed(posRaw);
-    if (NEMA_H[sizeRaw] !== undefined) {
-      units.push({ id: uid++, nema: sizeRaw, tag: reservado ? (tag || 'Espacio reservado') : tag, reservado, posFixed });
-    }
+function importarLista() {
+  const lines=document.getElementById('txt-lista').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  let added=0;
+  lines.forEach(line=>{
+    const parts=line.split(';').map(s=>s.trim());
+    if(!parts[0])return;
+    let nemaRaw=parts[0].toUpperCase();
+    const reservado=nemaRaw.startsWith('R');
+    const nema=reservado?nemaRaw.slice(1):nemaRaw;
+    if(!NEMA_H[nema])return;
+    units.push({id:uid(),nema,tag:parts[1]||'',reservado,posFixed:parsePos(parts[2])});
+    added++;
   });
-  document.getElementById('inp-list').value = '';
-  renderTable();
+  showAlert(`${added} unidades importadas`,'info');
+  document.getElementById('txt-lista').value='';
+  renderPending();renderTable();updateStats();
 }
 
-// Parsea "2C" → {col:2, letra:'C'} o null si inválido
-function parsePosFixed(raw) {
-  if (!raw) return null;
-  const m = raw.match(/^(\d+)([A-X])$/);
-  if (!m) return null;
-  return { col: parseInt(m[1]), letra: m[2] };
+function limpiarTodo() {
+  if(!confirm('¿Limpiar todas las unidades y el layout?'))return;
+  units=[];columns=[];
+  renderPending();renderTable();renderCCM();updateStats();clearAlerts();
 }
 
-// Convierte letra a mm inicio de fila
-const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWX';
-function letraToMm(letra) {
-  const i = LETTERS.indexOf(letra);
-  return i >= 0 ? i * 76 : 0;
-}
-
-function removeUnit(id) {
-  units = units.filter(u => u.id !== id);
-  renderTable();
-}
-
-// ─── TABLE ───────────────────────────────────────────────────────────────────
-function renderTable() {
-  const wrap = document.getElementById('tabla-wrap');
-  if (!units.length) {
-    wrap.innerHTML = '<div class="empty-state">Sin unidades &mdash; agrega desde el panel izquierdo</div>';
-    return;
+function renderPending() {
+  const el=document.getElementById('pending-list');
+  document.getElementById('pending-count').textContent=units.length+' uds';
+  if(!units.length){
+    el.innerHTML=`<div class="empty-state" style="padding:1.5rem 0">
+      <div class="empty-state-icon">⬡</div>
+      <div class="empty-state-title">Sin unidades</div>
+      <div class="empty-state-sub">Agrega cubículos para comenzar</div>
+    </div>`;return;
   }
-  let html = `<table class="units-table">
-    <thead><tr>
-      <th>#</th><th>Size</th><th>Altura</th><th>Tag</th><th>Pos. fija</th><th></th>
-    </tr></thead><tbody>`;
-  units.forEach((u,i) => {
-    const badge = u.reservado ? '<span class="reservado-badge">RESERVADO</span>' : '';
-    const tagCell = u.reservado
-      ? `<span style="color:var(--muted);opacity:0.6">${u.tag}</span>${badge}`
-      : `<span class="editable-cell" style="display:inline-block;width:100%" onclick="editTag(${u.id}, this)">${u.tag || '<span style="opacity:0.3">—</span>'}</span>`;
-    const posCell = u.posFixed
-      ? `<span style="color:var(--accent2);font-family:var(--mono);font-size:0.75rem;font-weight:500">${u.posFixed.col}${u.posFixed.letra}</span>`
-      : `<span style="opacity:0.25;font-family:var(--mono);font-size:0.7rem">libre</span>`;
-    html += `<tr data-uid="${u.id}">
-      <td style="color:var(--muted)">${i+1}</td>
-      <td class="nema-col editable-cell" onclick="editNema(${u.id}, this)">Size ${u.nema}</td>
-      <td class="h-col" id="h-${u.id}">${NEMA_H[u.nema]} mm</td>
-      <td>${tagCell}</td>
-      <td>${posCell}</td>
-      <td><button class="btn btn-delete" onclick="removeUnit(${u.id})">✕</button></td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  wrap.innerHTML = html;
+  el.innerHTML=units.map(u=>`
+    <div class="unit-item ${u.reservado?'reserved':''}">
+      <span class="unit-item-nema">${u.nema}</span>
+      <span class="unit-item-mm">${nemaMm(u.nema)}mm</span>
+      <span class="unit-item-tag">${u.tag||'<span style="opacity:.35">sin tag</span>'}</span>
+      ${u.posFixed?`<span class="unit-item-pos">${u.posFixed.col}${u.posFixed.letra}</span>`:''}
+      ${u.reservado?'<span class="badge badge-reserved">RSRV</span>':''}
+      <button class="unit-item-del" onclick="delUnit(${u.id})">✕</button>
+    </div>`).join('');
 }
 
-function editNema(id, cell) {
-  if (cell.querySelector('select')) return;
-  const u = units.find(x => x.id === id);
-  const sel = document.createElement('select');
-  sel.className = 'inline-edit';
-  ['1X','2X','3X','4X','5X','6X','7X','8X','9X','10X','11X','12X'].forEach(n => {
-    const opt = document.createElement('option');
-    opt.value = n; opt.textContent = 'Size ' + n;
-    if (n === u.nema) opt.selected = true;
-    sel.appendChild(opt);
-  });
-  cell.innerHTML = '';
-  cell.appendChild(sel);
-  sel.focus();
-  let committed = false;
-  const commit = () => {
-    if (committed) return;
-    committed = true;
-    u.nema = sel.value;
-    requestAnimationFrame(renderTable);
-  };
-  sel.addEventListener('change', commit);
-  sel.addEventListener('blur', commit);
-}
+function delUnit(id){units=units.filter(u=>u.id!==id);renderPending();renderTable();updateStats();}
 
-function editTag(id, cell) {
-  if (cell.querySelector('input')) return;
-  const u = units.find(x => x.id === id);
-  const inp = document.createElement('input');
-  inp.className = 'inline-edit';
-  inp.type = 'text';
-  inp.value = u.tag || '';
-  inp.placeholder = 'Tag...';
-  cell.innerHTML = '';
-  cell.appendChild(inp);
-  inp.focus();
-  inp.select();
-  let committed = false;
-  const commit = () => {
-    if (committed) return;
-    committed = true;
-    u.tag = inp.value.trim();
-    requestAnimationFrame(renderTable);
-  };
-  inp.addEventListener('blur', commit);
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { inp.blur(); }
-    if (e.key === 'Escape') { committed = true; requestAnimationFrame(renderTable); }
-  });
-}
+function letterToMm(l){const i=LETTERS.indexOf(l.toUpperCase());return i>=0?i*ROW_MM:0;}
+function mmToLetter(mm){return LETTERS[Math.min(Math.round(mm/ROW_MM),LETTERS.length-1)]||'X';}
+function colHeight(col){return col.units.reduce((s,u)=>s+(u._gap?u._gapMm:nemaMm(u.nema)),0);}
 
-// ─── CALCULAR ────────────────────────────────────────────────────────────────
 function calcular() {
-  if (!units.length) { shakeEl('tabla-wrap'); return; }
+  clearAlerts();
+  if(!units.length){showAlert('No hay unidades para distribuir','warn');return;}
+  columns=[];
+  const alerts=[];
+  const fixed=units.filter(u=>u.posFixed);
+  const free=units.filter(u=>!u.posFixed);
+  const maxC=fixed.reduce((m,u)=>Math.max(m,u.posFixed.col),0);
+  while(columns.length<maxC)columns.push({id:cid(),units:[]});
 
-  cols = [];
-  const warnings = [];
-  const ROW_MM   = 76;
-  const letraToMm = l => LETTERS.indexOf(l) * ROW_MM;
+  const fbc={};
+  fixed.forEach(u=>{const c=u.posFixed.col;if(!fbc[c])fbc[c]=[];fbc[c].push(u);});
 
-  // Devuelve mm acumulados en la columna (acepta índice o objeto)
-  function colMm(ciOrCol) {
-    const col = typeof ciOrCol === 'number' ? cols[ciOrCol] : ciOrCol;
-    if (!col || !col.units.length) return 0;
-    // Si la última unidad tiene startMm fijo, el total es startMm + su altura
-    const last = col.units[col.units.length - 1];
-    if (last.startMm !== undefined) return last.startMm + NEMA_H[last.nema];
-    // Si no, acumular normalmente
-    return col.units.reduce((s,u) => s + (NEMA_H[u.nema] || 0), 0);
-  }
-
-  // Asegurar que existan las columnas hasta ci (0-based)
-  function ensureCol(ci) {
-    while (cols.length <= ci) cols.push({ id: cid++, units: [] });
-  }
-
-  // ── 1. Separar fijas y libres ──
-  const fijas  = units.filter(u => u.posFixed);
-  const libres = [...units].filter(u => !u.posFixed).sort((a,b) => NEMA_H[b.nema] - NEMA_H[a.nema]);
-
-  // ── 2. Colocar unidades con posición fija ──
-  // Ordenar fijas por columna y luego por mm para procesarlas en orden
-  fijas.sort((a,b) => {
-    const ca = a.posFixed.col, cb = b.posFixed.col;
-    if (ca !== cb) return ca - cb;
-    return letraToMm(a.posFixed.letra) - letraToMm(b.posFixed.letra);
-  });
-
-  fijas.forEach(u => {
-    const { col: colN, letra } = u.posFixed;
-    const ci      = colN - 1;
-    const startMm = letraToMm(letra);
-    const h       = NEMA_H[u.nema];
-    ensureCol(ci);
-
-    const usedMm = colMm(ci);
-
-    // Detectar conflicto con lo ya colocado
-    let curMm = 0;
-    let conflicto = null;
-    for (const ex of cols[ci].units) {
-      const exH = NEMA_H[ex.nema];
-      if (startMm < curMm + exH && startMm + h > curMm) {
-        conflicto = ex;
-        break;
-      }
-      curMm += exH;
-    }
-
-    if (conflicto) {
-      const posTag = conflicto.tag || conflicto.nema;
-      warnings.push(`⚠ Conflicto en <strong>${colN}${letra}</strong>: <strong>${u.tag || u.nema}</strong> se solapa con <strong>${posTag}</strong>. Unidad colocada al final de la columna.`);
-      const libre = COL_MAX - colMm(ci);
-      if (libre >= h) {
-        cols[ci].units.push({ ...u });
-      } else {
-        cols.push({ id: cid++, units: [{ ...u }] });
-        warnings.push(`↳ <strong>${u.tag || u.nema}</strong> movido a columna ${cols.length}.`);
-      }
-      return;
-    }
-
-    // Sin conflicto: si hay hueco antes de startMm, se guardará como startMm
-    // para que el render lo dibuje como espacio libre
-    cols[ci].units.push({ ...u, startMm });
-  });
-
-  // ── 3. Distribuir libres con First Fit Decreasing considerando huecos ──
-
-  // Calcula todos los huecos disponibles en una columna (lista de {startMm, size} disponibles)
-  function getHuecos(col) {
-    const huecos = [];
-    let cursor = 0;
-    col.units.forEach(u => {
-      const start = (u.startMm !== undefined && u.startMm > cursor) ? u.startMm : cursor;
-      // Hueco antes de esta unidad
-      if (start > cursor) huecos.push({ desde: cursor, size: start - cursor });
-      cursor = start + NEMA_H[u.nema];
+  Object.keys(fbc).sort((a,b)=>a-b).forEach(cIdx=>{
+    const ci=parseInt(cIdx)-1;
+    const cu=fbc[cIdx].sort((a,b)=>LETTERS.indexOf(a.posFixed.letra)-LETTERS.indexOf(b.posFixed.letra));
+    let acc=0;
+    cu.forEach(u=>{
+      const target=letterToMm(u.posFixed.letra);
+      const diff=target-acc;
+      if(diff<0){alerts.push(`Conflicto: ${u.nema} "${u.tag}" en ${u.posFixed.col}${u.posFixed.letra} solapa.`);return;}
+      if(diff>=150){columns[ci].units.push({_gap:true,_gapMm:diff,id:uid()});acc+=diff;}
+      columns[ci].units.push(u);acc+=nemaMm(u.nema);
     });
-    // Hueco al final
-    if (COL_MAX > cursor) huecos.push({ desde: cursor, size: COL_MAX - cursor });
-    return huecos;
-  }
+    if(acc>COL_MAX)alerts.push(`Columna ${cIdx} excede 1800mm (${acc}mm).`);
+  });
 
-  // Inserta una unidad libre en el mejor hueco de la columna
-  function insertarEnHueco(col, u, hueco) {
-    // Buscar la posición correcta en el array según hueco.desde
-    let cursor = 0;
-    let insertIdx = col.units.length;
-    for (let i = 0; i < col.units.length; i++) {
-      const uStart = (col.units[i].startMm !== undefined) ? col.units[i].startMm : cursor;
-      if (uStart >= hueco.desde + NEMA_H[u.nema]) {
-        insertIdx = i;
-        break;
-      }
-      cursor = uStart + NEMA_H[col.units[i].nema];
-    }
-    col.units.splice(insertIdx, 0, { ...u });
-  }
-
-  libres.forEach(u => {
-    const h = NEMA_H[u.nema];
-
-    // Buscar la columna+hueco con menor espacio sobrante que aún quepa
-    let bestCol = -1, bestHueco = null, bestRem = COL_MAX + 1;
-    cols.forEach((col, i) => {
-      const huecos = getHuecos(col);
-      huecos.forEach(hq => {
-        if (hq.size >= h && hq.size < bestRem) {
-          bestRem  = hq.size;
-          bestCol  = i;
-          bestHueco = hq;
-        }
+  // FFD con soporte para gaps internos (best-fit across gaps + trailing space)
+  function getSlots(h) {
+    const slots = [];
+    columns.forEach((col, ci) => {
+      col.units.forEach((u, gi) => {
+        if (u._gap && !u._free && u._gapMm >= h)
+          slots.push({ ci, gapIdx: gi, space: u._gapMm });
       });
+      const trail = COL_MAX - colHeight(col);
+      if (trail >= h) slots.push({ ci, gapIdx: -1, space: trail });
     });
-
-    if (bestCol === -1) {
-      // No cabe en ningún hueco → nueva columna
-      cols.push({ id: cid++, units: [{ ...u }] });
-    } else {
-      insertarEnHueco(cols[bestCol], u, bestHueco);
-    }
-  });
-
-  // ── 4. Warnings ──
-  const adviceBase = `CCM generado con <strong style="color:var(--accent)">${cols.length} columna${cols.length!==1?'s':''}</strong> para ${units.length} unidad${units.length!==1?'es':''}. Arrastra para reorganizar.`;
-  const warnHtml = warnings.length
-    ? `<div style="margin-top:10px;padding:10px 14px;border-left:3px solid var(--danger);background:rgba(239,68,68,0.06);font-family:var(--mono);font-size:0.7rem;line-height:1.8;">${warnings.join('<br>')}</div>`
-    : '';
-  document.getElementById('advice-box').innerHTML = adviceBase + warnHtml;
-
-  updateStats(false);
-  renderCCM();
-
-  const res = document.getElementById('resultado');
-  res.classList.add('visible');
-  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function colHeight(col) {
-  if (!col.units.length) return 0;
-  // Recorrer acumulando, respetando startMm si existe
-  let mm = 0;
-  col.units.forEach(u => {
-    if (u.startMm !== undefined && u.startMm > mm) mm = u.startMm;
-    mm += NEMA_H[u.nema];
-  });
-  return mm;
-}
-
-function updateStats(updateAdvice = true) {
-  const total    = units.length;
-  const ncols    = cols.length;
-  const mmUsado  = cols.reduce((s,c) => s + colHeight(c), 0);
-  const anchoTotal = ncols * 508;
-  document.getElementById('s-units').textContent = total;
-  document.getElementById('s-cols').textContent  = ncols;
-  document.getElementById('s-mm').textContent    = anchoTotal.toLocaleString('es-CL') + ' mm';
-  if (updateAdvice) {
-    document.getElementById('advice-box').innerHTML =
-      `CCM generado con <strong style="color:var(--accent)">${ncols} columna${ncols!==1?'s':''}</strong> para ${total} unidad${total!==1?'es':''}. 
-      Espacio total utilizado: <strong style="color:var(--accent2)">${mmUsado} mm</strong>. Ancho total CCM: <strong style="color:var(--accent)">${anchoTotal} mm</strong>. 
-      Arrastra los cubículos para reorganizar manualmente el layout.`;
+    slots.sort((a, b) => a.space - b.space); // best fit: menor espacio sobrante
+    return slots;
   }
-}
 
-// ─── RENDER CCM ──────────────────────────────────────────────────────────────
-function renderCCM() {
-  const wrap = document.getElementById('ccm-columns');
-  wrap.innerHTML = '';
-
-  cols.forEach((col, ci) => {
-    const used  = colHeight(col);
-    const pct   = Math.round(used / COL_MAX * 100);
-    const over  = used > COL_MAX;
-    const pctFill = Math.min(pct, 100);
-    const fillColor = over ? 'var(--danger)' : pct > 80 ? 'var(--warn)' : 'var(--accent)';
-
-    const colEl = document.createElement('div');
-    colEl.className = 'ccm-col';
-    colEl.dataset.ci = ci;
-
-    colEl.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (!dragSrc) return;
-      const tci = +colEl.dataset.ci;
-      if (canDrop(dragSrc, tci)) {
-        colEl.classList.add('drag-over');
-        e.dataTransfer.dropEffect = 'move';
-      } else {
-        colEl.classList.add('drag-reject');
-        e.dataTransfer.dropEffect = 'none';
-      }
-    });
-    colEl.addEventListener('dragleave', () => {
-      colEl.classList.remove('drag-over');
-      colEl.classList.remove('drag-reject');
-    });
-    colEl.addEventListener('drop', e => {
-      e.preventDefault();
-      colEl.classList.remove('drag-over');
-      colEl.classList.remove('drag-reject');
-      if (dragSrc === null) return;
-      const tci = +colEl.dataset.ci;
-      if (!canDrop(dragSrc, tci)) return;
-      if (dragSrc.ci === tci && dragSrc.ui === col.units.length - 1) return;
-      const [unit] = cols[dragSrc.ci].units.splice(dragSrc.ui, 1);
-      cols[tci].units.push(unit);
-      dragSrc = null;
-      updateStats();
-      renderCCM();
-    });
-
-    const free   = Math.max(0, COL_MAX - used);
-    const SCALE  = 320;
-    const mmToPx = mm => Math.round(mm / COL_MAX * SCALE);
-    const ROW_MM = 76;
-    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const rowPx = ROW_MM / COL_MAX * SCALE;
-    // La letra visible en el lateral está en el borde INFERIOR de cada franja.
-    // La letra que "está dentro" del cubículo es la del borde inferior
-    // de la franja donde cae el pixel de inicio → franja i, letra i.
-    const mmToLetter = mm => {
-      const py = mm / COL_MAX * SCALE;
-      const i  = Math.round(py / rowPx);
-      return LETTERS[i] || '';
-    };
-
-    let unitsHtml = '';
-    let curMm = 0; // acumulador de mm para calcular posición
-    if (!col.units.length) {
-      unitsHtml = `
-        <div class="drop-slot" data-ci="${ci}" data-ui="0"></div>
-        <div class="free-block" style="height:${SCALE}px;">
-          <span class="free-label">Libre</span>
-          <span class="free-mm">${COL_MAX} mm</span>
-        </div>`;
+  function insertIntoSlot(u, slot) {
+    const h = nemaMm(u.nema);
+    const col = columns[slot.ci];
+    if (slot.gapIdx >= 0) {
+      const gap = col.units[slot.gapIdx];
+      const remainder = gap._gapMm - h;
+      const newItems = remainder > 0
+        ? [{ _gap:true, _gapMm:remainder, id:uid() }, u]
+        : [u];
+      col.units.splice(slot.gapIdx, 1, ...newItems);
     } else {
-      col.units.forEach((u, ui) => {
-        // Si la unidad tiene startMm fijo, dibujar espacio libre antes si hay hueco
-        if (u.startMm !== undefined && u.startMm > curMm) {
-          const gapMm = u.startMm - curMm;
-          const gapPx = mmToPx(gapMm);
-          // Wrapper relativo: free-block visual + drop-slot absoluto que lo cubre todo
-          unitsHtml += `
-            <div style="position:relative;height:${gapPx}px;flex-shrink:0;">
-              <div class="free-block" style="height:100%;pointer-events:none;">
-                ${gapPx >= 22 ? `<span class="free-label">Libre</span><span class="free-mm">${gapMm} mm</span>` : ''}
-              </div>
-              <div class="drop-slot" data-ci="${ci}" data-ui="${ui}" style="position:absolute;inset:0;height:auto;z-index:2;"></div>
-            </div>`;
-          curMm = u.startMm;
-        }
-
-        const px  = mmToPx(NEMA_H[u.nema]);
-        const pos = `${ci + 1}${mmToLetter(curMm)}`;
-        const esReservado = u.reservado && !u.libre;
-        const clases = `unit-block nema-${u.nema}${esReservado ? ' reservado' : ''}`;
-        const pinBadge = u.posFixed ? `<span style="position:absolute;top:2px;right:18px;font-size:0.45rem;font-family:var(--mono);color:var(--accent);letter-spacing:1px;opacity:0.8;">&#9679; FIJO</span>` : '';
-        const label = esReservado
-          ? `<span class="u-nema">RESERVADO</span><span class="u-h">${NEMA_H[u.nema]} mm &nbsp;·&nbsp; <span style="color:var(--accent2)">${pos}</span></span>`
-          : `<span class="u-nema">${u.nema}</span>${u.tag ? `<span class="u-tag">${u.tag}</span>` : ''}<span class="u-h">${NEMA_H[u.nema]} mm &nbsp;·&nbsp; <span style="color:var(--accent2)">${pos}</span></span>`;
-        const hasGap = u.startMm !== undefined && u.startMm > 0;
-        unitsHtml += `
-          ${hasGap ? '' : `<div class="drop-slot" data-ci="${ci}" data-ui="${ui}"></div>`}
-          <div class="${clases}"
-            draggable="true"
-            data-ci="${ci}" data-ui="${ui}"
-            style="height:${px}px;margin:0;border-radius:0;"
-          >
-            ${label}
-            ${pinBadge}
-            <button class="rm-u" onclick="removeFromCol(${ci},${ui})">×</button>
-          </div>`;
-        curMm += NEMA_H[u.nema];
-      });
-      unitsHtml += `<div class="drop-slot" data-ci="${ci}" data-ui="${col.units.length}"></div>`;
-      if (!over && free > 0) {
-        const freePx = mmToPx(free);
-        unitsHtml += `
-          <div class="free-block" style="height:${freePx}px;">
-            ${freePx >= 22 ? `<span class="free-label">Libre</span><span class="free-mm">${free} mm</span>` : ''}
-          </div>`;
-      }
+      col.units.push(u);
     }
+  }
 
-    colEl.innerHTML = `
-      <div class="ccm-col-header">COL ${ci + 1}</div>
-      <div class="col-progress">
-        <div class="col-progress-fill" style="width:${pctFill}%;background:${fillColor}"></div>
-      </div>
-      <div class="ccm-col-body" style="padding:0;display:flex;flex-direction:column;height:320px;overflow:hidden;">${unitsHtml}</div>
-      <div class="ccm-col-footer${over?' overflow':''}">${used}/${COL_MAX} mm · ${pct}% · <span style="color:var(--accent2)">508mm</span></div>`;
-
-    wrap.appendChild(colEl);
+  [...free].sort((a,b)=>nemaMm(b.nema)-nemaMm(a.nema)).forEach(u=>{
+    const h = nemaMm(u.nema);
+    const slots = getSlots(h);
+    if (slots.length === 0) columns.push({ id: cid(), units: [u] });
+    else insertIntoSlot(u, slots[0]);
   });
 
-  // Botones + columna y - columna
-  const addColBtn = document.createElement('div');
-  addColBtn.style.cssText = 'flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;';
-  addColBtn.innerHTML = `
-    <button class="btn btn-add2" style="width:50px;height:37px;font-size:1.2rem;letter-spacing:0;padding:0;" onclick="addColumn()" title="Agregar columna">+</button>
-    <button class="btn btn-delete" style="width:50px;height:37px;font-size:1.2rem;letter-spacing:0;padding:0;" onclick="removeLastColumn()" title="Eliminar última columna">−</button>`;
-  wrap.appendChild(addColBtn);
+  columns.forEach(col=>{
+    const left=COL_MAX-colHeight(col);
+    if(left>0)col.units.push({_gap:true,_free:true,_gapMm:left,id:uid()});
+  });
 
-  bindDrag();
-  bindDropSlots();
+  alerts.forEach(a=>showAlert(a,'warn'));
+  if(!alerts.length)showAlert(`Layout generado: ${columns.length} columna${columns.length>1?'s':''}`, 'info');
+  renderCCM();renderTable();updateStats();
+}
+
+function mmToPx(mm){return(mm/COL_MAX)*COL_H_PX;}
+function calcPosBadge(mm){return mmToLetter(mm);}
+
+function renderRowLabels(){
+  document.getElementById('row-labels').innerHTML=
+    Array.from({length:COL_MAX/ROW_MM},(_,i)=>
+      `<div class="row-label" style="height:${rowPx}px">${LETTERS[i]}</div>`
+    ).join('');
+}
+
+function renderCCM(){
+  const colsEl=document.getElementById('ccm-cols');
   renderRowLabels();
-}
-
-// ─── LETRAS DE FILA ───────────────────────────────────────────────────────────
-function renderRowLabels() {
-  const body = document.getElementById('ccm-row-label-body');
-  if (!body) return;
-  body.innerHTML = '';
-
-  const SCALE   = 320;
-  const ROW_MM  = 76;
-  const rowPx   = ROW_MM / COL_MAX * SCALE;
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  const total   = Math.ceil(COL_MAX / ROW_MM);
-
-  for (let i = 0; i < total; i++) {
-    const label = document.createElement('div');
-    label.className = 'ccm-row-label';
-    label.style.top    = (i * rowPx) + 'px';
-    label.style.height = rowPx + 'px';
-    label.textContent  = letters[i] || '';
-    body.appendChild(label);
+  if(!columns.length){
+    colsEl.innerHTML=`<div class="empty-state" style="padding:3rem 2.5rem;min-width:280px;">
+      <div class="empty-state-icon">▦</div>
+      <div class="empty-state-title">Sin layout generado</div>
+      <div class="empty-state-sub">Agrega unidades y presiona Generar Layout CCM</div>
+    </div>`;return;
   }
-}
-
-function canDrop(src, tci) {
-  if (src.ci === tci) return true;
-  const unit = cols[src.ci].units[src.ui];
-  const h = NEMA_H[unit.nema];
-  const realUsed = cols[tci].units.reduce((s,u) => s + NEMA_H[u.nema], 0);
-  return h <= (COL_MAX - realUsed);
-}
-
-function bindDrag() {} // no-op, usamos mouse drag
-function bindDropSlots() {} // no-op
-
-// ─── MOUSE DRAG ──────────────────────────────────────────────────────────────
-(function initMouseDrag() {
-  let ghost = null;
-  let src   = null; // {ci, ui}
-  let insertMark = null;
-
-  function createGhost(el, x, y) {
-    ghost = el.cloneNode(true);
-    const r = el.getBoundingClientRect();
-    ghost.style.cssText = `
-      position:fixed; z-index:9999; pointer-events:none;
-      width:${r.width}px; height:${r.height}px;
-      left:${r.left}px; top:${r.top}px;
-      opacity:0.75; box-shadow:0 8px 24px rgba(0,0,0,0.5);
-      transition:none;
+  colsEl.innerHTML='';
+  columns.forEach((col,ci)=>{
+    const used=Math.min(colHeight(col),COL_MAX);
+    const pct=Math.round(used/COL_MAX*100);
+    const pc=pct>90?'var(--danger)':pct>75?'var(--warn)':'var(--accent)';
+    const colDiv=document.createElement('div');
+    colDiv.className='ccm-col';colDiv.dataset.colidx=ci;
+    colDiv.style.animationDelay=(ci*.05)+'s';
+    colDiv.innerHTML=`
+      <div class="ccm-col-header">
+        <span class="ccm-col-name">COL ${ci+1}</span>
+        <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted)">${pct}%</span>
+      </div>
+      <div class="ccm-col-prog-bar"><div class="ccm-col-prog-fill" style="width:${pct}%;background:${pc}"></div></div>
+      <div class="ccm-col-body" id="col-body-${ci}" data-colidx="${ci}"></div>
+      <div class="ccm-col-footer">${used}mm / ${COL_MAX}mm &nbsp;·&nbsp; ${pct}% &nbsp;·&nbsp; ${COL_W_MM}mm</div>
     `;
-    document.body.appendChild(ghost);
-  }
-
-  function moveGhost(x, y) {
-    if (!ghost) return;
-    const r = ghost.getBoundingClientRect();
-    ghost.style.left = (x - r.width / 2) + 'px';
-    ghost.style.top  = (y - r.height / 2) + 'px';
-  }
-
-  function removeGhost() {
-    if (ghost) { ghost.remove(); ghost = null; }
-  }
-
-  function getInsertTarget(x, y) {
-    // Encontrar qué columna está bajo el cursor
-    const colEls = document.querySelectorAll('.ccm-col');
-    let targetCol = null, tci = -1;
-    colEls.forEach((el, i) => {
-      const r = el.getBoundingClientRect();
-      if (x >= r.left && x <= r.right) { targetCol = el; tci = i; }
-    });
-    if (!targetCol || tci < 0) return null;
-
-    // Encontrar posición de inserción dentro de la columna
-    const body = targetCol.querySelector('.ccm-col-body');
-    if (!body) return null;
-    const bodyR = body.getBoundingClientRect();
-    const relY  = y - bodyR.top;
-
-    const blocks = body.querySelectorAll('.unit-block');
-    let tui = cols[tci].units.length; // por defecto al final
-    let insertY = bodyR.bottom;
-
-    for (let i = 0; i < blocks.length; i++) {
-      const br = blocks[i].getBoundingClientRect();
-      const mid = br.top + br.height / 2 - bodyR.top;
-      if (relY < mid) {
-        tui = +blocks[i].dataset.ui;
-        insertY = br.top;
-        break;
+    colsEl.appendChild(colDiv);
+    const body=colDiv.querySelector(`#col-body-${ci}`);
+    let acc=0;
+    col.units.forEach(u=>{
+      const h=u._gap?u._gapMm:nemaMm(u.nema);
+      const div=document.createElement('div');
+      div.style.top=mmToPx(acc)+'px';
+      div.style.height=Math.max(mmToPx(h),2)+'px';
+      if(u._gap){
+        div.className=`cub ${u._free?'cub-free':'cub-gap'}`;
+        div.innerHTML=`<span class="cub-nema">${u._free?'Libre':'Gap'} ${Math.round(h)}mm</span>`;
+      } else {
+        div.className=`cub ${u.reservado?'cub-reserved':u.posFixed?'cub-fixed-highlight':'cub-regular'}`;
+        div.dataset.uid=u.id;div.dataset.colidx=ci;
+        const posLetter=calcPosBadge(acc);
+        const posBadge=`${ci+1}${posLetter}`;
+        let badges='';
+        if(u.posFixed)badges+=`<span class="badge badge-fixed">● FIJO</span>`;
+        if(u.reservado)badges+=`<span class="badge badge-reserved">RSRV</span>`;
+        div.innerHTML=`
+          <div class="cub-nema">${u.nema}</div>
+          ${u.tag?`<div class="cub-tag">${u.tag}</div>`:''}
+          <div class="cub-mm">${nemaMm(u.nema)}mm</div>
+          <div class="cub-pos">${posBadge}</div>
+          ${badges?`<div class="cub-badges">${badges}</div>`:''}
+        `;
       }
-    }
-    return { tci, tui, insertY, colEl: targetCol };
-  }
-
-  function showInsertMark(y, colEl) {
-    removeInsertMark();
-    insertMark = document.createElement('div');
-    insertMark.style.cssText = `
-      position:fixed; left:${colEl.getBoundingClientRect().left + 2}px;
-      top:${y - 1}px;
-      width:${colEl.getBoundingClientRect().width - 4}px;
-      height:2px; background:var(--accent);
-      z-index:9998; pointer-events:none;
-      box-shadow:0 0 6px rgba(0,200,150,0.6);
-    `;
-    document.body.appendChild(insertMark);
-  }
-
-  function removeInsertMark() {
-    if (insertMark) { insertMark.remove(); insertMark = null; }
-  }
-
-  document.addEventListener('mousedown', e => {
-    const block = e.target.closest('.unit-block');
-    // No iniciar si es el botón eliminar
-    if (!block || e.target.closest('.rm-u')) return;
-    e.preventDefault();
-    src = { ci: +block.dataset.ci, ui: +block.dataset.ui };
-    createGhost(block, e.clientX, e.clientY);
-    block.style.opacity = '0.3';
+      acc+=h;body.appendChild(div);
+    });
   });
+  initMouseDrag();
+}
 
-  document.addEventListener('mousemove', e => {
-    if (!src) return;
-    moveGhost(e.clientX, e.clientY);
-    const target = getInsertTarget(e.clientX, e.clientY);
-    if (target && canDrop(src, target.tci)) {
-      showInsertMark(target.insertY, target.colEl);
+// DRAG & DROP
+window.initMouseDrag=function(){
+  const ghost=document.getElementById('drag-ghost');
+  let drag=null;
+  let insertLine=document.getElementById('_insertLine');
+  if(!insertLine){
+    insertLine=document.createElement('div');insertLine.id='_insertLine';
+    insertLine.style.cssText='position:fixed;height:2px;pointer-events:none;z-index:9998;background:var(--accent);display:none;box-shadow:0 0 8px var(--accent);';
+    document.body.appendChild(insertLine);
+  }
+  document.querySelectorAll('.cub[data-uid]').forEach(el=>el.addEventListener('mousedown',onDown));
+
+  function onDown(e){
+    if(e.button!==0)return;e.preventDefault();e.stopPropagation();
+    const el=e.currentTarget;
+    const uidV=parseInt(el.dataset.uid);
+    const ci=parseInt(el.dataset.colidx);
+    const srcPos=columns[ci].units.findIndex(u=>u.id===uidV);
+    drag={uid:uidV,srcCi:ci,srcPos,el};
+    const r=el.getBoundingClientRect();
+    ghost.innerHTML=el.innerHTML;
+    ghost.style.cssText=`position:fixed;width:${r.width}px;pointer-events:none;z-index:9999;background:var(--surface);border:1px solid var(--accent);padding:4px 8px;opacity:.88;box-shadow:0 8px 28px rgba(0,200,150,.2);display:block;left:${r.left}px;top:${r.top}px;`;
+    el.style.opacity='.25';
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  }
+
+  function onMove(e){
+    if(!drag)return;
+    ghost.style.left=(e.clientX-ghost.offsetWidth/2)+'px';
+    ghost.style.top=(e.clientY-14)+'px';
+    document.querySelectorAll('.ccm-col-body').forEach(b=>b.style.outline='');
+    insertLine.style.display='none';
+    const info=getTarget(e.clientX,e.clientY);
+    if(!info)return;
+    const body=document.getElementById(`col-body-${info.ci}`);
+    if(info.fits){
+      body.style.outline='2px solid var(--accent)';
+      insertLine.style.display='block';
+      insertLine.style.left=info.br.left+'px';
+      insertLine.style.width=info.br.width+'px';
+      insertLine.style.top=info.iy+'px';
     } else {
-      removeInsertMark();
+      body.style.outline='2px solid var(--danger)';
     }
-  });
-
-  document.addEventListener('mouseup', e => {
-    if (!src) return;
-    removeGhost();
-    removeInsertMark();
-
-    // Restaurar opacidad del original
-    const origBlock = document.querySelector(`.unit-block[data-ci="${src.ci}"][data-ui="${src.ui}"]`);
-    if (origBlock) origBlock.style.opacity = '';
-
-    const target = getInsertTarget(e.clientX, e.clientY);
-    if (target && canDrop(src, target.tci)) {
-      let { tci, tui } = target;
-      const [unit] = cols[src.ci].units.splice(src.ui, 1);
-      delete unit.startMm;
-      if (src.ci === tci && tui > src.ui) tui--;
-      cols[tci].units.splice(tui, 0, unit);
-      updateStats();
-      renderCCM();
-    }
-    src = null;
-  });
-})();
-
-function removeFromCol(ci, ui) {
-  cols[ci].units.splice(ui, 1);
-  // Remove from main units list too
-  updateStats();
-  renderCCM();
-}
-
-function addColumn() {
-  cols.push({ id: cid++, units: [] });
-  updateStats();
-  renderCCM();
-}
-
-function removeLastColumn() {
-  if (cols.length === 0) return;
-  const last = cols[cols.length - 1];
-  if (last.units.length > 0) {
-    if (!confirm(`La columna ${cols.length} tiene ${last.units.length} unidad${last.units.length!==1?'es':''}. ¿Eliminarla de todas formas?`)) return;
   }
-  cols.pop();
-  updateStats();
-  renderCCM();
-}
 
-function shakeEl(id) {
-  const el = document.getElementById(id);
-  el.style.animation = 'none';
-  el.style.borderColor = 'var(--danger)';
-  setTimeout(() => {
-    el.style.borderColor = '';
-  }, 600);
-}
-
-// Enter key shortcuts
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.activeElement.id === 'inp-tag') addUnit();
-});
-
-// ─── EXPORTAR PDF ────────────────────────────────────────────────────────────
-function exportarPDF() {
-  const fecha = new Date().toLocaleDateString('es-CL', { day:'2-digit', month:'2-digit', year:'numeric' });
-  document.getElementById('print-meta').textContent =
-    `Fecha: ${fecha}   |   Columnas: ${cols.length}   |   Unidades: ${units.length}   |   Altura columna: ${COL_MAX} mm   |   Ancho columna: 508 mm`;
-
-  const ROW_MM  = 76;
-  const rowPx   = ROW_MM / COL_MAX * 320;
-  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const mmToLetter = mm => LETTERS[Math.round((mm / COL_MAX * 320) / rowPx)] || '';
-
-  // ── Tabla de unidades ──
-  let html = `<table>
-    <thead><tr>
-      <th>#</th><th>Posición</th><th>Size</th><th>Altura mm</th><th>Tag</th><th>Tipo</th>
-    </tr></thead><tbody>`;
-  let rowN = 0;
-  cols.forEach((col, ci) => {
-    let curMm = 0;
-    col.units.forEach(u => {
-      rowN++;
-      const pos = `${ci + 1}${mmToLetter(curMm)}`;
-      html += `<tr>
-        <td>${rowN}</td>
-        <td><strong>${pos}</strong></td>
-        <td>${u.nema}</td>
-        <td>${NEMA_H[u.nema]}</td>
-        <td>${u.tag || '—'}</td>
-        <td>${u.reservado ? 'Reservado' : 'Unidad'}</td>
-      </tr>`;
-      curMm += NEMA_H[u.nema];
-    });
-  });
-  html += '</tbody></table>';
-  document.getElementById('print-table').innerHTML = html;
-
-  // ── Lista copiable formato SIZE ; tag ; posición ──
-  const lineas = [];
-  cols.forEach((col, ci) => {
-    let curMm = 0;
-    col.units.forEach(u => {
-      if (!u.libre) { // excluir rellenos automáticos
-        const pos  = `${ci + 1}${mmToLetter(curMm)}`;
-        const prefix = u.reservado ? 'R' : '';
-        lineas.push(`${prefix}${u.nema} ; ${u.tag || ''} ; ${pos}`.trimEnd());
+  function onUp(e){
+    if(!drag)return;
+    document.querySelectorAll('.ccm-col-body').forEach(b=>b.style.outline='');
+    insertLine.style.display='none';ghost.style.display='none';drag.el.style.opacity='';
+    const info=getTarget(e.clientX,e.clientY);
+    if(info&&info.fits){
+      const{ci:tci,insertIdx}=info;
+      const{srcCi,srcPos}=drag;
+      const u=columns[srcCi].units[srcPos];
+      if(u&&!u._gap){
+        columns[srcCi].units.splice(srcPos,1);
+        u.posFixed=null;
+        let ri=insertIdx;
+        if(tci===srcCi&&srcPos<ri)ri--;
+        columns[tci].units=columns[tci].units.filter(x=>!x._free);
+        ri=Math.min(ri,columns[tci].units.length);
+        columns[tci].units.splice(ri,0,u);
+        if(tci!==srcCi)columns[srcCi].units=columns[srcCi].units.filter(x=>!x._free);
+        recomputeFreeGaps();renderCCM();renderTable();updateStats();
       }
-      curMm += NEMA_H[u.nema];
+    }
+    drag=null;
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+  }
+
+  function getTarget(mx,my){
+    let tb=null;
+    document.querySelectorAll('.ccm-col-body').forEach(b=>{
+      const r=b.getBoundingClientRect();
+      if(mx>=r.left&&mx<=r.right&&my>=r.top-10&&my<=r.bottom+10)tb=b;
+    });
+    if(!tb)return null;
+    const tci=parseInt(tb.dataset.colidx);
+    const col=columns[tci];
+    const br=tb.getBoundingClientRect();
+    const items=tb.querySelectorAll('.cub');
+    let insertIdx=col.units.filter(u=>!u._free).length;
+    let iy=br.bottom;
+    for(let i=0;i<items.length;i++){
+      const r=items[i].getBoundingClientRect();
+      if(my<=r.top+r.height/2){
+        const us=items[i].dataset.uid;
+        insertIdx=us?col.units.findIndex(u=>u.id===parseInt(us)):i;
+        iy=r.top;break;
+      }
+      iy=r.bottom;
+      const us=items[i].dataset.uid;
+      if(us)insertIdx=col.units.findIndex(u=>u.id===parseInt(us))+1;
+    }
+    iy=Math.max(br.top,Math.min(br.bottom,iy));
+    const du=columns[drag.srcCi].units[drag.srcPos];
+    const dh=du?nemaMm(du.nema):0;
+    const fg=col.units.find(u=>u._free);
+    const net=colHeight(col)-(fg?fg._gapMm:0)-(tci===drag.srcCi?dh:0);
+    return{ci:tci,insertIdx,fits:net+dh<=COL_MAX+1,br,iy};
+  }
+};
+
+function recomputeFreeGaps(){
+  columns.forEach(col=>{
+    col.units=col.units.filter(u=>!u._free);
+    const left=COL_MAX-colHeight(col);
+    if(left>0)col.units.push({_gap:true,_free:true,_gapMm:left,id:uid()});
+  });
+}
+
+function addColumna(){columns.push({id:cid(),units:[{_gap:true,_free:true,_gapMm:COL_MAX,id:uid()}]});renderCCM();updateStats();}
+function delColumna(){
+  if(!columns.length)return;
+  if(columns[columns.length-1].units.some(u=>!u._gap)&&!confirm('La última columna tiene unidades. ¿Eliminar?'))return;
+  columns.pop();renderCCM();updateStats();
+}
+
+function renderTable(){
+  const tbody=document.getElementById('unit-table-body');
+  let tu=[];
+  if(columns.length){
+    columns.forEach((col,ci)=>{
+      let acc=0;
+      col.units.forEach(u=>{
+        if(!u._gap)tu.push({...u,_ci:ci,_mm:acc});
+        acc+=u._gap?u._gapMm:nemaMm(u.nema);
+      });
+    });
+  } else tu=units.map(u=>({...u,_ci:null,_mm:null}));
+  if(!tu.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;font-family:var(--mono);font-size:0.75rem;letter-spacing:1px;">Sin unidades aún</td></tr>`;return;}
+  tbody.innerHTML=tu.map((u,i)=>{
+    const pos=u._ci!==null?`${u._ci+1}${calcPosBadge(u._mm)}`:(u.posFixed?`${u.posFixed.col}${u.posFixed.letra}`:'—');
+    const tipo=u.reservado?'<span class="badge badge-reserved">RSRV</span>':(u.posFixed?'<span class="badge badge-fixed">FIJO</span>':'<span class="badge badge-free">LIBRE</span>');
+    return `<tr>
+      <td class="td-num">${i+1}</td>
+      <td class="td-nema" onclick="editNema(this,${u.id})">${u.nema}</td>
+      <td style="color:var(--muted)">${nemaMm(u.nema)}mm</td>
+      <td class="td-tag" onclick="editTag(this,${u.id})">${u.tag||'<span style="opacity:.35">—</span>'}</td>
+      <td style="font-family:var(--mono);color:var(--warn)">${pos}</td>
+      <td>${tipo}</td>
+      <td class="no-print"><button class="btn btn-danger btn-sm" onclick="delUnitFromAll(${u.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function editNema(td,id){
+  let done=false;
+  const sel=document.createElement('select');sel.className='inline-select';
+  Object.keys(NEMA_H).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===td.textContent.trim())o.selected=true;sel.appendChild(o);});
+  td.innerHTML='';td.appendChild(sel);sel.focus();
+  function commit(){if(done)return;done=true;const u=findUnitById(id);if(u)u.nema=sel.value;requestAnimationFrame(()=>{renderTable();renderCCM();updateStats();});}
+  sel.addEventListener('change',commit);sel.addEventListener('blur',commit);
+}
+function editTag(td,id){
+  let done=false;
+  const cur=td.textContent.trim()==='—'?'':td.textContent.trim();
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-input';inp.value=cur;inp.style.width='100%';
+  td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+  function commit(){if(done)return;done=true;const u=findUnitById(id);if(u)u.tag=inp.value.trim();requestAnimationFrame(()=>renderTable());}
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){done=true;renderTable();}});
+  inp.addEventListener('blur',commit);
+}
+function findUnitById(id){
+  let u=units.find(x=>x.id===id);if(u)return u;
+  for(const col of columns){u=col.units.find(x=>x.id===id);if(u&&!u._gap)return u;}
+  return null;
+}
+function delUnitFromAll(id){
+  units=units.filter(u=>u.id!==id);
+  columns.forEach(col=>{col.units=col.units.filter(u=>u.id!==id);});
+  recomputeFreeGaps();renderPending();renderTable();renderCCM();updateStats();
+}
+
+function updateStats(){
+  const total=columns.length?columns.reduce((s,col)=>s+col.units.filter(u=>!u._gap).length,0):units.length;
+  document.getElementById('stat-units').textContent=total;
+  document.getElementById('stat-cols').textContent=columns.length;
+  document.getElementById('stat-width').textContent=columns.length?(columns.length*COL_W_MM)+'mm':'—';
+}
+
+function showAlert(msg,type='info'){
+  const div=document.createElement('div');div.className=`alert alert-${type}`;div.textContent=msg;
+  document.getElementById('alerts-box').appendChild(div);
+}
+function clearAlerts(){document.getElementById('alerts-box').innerHTML='';}
+
+function exportarPDF(){
+  let list='';
+  columns.forEach((col,ci)=>{
+    let acc=0;
+    col.units.forEach(u=>{
+      if(!u._gap){list+=`${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${ci+1}${calcPosBadge(acc)}\n`;}
+      acc+=u._gap?u._gapMm:nemaMm(u.nema);
     });
   });
-
-  document.getElementById('print-list-block').innerHTML = `
-    <div style="font-family:monospace;font-size:7pt;font-weight:bold;letter-spacing:2px;text-transform:uppercase;margin-bottom:3mm;border-bottom:1px solid #000;padding-bottom:2mm;">
-      Lista copiable — formato entrada
-    </div>
-    <pre>${lineas.join('\n')}</pre>`;
-
+  if(!columns.length)units.forEach(u=>{list+=`${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${u.posFixed?u.posFixed.col+u.posFixed.letra:''}\n`;});
+  document.getElementById('print-list').textContent=list.trim()||'(Sin datos)';
+  document.title=`CCM Layout – ${new Date().toLocaleDateString('es-CL')}`;
   window.print();
 }
+
+renderRowLabels();updateStats();renderPending();
+document.getElementById('inp-tag').addEventListener('keydown',e=>{if(e.key==='Enter')addUnit(false);});
+document.getElementById('inp-pos').addEventListener('keydown',e=>{if(e.key==='Enter')addUnit(false);});
 </script>
 </body>
 </html>
