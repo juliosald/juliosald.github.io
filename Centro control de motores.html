@@ -538,22 +538,82 @@
   .card:nth-child(2) { animation-delay: .2s; }
 
   /* PRINT */
+  #print-only { display: none; }
+
   @media print {
-    body { background: #fff !important; color: #000 !important; }
-    body::before { display: none; }
-    footer { display: none; }
-    .no-print { display: none !important; }
-    .card { border: 1px solid #ccc !important; background: #fff !important; break-inside: avoid; }
-    .cub-regular { background: #f0f0f0 !important; }
-    .cub-fixed-highlight { background: #f5f5e8 !important; }
-    .cub-reserved, .cub-gap, .cub-free {
-      background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(0,0,0,.1) 4px, rgba(0,0,0,.1) 5px) !important;
+    /* Ocultar todo el contenido de pantalla */
+    body { background: #fff !important; margin: 0; }
+    body::before { display: none !important; }
+    .container > header,
+    .container > .grid,
+    .container > footer,
+    #drag-ghost { display: none !important; }
+
+    /* Mostrar solo el bloque de impresión */
+    #print-only { display: block !important; }
+
+    /* Reset colores a B&N estricto */
+    * {
+      color: #000 !important;
+      background: transparent !important;
+      border-color: #aaa !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
-    .ccm-col-body { border: 1px solid #ccc !important; }
-    * { color: #000 !important; -webkit-print-color-adjust: exact; }
-    #print-extra { display: block !important; }
+
+    /* Cabecera impresión */
+    #po-header { margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #000 !important; }
+    #po-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 28pt; letter-spacing: 2px; }
+    #po-header p  { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: 2px; color: #555 !important; }
+
+    /* Layout gráfico */
+    #po-layout { margin-bottom: 20px; page-break-inside: avoid; }
+    #po-layout h2 { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; color: #555 !important; border-bottom: 1px solid #ccc !important; padding-bottom: 4px; }
+    .ccm-wrapper { overflow: visible !important; }
+    .row-labels  { padding-top: 33px; }
+    .row-label   { font-size: 7pt; color: #666 !important; border-color: #ccc !important; }
+    .ccm-cols    { flex-wrap: nowrap; gap: 4px; }
+    .ccm-col     { width: 120px; }
+    .ccm-col-header { background: #f0f0f0 !important; border: 1px solid #aaa !important; padding: 4px 6px; }
+    .ccm-col-name   { font-size: 11pt; color: #000 !important; }
+    .ccm-col-prog-bar { display: none; }
+    .ccm-col-body { border: 1px solid #aaa !important; height: 260px !important; flex: 0 0 260px !important; }
+    .ccm-col-footer { font-size: 6pt; background: #f0f0f0 !important; border: 1px solid #aaa !important; padding: 3px 6px; }
+    /* Cubículos B&N */
+    .cub { border-bottom: 1px solid #ccc !important; }
+    .cub-nema { font-size: 10pt; color: #000 !important; }
+    .cub-tag  { font-size: 6pt; color: #444 !important; }
+    .cub-mm   { font-size: 5pt; color: #666 !important; }
+    .cub-pos  { font-size: 5pt; color: #333 !important; }
+    .cub-regular         { background: #f5f5f5 !important; }
+    .cub-fixed-highlight { background: #ebebeb !important; }
+    .cub-reserved {
+      background: repeating-linear-gradient(-45deg, #fff, #fff 4px, #ddd 4px, #ddd 5px) !important;
+    }
+    .cub-gap, .cub-free {
+      background: repeating-linear-gradient(-45deg, #fff, #fff 4px, #eee 4px, #eee 5px) !important;
+    }
+    .cub-gap .cub-nema, .cub-free .cub-nema { font-size: 7pt; color: #888 !important; }
+    .badge-fixed    { background: #eee !important; color: #333 !important; border-color: #aaa !important; font-size: 5pt; }
+    .badge-reserved { background: #eee !important; color: #333 !important; border-color: #aaa !important; font-size: 5pt; }
+
+    /* Tabla */
+    #po-table { margin-bottom: 20px; page-break-before: always; }
+    #po-table h2 { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; color: #555 !important; border-bottom: 1px solid #ccc !important; padding-bottom: 4px; }
+    .unit-table { font-size: 8pt; border-collapse: collapse; width: 100%; }
+    .unit-table th { font-size: 6pt; padding: 5px 8px; border-bottom: 1px solid #aaa !important; color: #555 !important; }
+    .unit-table td { font-size: 8pt; padding: 5px 8px; border-bottom: 1px solid #ddd !important; }
+    .td-nema { font-size: 10pt; }
+    .btn-danger { display: none !important; }
+
+    /* Lista copiable */
+    #po-list { page-break-before: always; }
+    #po-list h2 { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; color: #555 !important; border-bottom: 1px solid #ccc !important; padding-bottom: 4px; }
+    #po-list p  { font-family: 'DM Mono', monospace; font-size: 7pt; color: #555 !important; margin-bottom: 6px; line-height: 1.5; }
+    #print-list { font-size: 8pt; line-height: 2; border: 1px solid #aaa !important; padding: 10px; background: #fafafa !important; }
   }
-  #print-extra { display: none; }
 </style>
 </head>
 <body>
@@ -701,10 +761,42 @@ R3X ; Reserva ; 1C
   </div>
 </div>
 
-<!-- PRINT ONLY -->
-<div id="print-extra">
-  <h2 style="margin-top:20px;font-family:var(--display);letter-spacing:2px;">LISTA COPIABLE</h2>
-  <pre id="print-list" style="font-size:10px;line-height:1.8;border:1px solid #ccc;padding:12px;margin-top:8px;"></pre>
+<!-- PRINT ONLY BLOCK (hidden on screen, shown on print) -->
+<div id="print-only">
+  <!-- Cabecera -->
+  <div id="po-header">
+    <h1>CCM LAYOUT</h1>
+    <p>CENTRO CONTROL DE MOTORES &nbsp;·&nbsp; <span id="po-date"></span> &nbsp;·&nbsp; julioproyectista.cl</p>
+  </div>
+
+  <!-- Layout gráfico clonado -->
+  <div id="po-layout">
+    <h2>Layout gráfico · <span id="po-dims"></span></h2>
+    <div class="ccm-wrapper">
+      <div class="row-labels" id="po-row-labels"></div>
+      <div class="ccm-cols" id="po-ccm-cols"></div>
+    </div>
+  </div>
+
+  <!-- Tabla de unidades clonada -->
+  <div id="po-table">
+    <h2>Tabla de unidades</h2>
+    <table class="unit-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Size</th><th>Altura</th><th>Tag</th><th>Posición</th><th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody id="po-table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Lista copiable -->
+  <div id="po-list">
+    <h2>Lista copiable — para reutilizar esta disposición</h2>
+    <p>Pega este listado en el campo "Lista" para reproducir el layout exacto:</p>
+    <pre id="print-list"></pre>
+  </div>
 </div>
 
 <footer>CCM LAYOUT · CALCULADORA DE DISTRIBUCIÓN · julioproyectista.cl</footer>
@@ -1140,17 +1232,49 @@ function showAlert(msg,type='info'){
 function clearAlerts(){document.getElementById('alerts-box').innerHTML='';}
 
 function exportarPDF(){
-  let list='';
-  columns.forEach((col,ci)=>{
-    let acc=0;
-    col.units.forEach(u=>{
-      if(!u._gap){list+=`${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${ci+1}${calcPosBadge(acc)}\n`;}
-      acc+=u._gap?u._gapMm:nemaMm(u.nema);
+  const fecha = new Date().toLocaleDateString('es-CL');
+  document.title = `CCM Layout – ${fecha}`;
+
+  // ── Cabecera ──
+  document.getElementById('po-date').textContent = fecha;
+  document.getElementById('po-dims').textContent =
+    columns.length ? `${columns.length} columnas · ${columns.length * COL_W_MM}mm ancho total` : 'sin layout';
+
+  // ── Layout gráfico: clonar row-labels + columnas ──
+  const poRowLabels = document.getElementById('po-row-labels');
+  poRowLabels.innerHTML = document.getElementById('row-labels').innerHTML;
+
+  const poCols = document.getElementById('po-ccm-cols');
+  poCols.innerHTML = document.getElementById('ccm-cols').innerHTML;
+  // quitar botones de acción dentro del clon si los hubiera
+  poCols.querySelectorAll('.no-print').forEach(el => el.remove());
+
+  // ── Tabla de unidades ──
+  const poTbody = document.getElementById('po-table-body');
+  poTbody.innerHTML = document.getElementById('unit-table-body').innerHTML;
+  // quitar botones eliminar de la copia
+  poTbody.querySelectorAll('.btn-danger').forEach(el => el.closest('td') ? el.closest('td').remove() : el.remove());
+
+  // ── Lista copiable ──
+  let list = '';
+  columns.forEach((col, ci) => {
+    let acc = 0;
+    col.units.forEach(u => {
+      if (!u._gap) {
+        const pos = `${ci+1}${calcPosBadge(acc)}`;
+        list += `${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+      }
+      acc += u._gap ? u._gapMm : nemaMm(u.nema);
     });
   });
-  if(!columns.length)units.forEach(u=>{list+=`${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${u.posFixed?u.posFixed.col+u.posFixed.letra:''}\n`;});
-  document.getElementById('print-list').textContent=list.trim()||'(Sin datos)';
-  document.title=`CCM Layout – ${new Date().toLocaleDateString('es-CL')}`;
+  if (!columns.length) {
+    units.forEach(u => {
+      const pos = u.posFixed ? `${u.posFixed.col}${u.posFixed.letra}` : '';
+      list += `${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+    });
+  }
+  document.getElementById('print-list').textContent = list.trim() || '(Sin datos)';
+
   window.print();
 }
 
