@@ -946,7 +946,7 @@ footer {
       </div>
       <div class="stat">
         <span class="stat-val" id="s-mm">0 mm</span>
-        <span class="stat-lbl">Espacio total usado</span>
+        <span class="stat-lbl">Ancho total CCM</span>
       </div>
     </div>
 
@@ -1259,16 +1259,17 @@ function colHeight(col) {
 }
 
 function updateStats(updateAdvice = true) {
-  const total = units.length;
-  const ncols = cols.length;
-  const mm    = cols.reduce((s,c) => s + colHeight(c), 0);
+  const total    = units.length;
+  const ncols    = cols.length;
+  const mmUsado  = cols.reduce((s,c) => s + colHeight(c), 0);
+  const anchoTotal = ncols * 508;
   document.getElementById('s-units').textContent = total;
   document.getElementById('s-cols').textContent  = ncols;
-  document.getElementById('s-mm').textContent    = mm + ' mm';
+  document.getElementById('s-mm').textContent    = anchoTotal.toLocaleString('es-CL') + ' mm';
   if (updateAdvice) {
     document.getElementById('advice-box').innerHTML =
       `CCM generado con <strong style="color:var(--accent)">${ncols} columna${ncols!==1?'s':''}</strong> para ${total} unidad${total!==1?'es':''}. 
-      Espacio total utilizado: <strong style="color:var(--accent2)">${mm} mm</strong>. 
+      Espacio total utilizado: <strong style="color:var(--accent2)">${mmUsado} mm</strong> de ${mmTotal} mm disponibles. 
       Arrastra los cubículos para reorganizar manualmente el layout.`;
   }
 }
