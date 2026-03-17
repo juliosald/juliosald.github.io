@@ -930,7 +930,7 @@ function renderCCM(){
         div.innerHTML=`
           <div class="cub-nema">${u.nema}</div>
           ${u.tag?`<div class="cub-tag">${u.tag}</div>`:''}
-
+          <div class="cub-mm">${nemaMm(u.nema)}mm</div>
           <div class="cub-pos">${posBadge}</div>
           ${badges?`<div class="cub-badges">${badges}</div>`:''}
         `;
