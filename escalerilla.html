@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Llenado Escalerilla NEC</title>
+<title>CCM Layout · Centro Control de Motores</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -20,6 +20,18 @@
     --mono: 'DM Mono', monospace;
     --sans: 'DM Sans', sans-serif;
     --display: 'Bebas Neue', sans-serif;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --border2: #263040;
+    --accent3: #f59e0b;
+    --accent4: #f59e0b;
+    --red: #ef4444;
+    --green: #00c896;
+    --col-w: 135px;
+    --col-h: 480px;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,7 +44,6 @@
     overflow-x: hidden;
   }
 
-  /* Grid background */
   body::before {
     content: '';
     position: fixed;
@@ -48,43 +59,22 @@
   .container {
     position: relative;
     z-index: 1;
-    max-width: 900px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
   }
 
   /* HEADER */
-  .btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-decoration: none;
-    border: 1px solid var(--border);
-    padding: 6px 12px;
-    margin-bottom: 1.5rem;
-    transition: all 0.2s;
-    animation: fadeDown 0.4s ease both;
-  }
-  .btn-back:hover {
-    color: var(--accent);
-    border-color: rgba(0,200,150,0.4);
-    background: rgba(0,200,150,0.05);
-  }
-  .btn-back svg { transition: transform 0.2s; }
-  .btn-back:hover svg { transform: translateX(-3px); }
-
   header {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid var(--border);
     animation: fadeDown 0.6s ease both;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   .brand h1 {
@@ -94,7 +84,6 @@
     color: var(--accent);
     line-height: 1;
   }
-
   .brand p {
     font-family: var(--mono);
     font-size: 0.7rem;
@@ -104,25 +93,45 @@
     margin-top: 4px;
   }
 
-  .nec-badge {
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .back-btn {
     font-family: var(--mono);
     font-size: 0.65rem;
     color: var(--accent2);
+    text-decoration: none;
     border: 1px solid var(--accent2);
     padding: 4px 10px;
     letter-spacing: 2px;
     opacity: 0.8;
+    transition: opacity .2s;
   }
+  .back-btn:hover { opacity: 1; }
 
-  /* MAIN GRID */
+  .stat-pill {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-pill strong { color: var(--accent); }
+
+  /* GRID */
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     margin-bottom: 1.5rem;
   }
-
-  @media (max-width: 640px) {
+  @media (max-width: 700px) {
     .grid { grid-template-columns: 1fr; }
     .brand h1 { font-size: 2rem; }
   }
@@ -136,7 +145,6 @@
     overflow: hidden;
     animation: fadeUp 0.6s ease both;
   }
-
   .card::before {
     content: '';
     position: absolute;
@@ -144,10 +152,9 @@
     height: 2px;
     background: linear-gradient(90deg, var(--accent), transparent);
   }
-
-  .card:nth-child(2)::before {
-    background: linear-gradient(90deg, var(--accent2), transparent);
-  }
+  .card.card-blue::before  { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .card.card-warn::before  { background: linear-gradient(90deg, var(--warn), var(--accent)); }
+  .card.card-plain::before { background: linear-gradient(90deg, var(--accent), transparent); }
 
   .card-label {
     font-family: var(--mono);
@@ -160,19 +167,30 @@
     align-items: center;
     gap: 8px;
   }
+  .card-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .card-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
+  /* TABS */
+  .tabs { display: flex; gap: 0; margin-bottom: 1.25rem; }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    text-transform: uppercase;
   }
+  .tab-btn + .tab-btn { border-left: none; }
+  .tab-btn.active { background: rgba(0,200,150,.1); border-color: var(--accent); color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; animation: fadeUp .2s ease; }
 
   /* INPUTS */
-  .field {
-    margin-bottom: 1rem;
-  }
-
+  .field { margin-bottom: 1rem; }
   .field label {
     display: block;
     font-size: 0.75rem;
@@ -181,9 +199,7 @@
     font-weight: 500;
     letter-spacing: 0.5px;
   }
-
-  .field input, .field select {
-    width: 100%;
+  select, input[type=text], textarea {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
@@ -191,60 +207,20 @@
     font-size: 1rem;
     padding: 10px 14px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color .2s, box-shadow .2s;
     -webkit-appearance: none;
     appearance: none;
+    border-radius: 0;
   }
-
-  .field input:focus, .field select:focus {
+  select:focus, input[type=text]:focus, textarea:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(0,200,150,0.1);
   }
+  select option { background: var(--surface2); }
+  textarea { width: 100%; min-height: 140px; resize: vertical; line-height: 1.6; font-size: 0.8rem; }
 
-  /* CABLE INPUT ROW */
-  .cable-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 0.75rem;
-    align-items: flex-end;
-  }
-
-  .cable-row .field { flex: 1; margin-bottom: 0; }
-
-  .cable-row .field:first-child { flex: 2; }
-
-  /* TABLE */
-  .cables-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-  }
-
-  .cables-table th {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .cables-table td {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    padding: 9px 10px;
-    border-bottom: 1px solid rgba(30,42,58,0.5);
-    color: var(--text);
-  }
-
-  .cables-table tr:last-child td { border-bottom: none; }
-
-  .cables-table tr { transition: background 0.15s; }
-  .cables-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-  .area-col { color: var(--accent); }
+  .field-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .field-row .field { margin-bottom: 0; }
 
   /* BUTTONS */
   .btn {
@@ -254,229 +230,335 @@
     border: none;
     cursor: pointer;
     padding: 10px 18px;
-    transition: all 0.2s;
+    transition: all .2s;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    border-radius: 0;
   }
-
-  .btn-add {
-    background: rgba(0,200,150,0.1);
+  .btn-primary {
+    background: rgba(0,200,150,.1);
     color: var(--accent);
-    border: 1px solid rgba(0,200,150,0.3);
-    width: 100%;
-    justify-content: center;
-    margin-top: 0.5rem;
+    border: 1px solid rgba(0,200,150,.3);
   }
+  .btn-primary:hover { background: rgba(0,200,150,.2); border-color: var(--accent); }
 
-  .btn-add:hover {
-    background: rgba(0,200,150,0.2);
-    border-color: var(--accent);
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
   }
+  .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(14,165,233,.08); }
 
-  .btn-delete {
-    background: rgba(239,68,68,0.08);
+  .btn-danger {
+    background: rgba(239,68,68,.08);
     color: var(--danger);
-    border: 1px solid rgba(239,68,68,0.2);
+    border: 1px solid rgba(239,68,68,.2);
     padding: 6px 10px;
     font-size: 0.7rem;
   }
+  .btn-danger:hover { background: rgba(239,68,68,.18); }
 
-  .btn-delete:hover {
-    background: rgba(239,68,68,0.18);
+  .btn-warn {
+    background: rgba(245,158,11,.1);
+    color: var(--warn);
+    border: 1px solid rgba(245,158,11,.3);
   }
+  .btn-warn:hover { background: rgba(245,158,11,.2); }
 
-  .btn-calc {
+  .btn-sm { padding: 6px 12px; font-size: 0.7rem; }
+
+  .btn-generate {
     background: var(--accent);
     color: #000;
     font-weight: 600;
-    font-size: 0.9rem;
     width: 100%;
     justify-content: center;
     padding: 14px;
     letter-spacing: 2px;
     margin-top: 1.5rem;
-    animation: fadeUp 0.6s 0.3s ease both;
+    font-family: var(--display);
+    font-size: 1.1rem;
   }
-
-  .btn-calc:hover {
+  .btn-generate:hover {
     background: #00e6ad;
     transform: translateY(-1px);
-    box-shadow: 0 8px 30px rgba(0,200,150,0.3);
+    box-shadow: 0 8px 30px rgba(0,200,150,.3);
   }
+  .btn-generate:active { transform: translateY(0); }
 
-  .btn-calc:active { transform: translateY(0); }
-
-  /* PRESETS */
-  .presets {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 0.75rem;
-  }
-
-  .preset-btn {
+  /* BADGES */
+  .badge {
     font-family: var(--mono);
-    font-size: 0.65rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 5px 10px;
-    cursor: pointer;
+    font-size: 0.6rem;
+    padding: 2px 7px;
     letter-spacing: 1px;
-    transition: all 0.15s;
+    text-transform: uppercase;
   }
+  .badge-fixed    { background: rgba(245,158,11,.12); color: var(--warn);   border: 1px solid rgba(245,158,11,.3); }
+  .badge-reserved { background: rgba(239,68,68,.1);  color: var(--danger);  border: 1px solid rgba(239,68,68,.25); }
+  .badge-free     { background: rgba(0,200,150,.1);  color: var(--accent);  border: 1px solid rgba(0,200,150,.25); }
 
-  .preset-btn:hover {
-    border-color: var(--accent2);
-    color: var(--accent2);
-    background: rgba(14,165,233,0.08);
-  }
-
-  /* RESULT CARD */
-  .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 2rem;
-    display: none;
-    animation: fadeUp 0.5s ease both;
-    margin-top: 1.5rem;
-  }
-
-  .result-card.visible { display: block; }
-
-  .result-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--warn), var(--accent));
-  }
-
-  .result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .result-pct {
-    font-family: var(--display);
-    font-size: 5rem;
-    line-height: 1;
-    transition: color 0.4s;
-  }
-
-  .result-meta {
-    text-align: right;
-  }
-
-  .result-meta .status {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    letter-spacing: 2px;
-    padding: 4px 12px;
-    font-weight: 600;
-  }
-
-  .status-ok { background: rgba(0,200,150,0.15); color: var(--accent); border: 1px solid rgba(0,200,150,0.3); }
-  .status-warn { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
-  .status-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-
-  /* PROGRESS BAR */
-  .progress-wrap {
-    margin-bottom: 1.75rem;
-  }
-
-  .progress-labels {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-  }
-
-  .progress-track {
-    height: 12px;
+  /* UNIT LIST */
+  .unit-list { display: flex; flex-direction: column; gap: 6px; }
+  .unit-item {
+    display: flex; align-items: center; gap: 8px;
     background: var(--bg);
     border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
+    padding: 8px 10px;
+    transition: background .15s;
   }
+  .unit-item:hover { background: rgba(255,255,255,.02); }
+  .unit-item-nema { font-family: var(--display); font-size: 14px; color: var(--accent); min-width: 36px; cursor: pointer; }
+  .unit-item-nema:hover { color: var(--text); }
+  .unit-item-mm   { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); min-width: 44px; }
+  .unit-item-tag  { font-family: var(--mono); font-size: 0.75rem; color: var(--text); flex: 1; cursor: pointer; }
+  .unit-item-tag:hover { color: var(--accent); }
+  .unit-item-pos  { font-family: var(--mono); font-size: 0.65rem; color: var(--warn); cursor: pointer; }
+  .unit-item-pos:hover { color: var(--text); }
+  .unit-item-pos-empty { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); opacity:.4; cursor: pointer; }
+  .unit-item-pos-empty:hover { opacity:.7; }
+  .unit-item-del  { margin-left: auto; opacity: .35; transition: opacity .2s; cursor: pointer; font-size: 14px; background: none; border: none; color: var(--danger); }
+  .unit-item-del:hover { opacity: 1; }
+  .unit-item.reserved { border-color: rgba(239,68,68,.2); }
 
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s;
-    position: relative;
-  }
-
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    right: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: rgba(255,255,255,0.5);
-  }
-
-  .progress-limit {
-    position: absolute;
-    top: 0; bottom: 0;
-    left: 40%;
-    width: 2px;
-    background: var(--warn);
-    opacity: 0.7;
-  }
-
-  /* STATS GRID */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  @media (max-width: 500px) {
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-  }
-
-  .stat {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 1rem;
-  }
-
-  .stat-val {
-    font-family: var(--mono);
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: var(--text);
-    display: block;
-    margin-bottom: 4px;
-  }
-
-  .stat-lbl {
+  /* SECTION LABEL */
+  .section-label {
     font-family: var(--mono);
     font-size: 0.6rem;
     color: var(--muted);
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+
+  /* CCM VISUALIZER */
+  .ccm-wrapper { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+
+  .row-labels {
+    display: flex;
+    flex-direction: column;
+    padding-top: 35px;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .row-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1;
+    display: flex; align-items: flex-start;
+    padding-right: 6px;
+    border-right: 1px solid var(--border);
   }
 
-  /* ADVICE BOX */
-  .advice {
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    padding: 12px 16px;
-    border-left: 3px solid var(--accent);
-    background: rgba(0,200,150,0.05);
-    color: var(--muted);
-    line-height: 1.6;
+  .ccm-cols { display: flex; gap: 8px; padding-left: 8px; }
+
+  .ccm-col {
+    flex-shrink: 0;
+    width: var(--col-w);
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp .5s ease both;
   }
+  .ccm-col-header {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 6px 8px 5px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ccm-col-name {
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+  .ccm-col-prog-bar { height: 3px; background: var(--border); overflow: hidden; }
+  .ccm-col-prog-fill {
+    height: 100%;
+    transition: width .4s cubic-bezier(.34,1.56,.64,1), background .4s;
+  }
+  .ccm-col-body {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-bottom: none;
+    flex: 0 0 var(--col-h);
+    height: var(--col-h);
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+  }
+  .ccm-col-footer {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 5px 8px;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  /* CUBICLES */
+  .cub {
+    position: absolute; left: 0; right: 0;
+    border-bottom: 1px solid rgba(30,42,58,.6);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 3px 6px;
+    overflow: hidden;
+    cursor: grab;
+    transition: background .15s;
+    user-select: none;
+  }
+  .cub:hover { z-index: 10; }
+
+  .cub-nema   { font-family: var(--display); font-size: 13px; letter-spacing: 1px; line-height: 1; }
+  .cub-tag    { font-family: var(--mono); font-size: 0.6rem; color: rgba(226,232,240,.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cub-mm     { font-family: var(--mono); font-size: 0.55rem; color: rgba(226,232,240,.3); }
+  .cub-pos    { font-family: var(--mono); font-size: 0.55rem; color: var(--warn); }
+  .cub-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
+
+  /* Colores por size — 12 tonos distribuidos en el espectro */
+  .cub-s1x  { background: rgba(0,200,150,.10); }   /* verde esmeralda */
+  .cub-s2x  { background: rgba(14,165,233,.10); }  /* azul cielo */
+  .cub-s3x  { background: rgba(139,92,246,.10); }  /* violeta */
+  .cub-s4x  { background: rgba(236,72,153,.10); }  /* rosa */
+  .cub-s5x  { background: rgba(245,158,11,.10); }  /* ámbar */
+  .cub-s6x  { background: rgba(239,68,68,.10); }   /* rojo */
+  .cub-s7x  { background: rgba(6,182,212,.10); }   /* cian */
+  .cub-s8x  { background: rgba(168,85,247,.10); }  /* púrpura */
+  .cub-s9x  { background: rgba(34,197,94,.10); }   /* verde lima */
+  .cub-s10x { background: rgba(249,115,22,.10); }  /* naranja */
+  .cub-s11x { background: rgba(20,184,166,.10); }  /* teal */
+  .cub-s12x { background: rgba(99,102,241,.10); }  /* índigo */
+
+  .cub-s1x:hover  { background: rgba(0,200,150,.18); }
+  .cub-s2x:hover  { background: rgba(14,165,233,.18); }
+  .cub-s3x:hover  { background: rgba(139,92,246,.18); }
+  .cub-s4x:hover  { background: rgba(236,72,153,.18); }
+  .cub-s5x:hover  { background: rgba(245,158,11,.18); }
+  .cub-s6x:hover  { background: rgba(239,68,68,.18); }
+  .cub-s7x:hover  { background: rgba(6,182,212,.18); }
+  .cub-s8x:hover  { background: rgba(168,85,247,.18); }
+  .cub-s9x:hover  { background: rgba(34,197,94,.18); }
+  .cub-s10x:hover { background: rgba(249,115,22,.18); }
+  .cub-s11x:hover { background: rgba(20,184,166,.18); }
+  .cub-s12x:hover { background: rgba(99,102,241,.18); }
+
+  /* Borde izquierdo de color como acento adicional */
+  .cub-s1x  { border-left: 2px solid rgba(0,200,150,.5); }
+  .cub-s2x  { border-left: 2px solid rgba(14,165,233,.5); }
+  .cub-s3x  { border-left: 2px solid rgba(139,92,246,.5); }
+  .cub-s4x  { border-left: 2px solid rgba(236,72,153,.5); }
+  .cub-s5x  { border-left: 2px solid rgba(245,158,11,.5); }
+  .cub-s6x  { border-left: 2px solid rgba(239,68,68,.5); }
+  .cub-s7x  { border-left: 2px solid rgba(6,182,212,.5); }
+  .cub-s8x  { border-left: 2px solid rgba(168,85,247,.5); }
+  .cub-s9x  { border-left: 2px solid rgba(34,197,94,.5); }
+  .cub-s10x { border-left: 2px solid rgba(249,115,22,.5); }
+  .cub-s11x { border-left: 2px solid rgba(20,184,166,.5); }
+  .cub-s12x { border-left: 2px solid rgba(99,102,241,.5); }
+
+  /* Fijo: mantiene color del size pero con tinte ámbar en el borde */
+  .cub-fixed .cub-nema { opacity: .85; }
+
+  .cub-reserved {
+    background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(239,68,68,.06) 4px, rgba(239,68,68,.06) 5px);
+    cursor: default;
+  }
+  .cub-gap, .cub-free {
+    background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(0,200,150,.04) 4px, rgba(0,200,150,.04) 5px);
+    cursor: default;
+  }
+  .cub-gap .cub-nema, .cub-free .cub-nema {
+    font-family: var(--display); font-size: 11px; letter-spacing: 1px; color: var(--muted);
+  }
+
+  /* TABLE */
+  .unit-table { width: 100%; border-collapse: collapse; }
+  .unit-table th {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .unit-table td {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(30,42,58,.5);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .unit-table tr:last-child td { border-bottom: none; }
+  .unit-table tr { transition: background .15s; }
+  .unit-table tr:hover td { background: rgba(255,255,255,.02); }
+  .unit-table .td-num  { color: var(--muted); }
+  .unit-table .td-nema { color: var(--accent); font-family: var(--display); font-size: 1rem; cursor: pointer; }
+  .unit-table .td-tag  { cursor: pointer; }
+  .unit-table .td-tag:hover, .unit-table .td-nema:hover { color: var(--accent); }
+  .unit-table .td-pos  { cursor: pointer; font-family: var(--mono); color: var(--warn); }
+  .unit-table .td-pos:hover { color: var(--text); }
+
+  .inline-select, .inline-input {
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    outline: none;
+    border-radius: 0;
+  }
+
+  /* ALERTS */
+  .alerts { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+  .alert {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 10px 14px;
+    border-left: 3px solid;
+    line-height: 1.5;
+  }
+  .alert-warn  { background: rgba(245,158,11,.06); border-color: var(--warn);   color: var(--warn); }
+  .alert-error { background: rgba(239,68,68,.06);  border-color: var(--danger); color: var(--danger); }
+  .alert-info  { background: rgba(0,200,150,.05);  border-color: var(--accent); color: var(--muted); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 3rem 1.5rem; color: var(--muted); }
+  .empty-state-icon  { font-size: 2rem; margin-bottom: 12px; opacity: .3; }
+  .empty-state-title { font-family: var(--display); font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 6px; }
+  .empty-state-sub   { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 1px; }
+
+  /* GHOST */
+  #drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 6px 10px;
+    opacity: .88;
+    box-shadow: 0 8px 24px rgba(0,200,150,.2);
+    display: none;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
 
   /* FOOTER */
   footer {
@@ -486,1265 +568,934 @@
     font-size: 0.65rem;
     color: var(--muted);
     letter-spacing: 2px;
-    opacity: 0.5;
-  }
-
-  /* FACTOR SELECT */
-  .factor-display {
-    font-family: var(--display);
-    font-size: 2.5rem;
-    color: var(--accent2);
-    text-align: center;
-    padding: 0.5rem 0;
-    letter-spacing: 2px;
-  }
-
-  .factor-note {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-align: center;
-    letter-spacing: 1px;
+    opacity: .5;
   }
 
   /* ANIMATIONS */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-12px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
-  .card:nth-child(1) { animation-delay: 0.1s; }
-  .card:nth-child(2) { animation-delay: 0.2s; }
-
-  .btn-triada-on {
-    background: rgba(167,139,250,0.2);
-    color: #a78bfa;
-    border: 1px solid rgba(167,139,250,0.5);
-    padding: 6px 10px;
-    font-size: 0.65rem;
-    letter-spacing: 1px;
-  }
-  .btn-triada-on:hover { background: rgba(167,139,250,0.35); }
-
-  .btn-triada-off {
-    background: rgba(100,116,139,0.1);
-    color: var(--muted);
-    border: 1px solid var(--border);
-    padding: 6px 10px;
-    font-size: 0.65rem;
-    letter-spacing: 1px;
-  }
-  .btn-triada-off:hover { background: rgba(167,139,250,0.1); color: #a78bfa; border-color: rgba(167,139,250,0.4); }
-
-  .triada-badge {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 0.55rem;
-    background: rgba(167,139,250,0.15);
-    color: #a78bfa;
-    border: 1px solid rgba(167,139,250,0.3);
-    padding: 1px 6px;
-    letter-spacing: 1px;
-    margin-left: 4px;
-    vertical-align: middle;
-  }
-    text-align: center;
-    padding: 2rem;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 1px;
-    border: 1px dashed var(--border);
-  }
-
-  /* TOOLTIP */
-  .info {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 1px solid var(--muted);
-    border-radius: 50%;
-    font-size: 0.6rem;
-    text-align: center;
-    line-height: 12px;
-    color: var(--muted);
-    cursor: help;
-    margin-left: 4px;
-  }
-
-  /* FULL WIDTH CABLE CARD */
-  .cable-card {
-    grid-column: 1 / -1;
-  }
-
-  /* MODE BUTTONS */
-  .mode-btn {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    flex: 1;
-    justify-content: center;
-  }
-  .mode-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .mode-btn-active {
-    background: rgba(0,200,150,0.12);
-    color: var(--accent);
-    border-color: rgba(0,200,150,0.4);
-  }
-
-  /* CATALOG INFO CHIP */
-  .catalog-info {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    color: var(--accent2);
-    background: rgba(14,165,233,0.08);
-    border: 1px solid rgba(14,165,233,0.2);
-    padding: 6px 10px;
-    margin-top: 0.5rem;
-    letter-spacing: 0.5px;
-  }
-
-  /* SELECT styling override for catalog */
-  #cat-select, #sec-select, #cable-select {
-    cursor: pointer;
-  }
-
-  /* SEPARATOR */
-  .sep-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 1rem;
-    padding: 10px 14px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    user-select: none;
-    transition: border-color 0.2s;
-  }
-  .sep-toggle:hover { border-color: var(--accent2); }
-  .sep-toggle input[type=checkbox] { accent-color: var(--accent2); width:14px; height:14px; cursor:pointer; }
-  .sep-toggle-label {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 1px;
-    flex: 1;
-  }
-  .sep-panel {
-    margin-top: 0.75rem;
-    padding: 12px 14px;
-    background: var(--surface2);
-    border: 1px solid rgba(14,165,233,0.25);
-    border-left: 3px solid var(--accent2);
-  }
-  .sep-panel .field { margin-bottom: 0.75rem; }
-  .sep-panel .field:last-child { margin-bottom: 0; }
-
-  /* ZONE BADGE */
-  .zone-badge {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 0.55rem;
-    padding: 2px 7px;
-    letter-spacing: 1px;
-    font-weight: 600;
-  }
-  .zone-fuerza   { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-  .zone-control  { background: rgba(14,165,233,0.15); color: var(--accent2); border: 1px solid rgba(14,165,233,0.3); }
-
-  /* ZONE TOGGLE BUTTONS */
-  .zona-btn-group { display: flex; gap: 6px; margin-top: 2px; }
-  .zona-btn {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    letter-spacing: 1px;
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    background: transparent;
-    cursor: pointer;
-    flex: 1;
-    transition: all 0.2s;
-    opacity: 0.35;
-  }
-  .zona-btn-fuerza.active  { background: rgba(239,68,68,0.15);  color: #ef4444; border-color: rgba(239,68,68,0.5);  opacity: 1; }
-  .zona-btn-control.active { background: rgba(14,165,233,0.15); color: var(--accent2); border-color: rgba(14,165,233,0.5); opacity: 1; }
-  .zona-btn-fuerza:not(.active)  { color: #ef4444; }
-  .zona-btn-control:not(.active) { color: var(--accent2); }
-  .zona-btn:hover { opacity: 0.7; }
-  .zona-btn.active:hover { opacity: 1; }
+  .card:nth-child(1) { animation-delay: .1s; }
+  .card:nth-child(2) { animation-delay: .2s; }
 </style>
 </head>
 <body>
 
+<div id="drag-ghost"></div>
+
 <div class="container">
 
-  <a href="index.html" class="btn-back">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    VOLVER AL INICIO
-  </a>
-
-  <header>
-    <div class="brand">
-      <h1>ESCALERILLA</h1>
-      <p>Calculadora de llenado</p>
-    </div>
-    <div class="nec-badge">LLENADO ESCALERILLA</div>
-  </header>
-
-  <div class="grid">
-
-    <!-- CARD: ESCALERILLA -->
-    <div class="card">
-      <div class="card-label">01 / Escalerilla</div>
-
-      <div class="field">
-        <label>Ancho (mm)</label>
-        <input type="number" id="ancho" value="300" min="1" oninput="syncSepDefault()">
-      </div>
-
-      <div class="field">
-        <label>Altura útil (mm)</label>
-        <input type="number" id="altura" value="100" min="1">
-      </div>
-
-      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:6px;letter-spacing:1px;">Cables tangenciales · contacto directo</div>
-      <div style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;">
-        <label class="sep-toggle" for="chk-sep">
-          <input type="checkbox" id="chk-sep" onchange="toggleSeparador()">
-          <span class="sep-toggle-label">&#9135; SEPARADOR VERTICAL</span>
-          <span style="font-family:var(--mono);font-size:0.6rem;color:var(--accent2);letter-spacing:1px;">Fuerza / Control</span>
-        </label>
-        <div id="sep-panel" class="sep-panel" style="display:none;">
-          <div class="field">
-            <label>Posici&oacute;n del separador (mm desde izquierda)</label>
-            <input type="number" id="sep-pos" min="1" step="1">
-          </div>
-          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);letter-spacing:1px;margin-top:4px;">
-            &#9632; FUERZA &nbsp;(izquierda) &nbsp;&nbsp; &#9632; CTRL/INST &nbsp;(derecha)
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CARD: CABLES CATALOG + INPUT -->
-    <div class="card">
-      <div class="card-label">02 / Cables</div>
-
-      <!-- MODE TOGGLE -->
-      <div style="display:flex;gap:6px;margin-bottom:1rem;">
-        <button id="btn-mode-catalog" class="btn mode-btn mode-btn-active" onclick="setMode('catalog')">&#128203; CAT&Aacute;LOGO</button>
-        <button id="btn-mode-manual" class="btn mode-btn" onclick="setMode('manual')">&#9998; MANUAL mm</button>
-      </div>
-
-      <!-- CATALOG MODE -->
-      <div id="panel-catalog">
-        <div class="field">
-          <label>Categor&iacute;a</label>
-          <select id="cat-select" onchange="renderSectionSelect()">
-            <option value="">&#8212; Seleccionar categor&iacute;a &mdash;</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Secci&oacute;n</label>
-          <select id="sec-select" onchange="renderCableSelect()">
-            <option value="">&#8212; Seleccionar secci&oacute;n &mdash;</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Cable</label>
-          <select id="cable-select" onchange="onCableSelectChange()">
-            <option value="">&#8212; Seleccionar cable &mdash;</option>
-          </select>
-        </div>
-        <div class="catalog-info" id="catalog-info" style="display:none;"></div>
-        <div class="cable-row" style="margin-top:0.75rem;">
-          <div class="field" style="flex:1;">
-            <label>&Oslash; di&aacute;metro (mm)</label>
-            <input type="number" id="diam-cat" placeholder="Auto" min="0.1" step="0.1" readonly style="background:var(--surface2);color:var(--accent);cursor:default;">
-          </div>
-          <div class="field" style="flex:1;">
-            <label>Cant.</label>
-            <input type="number" id="cant-cat" placeholder="1" min="1" value="1">
-          </div>
-        </div>
-
-        <div class="field" id="zona-cat-wrap" style="margin-top:0.5rem;display:none;">
-          <label>Zona</label>
-          <div class="zona-btn-group">
-            <button class="zona-btn zona-btn-fuerza active" id="zona-cat-fuerza" onclick="setZona('cat','fuerza')">&#9632; FUERZA</button>
-            <button class="zona-btn zona-btn-control" id="zona-cat-control" onclick="setZona('cat','control')">&#9632; CTRL / INST</button>
-          </div>
-          <input type="hidden" id="zona-cat" value="fuerza">
-        </div>
-        <button class="btn btn-add" onclick="addCableFromCatalog()">+ AGREGAR CABLE</button>
-      </div>
-
-      <!-- MANUAL MODE -->
-      <div id="panel-manual" style="display:none;">
-        <div class="cable-row">
-          <div class="field">
-            <label>&Oslash; di&aacute;metro (mm)</label>
-            <input type="number" id="diam" placeholder="Ej: 12.4" min="0.1" step="0.1">
-          </div>
-          <div class="field">
-            <label>Cant.</label>
-            <input type="number" id="cant" placeholder="1" min="1" value="1">
-          </div>
-        </div>
-
-        <div class="field" id="zona-manual-wrap" style="margin-top:0.25rem;display:none;">
-          <label>Zona</label>
-          <div class="zona-btn-group">
-            <button class="zona-btn zona-btn-fuerza active" id="zona-manual-fuerza" onclick="setZona('manual','fuerza')">&#9632; FUERZA</button>
-            <button class="zona-btn zona-btn-control" id="zona-manual-control" onclick="setZona('manual','control')">&#9632; CTRL / INST</button>
-          </div>
-          <input type="hidden" id="zona-manual" value="fuerza">
-        </div>
-        <button class="btn btn-add" onclick="addCable()">+ AGREGAR CABLE</button>
-      </div>
-
-    </div>
-
-    <!-- CABLE TABLE FULL WIDTH -->
-    <div class="card cable-card" style="padding-top: 1.25rem;">
-      <div class="card-label">03 / Lista de cables</div>
-      <div id="tabla-wrap">
-        <div class="empty-state">Sin cables agregados — usa los presets o ingresa manualmente</div>
-      </div>
-    </div>
-
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <h1>CCM LAYOUT</h1>
+    <p>Calculadora de layout · Centro Control de Motores</p>
   </div>
+  <div class="header-right">
+    <div class="stat-pill">Unidades <strong id="stat-units">0</strong></div>
+    <div class="stat-pill">Columnas <strong id="stat-cols">0</strong></div>
+    <div class="stat-pill">Ancho <strong id="stat-width">—</strong></div>
+    <a href="index.html" class="back-btn">← INICIO</a>
+  </div>
+</header>
 
-  <button class="btn btn-calc" onclick="calcular()">▶ CALCULAR LLENADO</button>
+<!-- GRID: INGRESO + PENDIENTES -->
+<div class="grid">
 
-  <!-- RESULT -->
-  <div class="result-card" id="resultado" style="position:relative;">
-    <div class="result-header">
-      <div>
-        <div class="card-label" style="margin-bottom:0.5rem;">Resultado</div>
-        <div class="result-pct" id="res-pct">0%</div>
-        <div style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);margin-top:4px;">ocupación real</div>
-      </div>
-      <div class="result-meta">
-        <div class="status" id="res-status">—</div>
-      </div>
+  <!-- INGRESO -->
+  <div class="card">
+    <div class="card-label">Ingreso de unidades</div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('individual')">Individual</button>
+      <button class="tab-btn" onclick="switchTab('lista')">Lista</button>
     </div>
 
-    <div class="progress-wrap">
-      <div class="progress-labels">
-        <span>0%</span>
-        <span>50%</span>
-        <span>100%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat">
-        <span class="stat-val" id="s-total">—</span>
-        <span class="stat-lbl">Área total mm²</span>
-      </div>
-      <div class="stat">
-        <span class="stat-val" id="s-cables">—</span>
-        <span class="stat-lbl">Área cables mm²</span>
-      </div>
-      <div class="stat">
-        <span class="stat-val" id="s-libre">—</span>
-        <span class="stat-lbl">Área libre mm²</span>
-      </div>
-      <div class="stat">
-        <span class="stat-val" id="s-ncables">—</span>
-        <span class="stat-lbl">N° cables</span>
-      </div>
-    </div>
-
-    <!-- VISUAL SECTION TRANSVERSAL -->
-    <div style="margin-top:1.75rem;">
-      <div class="card-label" style="margin-bottom:1rem;">Sección transversal · Vista real a escala</div>
-      <div style="position:relative;">
-        <canvas id="canvas-escalerilla" style="width:100%;display:block;border:1px solid var(--border);background:#070b10;"></canvas>
-        <div id="canvas-legend" style="margin-top:0.75rem;display:flex;flex-wrap:wrap;gap:10px;"></div>
-        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:8px;letter-spacing:1px;">
-          * Distribución estimada para visualización. Los cables se empaquetan fila por fila de izquierda a derecha.
+    <div class="tab-pane active" id="tab-individual">
+      <div class="field-row">
+        <div class="field">
+          <label>Size</label>
+          <select id="sel-size" style="width:115px">
+            <option value="1X">1X – 150mm</option>
+            <option value="2X" selected>2X – 300mm</option>
+            <option value="3X">3X – 450mm</option>
+            <option value="4X">4X – 600mm</option>
+            <option value="5X">5X – 750mm</option>
+            <option value="6X">6X – 900mm</option>
+            <option value="7X">7X – 1050mm</option>
+            <option value="8X">8X – 1200mm</option>
+            <option value="9X">9X – 1350mm</option>
+            <option value="10X">10X – 1500mm</option>
+            <option value="11X">11X – 1650mm</option>
+            <option value="12X">12X – 1800mm</option>
+          </select>
         </div>
+        <div class="field" style="flex:1">
+          <label>Tag (opcional)</label>
+          <input type="text" id="inp-tag" placeholder="M-101, Bomba B..." style="width:100%">
+        </div>
+        <div class="field">
+          <label>Pos. fija</label>
+          <input type="text" id="inp-pos" placeholder="1A…" style="width:68px">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:0.5rem;">
+        <button class="btn btn-primary" onclick="addUnit()">+ Agregar</button>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-lista">
+      <div class="section-label">Formato: SIZE ; tag ; posición</div>
+      <textarea id="txt-lista" placeholder="2X ; M-101
+4X ; Bomba B ; 2K
+6X ; Compresor
+1X"></textarea>
+      <div style="display:flex;gap:8px;margin-top:0.75rem;">
+        <button class="btn btn-primary" onclick="importarLista()">↑ Importar</button>
+        <button class="btn btn-ghost btn-sm" onclick="limpiarTodo()">✕ Limpiar todo</button>
       </div>
     </div>
   </div>
 
-  <footer>
-    CALCULADORA LLENADO ESCALERILLA
-  </footer>
+  <!-- PENDIENTES -->
+  <div class="card card-blue">
+    <div class="card-label">
+      Unidades pendientes
+      <span id="pending-count" style="margin-left:auto;font-family:var(--mono);font-size:0.6rem;color:var(--accent)">0 uds</span>
+    </div>
+    <div class="section-label">Cola de distribución</div>
+    <div class="unit-list" id="pending-list">
+      <div class="empty-state" style="padding:1.5rem 0">
+        <div class="empty-state-icon">⬡</div>
+        <div class="empty-state-title">Sin unidades</div>
+        <div class="empty-state-sub">Agrega cubículos para comenzar</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-generate" onclick="calcular()">⚡ GENERAR LAYOUT CCM</button>
+    <div class="alerts" id="alerts-box"></div>
+  </div>
+
+</div>
+
+<!-- LAYOUT GRÁFICO -->
+<div class="card card-plain" style="animation-delay:.15s;margin-bottom:1.5rem;padding:1.75rem;">
+  <div class="card-label">
+    Layout gráfico
+    <span style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="addColumna()">＋ Columna</button>
+      <button class="btn btn-ghost btn-sm" onclick="delColumna()">－ Eliminar última</button>
+    </span>
+  </div>
+  <div style="overflow-x:auto;">
+    <div class="ccm-wrapper">
+      <div class="row-labels" id="row-labels"></div>
+      <div class="ccm-cols" id="ccm-cols">
+        <div class="empty-state" style="padding:3rem 2.5rem;min-width:280px;">
+          <div class="empty-state-icon">▦</div>
+          <div class="empty-state-title">Sin layout generado</div>
+          <div class="empty-state-sub">Agrega unidades y presiona Generar Layout CCM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLA -->
+<div class="card" style="animation-delay:.2s;padding:1.75rem;">
+  <div class="card-label">
+    Tabla de unidades
+    <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-left:auto;">Clic en size o tag para editar</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="unit-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Size</th><th>Altura</th><th>Tag</th><th>Posición</th><th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody id="unit-table-body">
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;font-family:var(--mono);font-size:0.75rem;letter-spacing:1px;">Sin unidades aún</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+<!-- LISTA COPIABLE -->
+<div class="card" style="animation-delay:.25s;padding:1.75rem;margin-top:1.5rem;" id="lista-card">
+  <div class="card-label">
+    Lista copiable
+    <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-left:auto;">Pega en modo Lista para reproducir este layout</span>
+  </div>
+  <div class="section-label">FORMAT: SIZE ; TAG ; POSICIÓN</div>
+  <pre id="lista-copiable" style="font-family:var(--mono);font-size:0.8rem;line-height:2;color:var(--text);background:var(--bg);border:1px solid var(--border);padding:1rem 1.25rem;white-space:pre;overflow-x:auto;margin-bottom:0.75rem;">—</pre>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="btn btn-primary btn-sm" onclick="copiarLista()">⎘ Copiar</button>
+    <span id="copy-feedback" style="font-family:var(--mono);font-size:0.65rem;color:var(--accent);opacity:0;transition:opacity .3s;"></span>
+  </div>
+</div>
+
+<footer>CCM LAYOUT · CALCULADORA DE DISTRIBUCIÓN · julioproyectista.cl</footer>
 
 </div>
 
 <script>
-// ─── CABLE CATALOG ────────────────────────────────────────────────────────
-const TABS = [
-  { id:'alumbrado', label:'Alumbrado', sections:[
-    { name:'THHN — Monoconductores', cables:[
-      {cal:'12 AWG',tipo:'1C',diam:3.6},{cal:'10 AWG',tipo:'1C',diam:4.3},
-      {cal:'8 AWG',tipo:'1C',diam:5.6},{cal:'6 AWG',tipo:'1C',diam:6.6},
-      {cal:'4 AWG',tipo:'1C',diam:8.4},{cal:'2 AWG',tipo:'1C',diam:9.7},
-      {cal:'1/0 AWG',tipo:'1C',diam:12.4},{cal:'2/0 AWG',tipo:'1C',diam:13.5},
-      {cal:'3/0 AWG',tipo:'1C',diam:14.7},{cal:'4/0 AWG',tipo:'1C',diam:16.3},
-      {cal:'250 kcmil',tipo:'1C',diam:18},{cal:'350 kcmil',tipo:'1C',diam:20.6},
-      {cal:'500 kcmil',tipo:'1C',diam:23.9},
-    ]}
-  ]},
-  { id:'instrumento', label:'Instrumentación', sections:[
-    { name:'Instrumentación — Multipares', cables:[
-      {cal:'N° 16 Awg',tipo:'1P',diam:7.5},{cal:'N° 16 Awg',tipo:'2P',diam:13},
-      {cal:'N° 16 Awg',tipo:'4P',diam:16},{cal:'N° 16 Awg',tipo:'6P',diam:19},
-      {cal:'N° 16 Awg',tipo:'8T',diam:30},{cal:'N° 16 Awg',tipo:'2T',diam:15},
-    ]}
-  ]},
-  { id:'control', label:'Control', sections:[
-    { name:'THHN — Control Multiconductor', cables:[
-      {cal:'N° 14 Awg',tipo:'3/C',diam:10},{cal:'N° 14 Awg',tipo:'5/C',diam:12},
-      {cal:'N° 14 Awg',tipo:'7/C',diam:13},{cal:'N° 14 Awg',tipo:'9/C',diam:17},
-      {cal:'N° 14 Awg',tipo:'12/C',diam:18},{cal:'N° 14 Awg',tipo:'19/C',diam:21},
-    ]}
-  ]},
-  { id:'mezcla', label:'Mezcla 600V', sections:[
-    { name:'Multiconductores 3C+G', cables:[
-      {cal:'12 AWG',tipo:'3C+G',diam:12},{cal:'10 AWG',tipo:'3C+G',diam:13},
-      {cal:'8 AWG',tipo:'3C+G',diam:18},{cal:'6 AWG',tipo:'3C+G',diam:20},
-      {cal:'4 AWG',tipo:'3C+G',diam:24},{cal:'2 AWG',tipo:'3C+G',diam:27},
-      {cal:'1/0 AWG',tipo:'3C+G',diam:33},{cal:'2/0 AWG',tipo:'3C+G',diam:35},
-    ]},
-    { name:'Multiconductores 4C+G', cables:[
-      {cal:'10 AWG',tipo:'4C+G',diam:16},{cal:'8 AWG',tipo:'4C+G',diam:20},
-      {cal:'6 AWG',tipo:'4C+G',diam:24},{cal:'2 AWG',tipo:'4C+G',diam:31},
-    ]},
-    { name:'Monoconductores', cables:[
-      {cal:'12 AWG',tipo:'5C',diam:14},{cal:'2/0 AWG',tipo:'1C',diam:14},
-      {cal:'4/0 AWG',tipo:'1C',diam:17},{cal:'250 kcmil',tipo:'1C',diam:18},
-      {cal:'350 kcmil',tipo:'1C',diam:21},{cal:'500 kcmil',tipo:'1C',diam:25},
-      {cal:'2 AWG (Grd)',tipo:'1C',diam:10},{cal:'1/0 AWG (Grd)',tipo:'1C',diam:13},
-    ]},
-    { name:'Control 14 AWG', cables:[
-      {cal:'N° 14 Awg',tipo:'3/C',diam:10},{cal:'N° 14 Awg',tipo:'5/C',diam:12},
-      {cal:'N° 14 Awg',tipo:'7/C',diam:13},{cal:'N° 14 Awg',tipo:'9/C',diam:17},
-      {cal:'N° 14 Awg',tipo:'12/C',diam:18},{cal:'N° 14 Awg',tipo:'19/C',diam:21},
-    ]}
-  ]},
-  { id:'cables600', label:'Cables 600V', sections:[
-    { name:'XTU — Monoconductores', cables:[
-      {cal:'14 AWG',tipo:'1C',diam:5.2},{cal:'12 AWG',tipo:'1C',diam:5.7},
-      {cal:'10 AWG',tipo:'1C',diam:6.3},{cal:'8 AWG',tipo:'1C',diam:7.7},
-      {cal:'6 AWG',tipo:'1C',diam:8.6},{cal:'4 AWG',tipo:'1C',diam:9.8},
-      {cal:'2 AWG',tipo:'1C',diam:11.2},{cal:'1 AWG',tipo:'1C',diam:13.4},
-      {cal:'1/0 AWG',tipo:'1C',diam:14.4},{cal:'2/0 AWG',tipo:'1C',diam:15.5},
-      {cal:'3/0 AWG',tipo:'1C',diam:16.7},{cal:'4/0 AWG',tipo:'1C',diam:18},
-      {cal:'250MCM',tipo:'1C',diam:19.7},{cal:'350MCM',tipo:'1C',diam:23.2},
-      {cal:'500MCM',tipo:'1C',diam:26.4},{cal:'750MCM',tipo:'1C',diam:31.6},
-      {cal:'1000MCM',tipo:'1C',diam:35.9},
-    ]},
-    { name:'XTMU — 3 Conductores (1x3C)', cables:[
-      {cal:'14 AWG',tipo:'3C',diam:10.2},{cal:'12 AWG',tipo:'3C',diam:11.2},
-      {cal:'10 AWG',tipo:'3C',diam:12.5},{cal:'8 AWG',tipo:'3C',diam:16.4},
-      {cal:'6 AWG',tipo:'3C',diam:18.3},{cal:'4 AWG',tipo:'3C',diam:21},
-      {cal:'2 AWG',tipo:'3C',diam:25.3},{cal:'1 AWG',tipo:'3C',diam:28.3},
-      {cal:'1/0 AWG',tipo:'3C',diam:30.4},{cal:'2/0 AWG',tipo:'3C',diam:32.08},
-      {cal:'3/0 AWG',tipo:'3C',diam:35.4},{cal:'4/0 AWG',tipo:'3C',diam:38.5},
-      {cal:'250MCM',tipo:'3C',diam:42.1},{cal:'350MCM',tipo:'3C',diam:49},
-      {cal:'500MCM',tipo:'3C',diam:56.3},{cal:'750MCM',tipo:'3C',diam:67.7},
-    ]},
-    { name:'XTMU — 4 Conductores (1x4C)', cables:[
-      {cal:'14 AWG',tipo:'4C',diam:11.4},{cal:'12 AWG',tipo:'4C',diam:12.4},
-      {cal:'10 AWG',tipo:'4C',diam:14},{cal:'8 AWG',tipo:'4C',diam:18.3},
-      {cal:'6 AWG',tipo:'4C',diam:20.5},{cal:'4 AWG',tipo:'4C',diam:24.7},
-      {cal:'2 AWG',tipo:'4C',diam:28.4},{cal:'1 AWG',tipo:'4C',diam:31.8},
-      {cal:'1/0 AWG',tipo:'4C',diam:34.2},{cal:'2/0 AWG',tipo:'4C',diam:36.9},
-      {cal:'3/0 AWG',tipo:'4C',diam:39.9},{cal:'4/0 AWG',tipo:'4C',diam:43.4},
-      {cal:'250MCM',tipo:'4C',diam:49.2},
-    ]}
-  ]},
-  { id:'c5kv', label:'5 kV', sections:[
-    { name:'XAT — Monoconductor 5 kV', cables:[
-      {cal:'6 AWG',tipo:'1C',diam:15.9},{cal:'4 AWG',tipo:'1C',diam:17.1},
-      {cal:'2 AWG',tipo:'1C',diam:18.5},{cal:'1 AWG',tipo:'1C',diam:19.3},
-      {cal:'1/0 AWG',tipo:'1C',diam:20.4},{cal:'2/0 AWG',tipo:'1C',diam:21.4},
-      {cal:'3/0 AWG',tipo:'1C',diam:23.6},{cal:'4/0 AWG',tipo:'1C',diam:25},
-      {cal:'250 MCM',tipo:'1C',diam:25.9},{cal:'350 MCM',tipo:'1C',diam:28.3},
-      {cal:'500 MCM',tipo:'1C',diam:31.8},{cal:'750 MCM',tipo:'1C',diam:36.7},
-      {cal:'1000 MCM',tipo:'1C',diam:40.8},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 5 kV', cables:[
-      {cal:'6 AWG',tipo:'3C',diam:31},{cal:'4 AWG',tipo:'3C',diam:33.4},
-      {cal:'2 AWG',tipo:'3C',diam:36.6},{cal:'1 AWG',tipo:'3C',diam:38.3},
-      {cal:'1/0 AWG',tipo:'3C',diam:40.6},{cal:'2/0 AWG',tipo:'3C',diam:42.8},
-      {cal:'3/0 AWG',tipo:'3C',diam:47.5},{cal:'4/0 AWG',tipo:'3C',diam:50.5},
-      {cal:'250 MCM',tipo:'3C',diam:52.6},{cal:'350 MCM',tipo:'3C',diam:57.7},
-      {cal:'500 MCM',tipo:'3C',diam:65.1},{cal:'750 MCM',tipo:'3C',diam:77.2},
-      {cal:'1000 MCM',tipo:'3C',diam:86.1},
-    ]}
-  ]},
-  { id:'c8kv100', label:'8 kV 100%', sections:[
-    { name:'XAT — Monoconductor 8 kV 100%', cables:[
-      {cal:'6 AWG',tipo:'1C',diam:17.2},{cal:'4 AWG',tipo:'1C',diam:18.4},
-      {cal:'2 AWG',tipo:'1C',diam:19.8},{cal:'1 AWG',tipo:'1C',diam:20.6},
-      {cal:'1/0 AWG',tipo:'1C',diam:21.7},{cal:'2/0 AWG',tipo:'1C',diam:23.5},
-      {cal:'3/0 AWG',tipo:'1C',diam:24.9},{cal:'4/0 AWG',tipo:'1C',diam:26.3},
-      {cal:'250 MCM',tipo:'1C',diam:27.2},{cal:'350 MCM',tipo:'1C',diam:29.6},
-      {cal:'500 MCM',tipo:'1C',diam:33.5},{cal:'750 MCM',tipo:'1C',diam:38},
-      {cal:'1000 MCM',tipo:'1C',diam:42.1},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 8 kV 100%', cables:[
-      {cal:'6 AWG',tipo:'3C',diam:33.8},{cal:'4 AWG',tipo:'3C',diam:36.2},
-      {cal:'2 AWG',tipo:'3C',diam:39.4},{cal:'1 AWG',tipo:'3C',diam:41.1},
-      {cal:'1/0 AWG',tipo:'3C',diam:43.4},{cal:'2/0 AWG',tipo:'3C',diam:47.2},
-      {cal:'3/0 AWG',tipo:'3C',diam:50.3},{cal:'4/0 AWG',tipo:'3C',diam:53.3},
-      {cal:'250 MCM',tipo:'3C',diam:55.4},{cal:'350 MCM',tipo:'3C',diam:60.5},
-      {cal:'500 MCM',tipo:'3C',diam:68.8},{cal:'750 MCM',tipo:'3C',diam:80},
-      {cal:'1000 MCM',tipo:'3C',diam:88.9},
-    ]}
-  ]},
-  { id:'c8kv133', label:'8 kV 133%', sections:[
-    { name:'XAT — Monoconductor 8 kV 133%', cables:[
-      {cal:'6 AWG',tipo:'1C',diam:18.6},{cal:'4 AWG',tipo:'1C',diam:19.7},
-      {cal:'2 AWG',tipo:'1C',diam:21.2},{cal:'1 AWG',tipo:'1C',diam:22},
-      {cal:'1/0 AWG',tipo:'1C',diam:23.8},{cal:'2/0 AWG',tipo:'1C',diam:24.8},
-      {cal:'3/0 AWG',tipo:'1C',diam:26.2},{cal:'4/0 AWG',tipo:'1C',diam:27.6},
-      {cal:'250 MCM',tipo:'1C',diam:28.6},{cal:'350 MCM',tipo:'1C',diam:31},
-      {cal:'500 MCM',tipo:'1C',diam:34.8},{cal:'750 MCM',tipo:'1C',diam:38},
-      {cal:'1000 MCM',tipo:'1C',diam:42.1},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 8 kV 133%', cables:[
-      {cal:'6 AWG',tipo:'3C',diam:36.6},{cal:'4 AWG',tipo:'3C',diam:39.1},
-      {cal:'2 AWG',tipo:'3C',diam:42.2},{cal:'1 AWG',tipo:'3C',diam:45.6},
-      {cal:'1/0 AWG',tipo:'3C',diam:47.9},{cal:'2/0 AWG',tipo:'3C',diam:50.1},
-      {cal:'3/0 AWG',tipo:'3C',diam:53.1},{cal:'4/0 AWG',tipo:'3C',diam:56.2},
-      {cal:'250 MCM',tipo:'3C',diam:58.2},{cal:'350 MCM',tipo:'3C',diam:63.4},
-      {cal:'500 MCM',tipo:'3C',diam:68.8},{cal:'750 MCM',tipo:'3C',diam:80},
-      {cal:'1000 MCM',tipo:'3C',diam:88.9},
-    ]}
-  ]},
-  { id:'c15kv100', label:'15 kV 100%', sections:[
-    { name:'XAT — Monoconductor 15 kV 100%', cables:[
-      {cal:'2 AWG',tipo:'1C',diam:23.8},{cal:'1 AWG',tipo:'1C',diam:24.6},
-      {cal:'1/0 AWG',tipo:'1C',diam:25.6},{cal:'2/0 AWG',tipo:'1C',diam:26.6},
-      {cal:'3/0 AWG',tipo:'1C',diam:28},{cal:'4/0 AWG',tipo:'1C',diam:29.5},
-      {cal:'250 MCM',tipo:'1C',diam:30.4},{cal:'350 MCM',tipo:'1C',diam:33.2},
-      {cal:'500 MCM',tipo:'1C',diam:36.6},{cal:'750 MCM',tipo:'1C',diam:41.2},
-      {cal:'1000 MCM',tipo:'1C',diam:46.9},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 15 kV 100%', cables:[
-      {cal:'2 AWG',tipo:'3C',diam:47.9},{cal:'1 AWG',tipo:'3C',diam:49.6},
-      {cal:'1/0 AWG',tipo:'3C',diam:51.8},{cal:'2/0 AWG',tipo:'3C',diam:54},
-      {cal:'3/0 AWG',tipo:'3C',diam:57.1},{cal:'4/0 AWG',tipo:'3C',diam:60.1},
-      {cal:'250 MCM',tipo:'3C',diam:62.2},{cal:'350 MCM',tipo:'3C',diam:68.2},
-      {cal:'500 MCM',tipo:'3C',diam:77.1},{cal:'750 MCM',tipo:'3C',diam:86.9},
-      {cal:'1000 MCM',tipo:'3C',diam:95.7},
-    ]}
-  ]},
-  { id:'c15kv133', label:'15 kV 133%', sections:[
-    { name:'XAT — Monoconductor 15 kV 133%', cables:[
-      {cal:'2 AWG',tipo:'1C',diam:26.1},{cal:'1 AWG',tipo:'1C',diam:26.9},
-      {cal:'1/0 AWG',tipo:'1C',diam:28},{cal:'2/0 AWG',tipo:'1C',diam:29},
-      {cal:'3/0 AWG',tipo:'1C',diam:30.4},{cal:'4/0 AWG',tipo:'1C',diam:31.8},
-      {cal:'250 MCM',tipo:'1C',diam:33.2},{cal:'350 MCM',tipo:'1C',diam:35.5},
-      {cal:'500 MCM',tipo:'1C',diam:39},{cal:'750 MCM',tipo:'1C',diam:43.5},
-      {cal:'1000 MCM',tipo:'1C',diam:49.7},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 15 kV 133%', cables:[
-      {cal:'2 AWG',tipo:'3C',diam:52.9},{cal:'1 AWG',tipo:'3C',diam:54.7},
-      {cal:'1/0 AWG',tipo:'3C',diam:56.9},{cal:'2/0 AWG',tipo:'3C',diam:59.1},
-      {cal:'3/0 AWG',tipo:'3C',diam:62.1},{cal:'4/0 AWG',tipo:'3C',diam:65.2},
-      {cal:'250 MCM',tipo:'3C',diam:68.1},{cal:'350 MCM',tipo:'3C',diam:74.7},
-      {cal:'500 MCM',tipo:'3C',diam:82.1},{cal:'750 MCM',tipo:'3C',diam:91.9},
-      {cal:'1000 MCM',tipo:'3C',diam:101.6},
-    ]}
-  ]},
-  { id:'c25kv100', label:'25 kV 100%', sections:[
-    { name:'XAT — Monoconductor 25 kV 100%', cables:[
-      {cal:'1 AWG',tipo:'1C',diam:29},{cal:'1/0 AWG',tipo:'1C',diam:30},
-      {cal:'2/0 AWG',tipo:'1C',diam:31.1},{cal:'3/0 AWG',tipo:'1C',diam:32.5},
-      {cal:'4/0 AWG',tipo:'1C',diam:34.3},{cal:'250 MCM',tipo:'1C',diam:35.2},
-      {cal:'350 MCM',tipo:'1C',diam:37.6},{cal:'500 MCM',tipo:'1C',diam:41.1},
-      {cal:'750 MCM',tipo:'1C',diam:47.2},{cal:'1000 MCM',tipo:'1C',diam:51.7},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 25 kV 100%', cables:[
-      {cal:'2 AWG',tipo:'3C',diam:59.4},{cal:'1 AWG',tipo:'3C',diam:59.2},
-      {cal:'1/0 AWG',tipo:'3C',diam:61.4},{cal:'2/0 AWG',tipo:'3C',diam:63.6},
-      {cal:'3/0 AWG',tipo:'3C',diam:66.6},{cal:'4/0 AWG',tipo:'3C',diam:70.6},
-      {cal:'250 MCM',tipo:'3C',diam:74.1},{cal:'350 MCM',tipo:'3C',diam:79.2},
-      {cal:'500 MCM',tipo:'3C',diam:86.6},{cal:'750 MCM',tipo:'3C',diam:96.4},
-      {cal:'1000 MCM',tipo:'3C',diam:106.1},
-    ]}
-  ]},
-  { id:'c25kv133', label:'25 kV 133%', sections:[
-    { name:'XAT — Monoconductor 25 kV 133%', cables:[
-      {cal:'1 AWG',tipo:'1C',diam:32.6},{cal:'1/0 AWG',tipo:'1C',diam:33.6},
-      {cal:'2/0 AWG',tipo:'1C',diam:34.6},{cal:'3/0 AWG',tipo:'1C',diam:36},
-      {cal:'4/0 AWG',tipo:'1C',diam:37.5},{cal:'250 MCM',tipo:'1C',diam:38.4},
-      {cal:'350 MCM',tipo:'1C',diam:40.8},{cal:'500 MCM',tipo:'1C',diam:45.9},
-      {cal:'750 MCM',tipo:'1C',diam:50.8},{cal:'1000 MCM',tipo:'1C',diam:54.9},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 25 kV 133%', cables:[
-      {cal:'2 AWG',tipo:'3C',diam:67.1},{cal:'1 AWG',tipo:'3C',diam:66.9},
-      {cal:'1/0 AWG',tipo:'3C',diam:69.1},{cal:'2/0 AWG',tipo:'3C',diam:71.3},
-      {cal:'3/0 AWG',tipo:'3C',diam:75.8},{cal:'4/0 AWG',tipo:'3C',diam:78.8},
-      {cal:'250 MCM',tipo:'3C',diam:80.9},{cal:'350 MCM',tipo:'3C',diam:86},
-      {cal:'500 MCM',tipo:'3C',diam:93.4},{cal:'750 MCM',tipo:'3C',diam:104.1},
-    ]}
-  ]},
-  { id:'c35kv100', label:'35 kV 100%', sections:[
-    { name:'XAT — Monoconductor 35 kV 100%', cables:[
-      {cal:'1/0 AWG',tipo:'1C',diam:33.9},{cal:'2/0 AWG',tipo:'1C',diam:34.9},
-      {cal:'3/0 AWG',tipo:'1C',diam:36.2},{cal:'4/0 AWG',tipo:'1C',diam:37.6},
-      {cal:'250 MCM',tipo:'1C',diam:38.5},{cal:'350 MCM',tipo:'1C',diam:40.9},
-      {cal:'500 MCM',tipo:'1C',diam:45.8},{cal:'750 MCM',tipo:'1C',diam:50.6},
-      {cal:'1000 MCM',tipo:'1C',diam:54.5},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 35 kV 100%', cables:[
-      {cal:'1/0 AWG',tipo:'3C',diam:73.3},{cal:'2/0 AWG',tipo:'3C',diam:75.6},
-      {cal:'3/0 AWG',tipo:'3C',diam:78.6},{cal:'4/0 AWG',tipo:'3C',diam:81.6},
-      {cal:'250 MCM',tipo:'3C',diam:83.7},{cal:'350 MCM',tipo:'3C',diam:88.8},
-      {cal:'500 MCM',tipo:'3C',diam:96.2},{cal:'750 MCM',tipo:'3C',diam:103.8},
-    ]}
-  ]},
-  { id:'c35kv133', label:'35 kV 133%', sections:[
-    { name:'XAT — Monoconductor 35 kV 133%', cables:[
-      {cal:'1/0 AWG',tipo:'1C',diam:37.8},{cal:'2/0 AWG',tipo:'1C',diam:38.8},
-      {cal:'3/0 AWG',tipo:'1C',diam:40.1},{cal:'4/0 AWG',tipo:'1C',diam:41.5},
-      {cal:'250 MCM',tipo:'1C',diam:44},{cal:'350 MCM',tipo:'1C',diam:47},
-      {cal:'500 MCM',tipo:'1C',diam:51.6},{cal:'750 MCM',tipo:'1C',diam:56.6},
-      {cal:'1000 MCM',tipo:'1C',diam:60.7},
-    ]},
-    { name:'XAT — Multiconductor 1x3C 35 kV 133%', cables:[
-      {cal:'1/0 AWG',tipo:'3C',diam:80.1},{cal:'2/0 AWG',tipo:'3C',diam:82.4},
-      {cal:'3/0 AWG',tipo:'3C',diam:85.4},{cal:'4/0 AWG',tipo:'3C',diam:90.4},
-      {cal:'250 MCM',tipo:'3C',diam:93.2},{cal:'350 MCM',tipo:'3C',diam:99.6},
-      {cal:'500 MCM',tipo:'3C',diam:107},{cal:'750 MCM',tipo:'3C',diam:116.2},
-    ]}
-  ]},
-];
+const COL_MAX  = 1800;
+const COL_W_MM = 508;
+const ROW_MM   = 75;
+const COL_H_PX = 480;
+const LETTERS  = 'ABCDEFGHIJKLMNOPQRSTUVWX';
+const rowPx    = COL_H_PX / (COL_MAX / ROW_MM);
 
-// ─── CATALOG UI ───────────────────────────────────────────────────────────
-function setMode(mode) {
-  document.getElementById('panel-catalog').style.display = mode === 'catalog' ? '' : 'none';
-  document.getElementById('panel-manual').style.display = mode === 'manual' ? '' : 'none';
-  document.getElementById('btn-mode-catalog').className = 'btn mode-btn' + (mode === 'catalog' ? ' mode-btn-active' : '');
-  document.getElementById('btn-mode-manual').className = 'btn mode-btn' + (mode === 'manual' ? ' mode-btn-active' : '');
+const NEMA_H = {
+  '1X':150,'2X':300,'3X':450,'4X':600,'5X':750,'6X':900,
+  '7X':1050,'8X':1200,'9X':1350,'10X':1500,'11X':1650,'12X':1800
+};
+function nemaMm(n) { return NEMA_H[n]||300; }
+
+let units=[], columns=[], _uid=0, _cid=0;
+function uid(){ return ++_uid; }
+function cid(){ return ++_cid; }
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['individual','lista'][i]===name));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
 }
 
-function initCatalog() {
-  const sel = document.getElementById('cat-select');
-  sel.innerHTML = '<option value="">— Seleccionar categoría —</option>';
-  TABS.forEach((tab, i) => {
-    const opt = document.createElement('option');
-    opt.value = i; opt.textContent = tab.label; sel.appendChild(opt);
+function parsePos(s) {
+  if(!s) return null;
+  s=s.trim().toUpperCase();
+  const m=s.match(/^(\d+)([A-X])$/);
+  return m?{col:parseInt(m[1]),letra:m[2]}:null;
+}
+
+function addUnit() {
+  const nema=document.getElementById('sel-size').value;
+  const tag=document.getElementById('inp-tag').value.trim();
+  const posRaw=document.getElementById('inp-pos').value.trim();
+  const posFixed=parsePos(posRaw);
+  if(posRaw&&!posFixed){showAlert('Posición inválida. Formato: número+letra (ej. 1A, 2K)','warn');return;}
+  units.push({id:uid(),nema,tag,reservado:false,posFixed});
+  document.getElementById('inp-tag').value='';
+  document.getElementById('inp-pos').value='';
+  renderPending();renderTable();updateStats();
+}
+
+function importarLista() {
+  const lines=document.getElementById('txt-lista').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  let added=0;
+  lines.forEach(line=>{
+    const parts=line.split(';').map(s=>s.trim());
+    if(!parts[0])return;
+    let nemaRaw=parts[0].toUpperCase();
+    if(!NEMA_H[nemaRaw])return;
+    units.push({id:uid(),nema:nemaRaw,tag:parts[1]||'',reservado:false,posFixed:parsePos(parts[2])});
+    added++;
   });
+  showAlert(`${added} unidades importadas`,'info');
+  document.getElementById('txt-lista').value='';
+  renderPending();renderTable();updateStats();
 }
 
-function renderSectionSelect() {
-  const catIdx = document.getElementById('cat-select').value;
-  const secSel = document.getElementById('sec-select');
-  const cableSel = document.getElementById('cable-select');
-  secSel.innerHTML = '<option value="">— Seleccionar sección —</option>';
-  cableSel.innerHTML = '<option value="">— Seleccionar cable —</option>';
-  document.getElementById('diam-cat').value = '';
-  document.getElementById('catalog-info').style.display = 'none';
-  if (catIdx === '') return;
-  TABS[+catIdx].sections.forEach((sec, i) => {
-    const opt = document.createElement('option');
-    opt.value = i; opt.textContent = sec.name; secSel.appendChild(opt);
-  });
+function limpiarTodo() {
+  if(!confirm('¿Limpiar todas las unidades y el layout?'))return;
+  units=[];columns=[];
+  renderPending();renderTable();renderCCM();updateStats();clearAlerts();renderListaCopiable();
 }
 
-function renderCableSelect() {
-  const catIdx = document.getElementById('cat-select').value;
-  const secIdx = document.getElementById('sec-select').value;
-  const cableSel = document.getElementById('cable-select');
-  cableSel.innerHTML = '<option value="">— Seleccionar cable —</option>';
-  document.getElementById('diam-cat').value = '';
-  document.getElementById('catalog-info').style.display = 'none';
-  if (catIdx === '' || secIdx === '') return;
-  TABS[+catIdx].sections[+secIdx].cables.forEach((c, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = c.cal + ' [' + c.tipo + '] — Ø' + c.diam + ' mm';
-    cableSel.appendChild(opt);
-  });
+function renderPending() {
+  const el=document.getElementById('pending-list');
+  document.getElementById('pending-count').textContent=units.length+' uds';
+  if(!units.length){
+    el.innerHTML=`<div class="empty-state" style="padding:1.5rem 0">
+      <div class="empty-state-icon">⬡</div>
+      <div class="empty-state-title">Sin unidades</div>
+      <div class="empty-state-sub">Agrega cubículos para comenzar</div>
+    </div>`;return;
+  }
+  el.innerHTML=units.map(u=>`
+    <div class="unit-item">
+      <span class="unit-item-nema" title="Clic para cambiar size" onclick="editPendingNema(${u.id})">${u.nema}</span>
+      <span class="unit-item-mm">${nemaMm(u.nema)}mm</span>
+      <span class="unit-item-tag" title="Clic para editar tag" onclick="editPendingTag(${u.id})">${u.tag||'<span style="opacity:.35">sin tag</span>'}</span>
+      <span class="${u.posFixed?'unit-item-pos':'unit-item-pos-empty'}" title="Clic para editar posición fija" onclick="editPendingPos(${u.id})">${u.posFixed?u.posFixed.col+u.posFixed.letra:'pos'}</span>
+      <button class="unit-item-del" onclick="delUnit(${u.id})">✕</button>
+    </div>`).join('');
 }
 
-function onCableSelectChange() {
-  const catIdx = document.getElementById('cat-select').value;
-  const secIdx = document.getElementById('sec-select').value;
-  const cableIdx = document.getElementById('cable-select').value;
-  const infoBox = document.getElementById('catalog-info');
-  document.getElementById('diam-cat').value = '';
-  infoBox.style.display = 'none';
-  if (catIdx === '' || secIdx === '' || cableIdx === '') return;
-  const cable = TABS[+catIdx].sections[+secIdx].cables[+cableIdx];
-  document.getElementById('diam-cat').value = cable.diam;
-  infoBox.style.display = 'block';
-  infoBox.innerHTML = 'Ø ' + cable.diam + ' mm &nbsp;│&nbsp; ' + cable.cal + ' ' + cable.tipo + ' &nbsp;│&nbsp; ' + TABS[+catIdx].label;
-  document.getElementById('cant-cat').focus();
+function editPendingNema(id) {
+  const u = units.find(x => x.id === id);
+  if (!u) return;
+  const el = document.querySelector(`.unit-item-nema[onclick="editPendingNema(${id})"]`);
+  if (!el) return;
+  let done = false;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'inline-input';
+  inp.value = u.nema; inp.placeholder = '2X';
+  inp.style.cssText = 'width:52px;font-size:11px;text-transform:uppercase;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit() {
+    if (done) return; done = true;
+    const val = inp.value.trim().toUpperCase();
+    if (NEMA_H[val]) u.nema = val;
+    renderPending(); renderTable(); updateStats();
+  }
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { done = true; renderPending(); } });
+  inp.addEventListener('blur', commit);
 }
 
-function addCableFromCatalog() {
-  const catIdx = document.getElementById('cat-select').value;
-  const secIdx = document.getElementById('sec-select').value;
-  const cableIdx = document.getElementById('cable-select').value;
-  if (catIdx === '' || secIdx === '' || cableIdx === '') { shake('cable-select'); return; }
-  const cable = TABS[+catIdx].sections[+secIdx].cables[+cableIdx];
-  const cant = parseInt(document.getElementById('cant-cat').value) || 1;
-  const area = Math.PI * Math.pow(cable.diam / 2, 2);
-  const label = cable.cal + ' ' + cable.tipo + ' [' + TABS[+catIdx].label + ']';
-  const zona = document.getElementById('zona-cat') ? document.getElementById('zona-cat').value : 'fuerza';
-  cables.push({ diam: cable.diam, cant, area, triada: false, label, zona });
-  renderTabla();
-  document.getElementById('cant-cat').value = '1';
-  document.getElementById('cable-select').value = '';
-  document.getElementById('diam-cat').value = '';
-  document.getElementById('catalog-info').style.display = 'none';
+function editPendingTag(id) {
+  const u = units.find(x => x.id === id);
+  if (!u) return;
+  const el = document.querySelector(`.unit-item-tag[onclick="editPendingTag(${id})"]`);
+  if (!el) return;
+  let done = false;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'inline-input';
+  inp.value = u.tag || ''; inp.placeholder = 'tag…';
+  inp.style.cssText = 'flex:1;width:100%;font-size:11px;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit() {
+    if (done) return; done = true;
+    u.tag = inp.value.trim();
+    renderPending(); renderTable();
+  }
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { done = true; renderPending(); } });
+  inp.addEventListener('blur', commit);
 }
 
-window.addEventListener('DOMContentLoaded', initCatalog);
+function editPendingPos(id) {
+  const u = units.find(x => x.id === id);
+  if (!u) return;
+  const selector = u.posFixed
+    ? `.unit-item-pos[onclick="editPendingPos(${id})"]`
+    : `.unit-item-pos-empty[onclick="editPendingPos(${id})"]`;
+  const el = document.querySelector(selector);
+  if (!el) return;
+  let done = false;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'inline-input';
+  inp.value = u.posFixed ? u.posFixed.col + u.posFixed.letra : '';
+  inp.placeholder = '1A…'; inp.style.cssText = 'width:52px;font-size:11px;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit() {
+    if (done) return; done = true;
+    const parsed = parsePos(inp.value.trim());
+    u.posFixed = parsed;
 
-function toggleSeparador() {
-  const chk = document.getElementById('chk-sep');
-  const panel = document.getElementById('sep-panel');
-  const active = chk.checked;
-  panel.style.display = active ? '' : 'none';
-  if (active) {
-    const sepPos = document.getElementById('sep-pos');
-    if (!sepPos.value) {
-      const ancho = parseFloat(document.getElementById('ancho').value) || 0;
-      if (ancho > 0) sepPos.value = Math.round(ancho / 2);
+    if (parsed && columns.length) {
+      // Buscar en qué columna está actualmente esta unidad
+      let srcCi = -1;
+      columns.forEach((col, ci) => {
+        if (col.units.find(x => x.id === id && !x._gap)) srcCi = ci;
+      });
+      const tci = parsed.col - 1;
+      const targetMm = letterToMm(parsed.letra);
+
+      if (srcCi >= 0 && tci >= 0 && tci < columns.length) {
+        if (tci !== srcCi) {
+          // Mover a otra columna
+          const srcIdx = columns[srcCi].units.findIndex(x => x.id === id);
+          const dragH = nemaMm(u.nema);
+          columns[srcCi].units.splice(srcIdx, 1, { _gap: true, _gapMm: dragH, id: uid() });
+          fusionarGaps(srcCi);
+          insertAtMm(tci, u, targetMm);
+          recomputeFreeGaps();
+          renderColsPartial([srcCi, tci]);
+        } else {
+          // Mover dentro de la misma columna
+          const srcIdx = columns[srcCi].units.findIndex(x => x.id === id);
+          const dragH = nemaMm(u.nema);
+          columns[srcCi].units.splice(srcIdx, 1, { _gap: true, _gapMm: dragH, id: uid() });
+          fusionarGaps(srcCi);
+          insertAtMm(srcCi, u, targetMm);
+          recomputeFreeGaps();
+          renderColsPartial([srcCi]);
+        }
+        renderTable(); updateStats(); renderListaCopiable();
+      } else {
+        renderPending(); renderTable();
+      }
+    } else {
+      renderPending(); renderTable();
     }
   }
-  ['zona-cat-wrap', 'zona-manual-wrap'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = active ? '' : 'none';
-  });
-  renderTabla();
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { done = true; renderPending(); } });
+  inp.addEventListener('blur', commit);
 }
 
-function syncSepDefault() {
-  const chk = document.getElementById('chk-sep');
-  if (!chk || !chk.checked) return;
-  const sepPos = document.getElementById('sep-pos');
-  const ancho = parseFloat(document.getElementById('ancho').value) || 0;
-  if (ancho > 0) sepPos.value = Math.round(ancho / 2);
-}
+function delUnit(id){units=units.filter(u=>u.id!==id);renderPending();renderTable();updateStats();}
 
-function setZona(panel, zona) {
-  document.getElementById('zona-' + panel).value = zona;
-  document.getElementById('zona-' + panel + '-fuerza').className  = 'zona-btn zona-btn-fuerza'  + (zona === 'fuerza'  ? ' active' : '');
-  document.getElementById('zona-' + panel + '-control').className = 'zona-btn zona-btn-control' + (zona === 'control' ? ' active' : '');
-}
-
-function getSeparadorMm() {
-  const chk = document.getElementById('chk-sep');
-  if (!chk || !chk.checked) return null;
-  const pos = parseFloat(document.getElementById('sep-pos').value);
-  const grosor = 1;
-  if (!pos || pos <= 0) return null;
-  return { pos, grosor };
-}
-
-let cables = [];
-
-function addPreset(diam, nombre) {
-  document.getElementById('diam').value = diam;
-  document.getElementById('cant').value = 1;
-  document.getElementById('diam').focus();
-}
-
-function addCable() {
-  const d = parseFloat(document.getElementById('diam').value);
-  const c = parseInt(document.getElementById('cant').value) || 1;
-  if (!d || d <= 0) { shake('diam'); return; }
-
-  const area = Math.PI * Math.pow(d / 2, 2);
-  const zona = document.getElementById('zona-manual') ? document.getElementById('zona-manual').value : 'fuerza';
-  cables.push({ diam: d, cant: c, area: area, triada: false, zona });
-  renderTabla();
-
-  document.getElementById('diam').value = '';
-  document.getElementById('cant').value = '1';
-  document.getElementById('diam').focus();
-}
-
-function toggleTriada(i) {
-  cables[i].triada = !cables[i].triada;
-  renderTabla();
-}
-
-function deleteCable(i) {
-  cables.splice(i, 1);
-  renderTabla();
-}
-
-function renderTabla() {
-  const wrap = document.getElementById('tabla-wrap');
-  const useSep = document.getElementById('chk-sep') && document.getElementById('chk-sep').checked;
-
-  if (cables.length === 0) {
-    wrap.innerHTML = '<div class="empty-state">Sin cables agregados — usa los presets o ingresa manualmente</div>';
-    return;
-  }
-
-  function makeRows(list, realIndices) {
-    return list.map((c, li) => {
-      const i = realIndices[li];
-      const aTotal = (c.area * c.cant).toFixed(1);
-      const esMultiplo3 = c.cant % 3 === 0 && c.cant >= 3;
-      const triadaBtn = esMultiplo3
-        ? `<button class="btn ${c.triada ? 'btn-triada-on' : 'btn-triada-off'}" onclick="toggleTriada(${i})" title="Agrupar en triadas">▲ TRIADA</button>`
-        : `<span style="font-family:var(--mono);font-size:0.6rem;color:var(--border);">—</span>`;
-      const zonaBadge = useSep
-        ? `<span class="zone-badge ${c.zona === 'control' ? 'zone-control' : 'zone-fuerza'}">${c.zona === 'control' ? 'CTRL' : 'FZA'}</span> `
-        : '';
-      return `<tr>
-        <td title="Ø${c.diam}mm">${zonaBadge}${c.label ? '<span style="font-size:0.75rem;color:var(--accent2);">' + c.label + '</span>' : 'Ø ' + c.diam + ' mm'}</td>
-        <td>${c.cant}</td>
-        <td><span style="color:var(--muted);font-size:0.7rem;">Ø${c.diam}mm</span><br>${c.area.toFixed(1)} mm²</td>
-        <td class="area-col">${aTotal} mm²</td>
-        <td>${triadaBtn}</td>
-        <td><button class="btn btn-delete" onclick="deleteCable(${i})">✕</button></td>
-      </tr>`;
-    }).join('');
-  }
-
-  const thead = `<thead><tr>
-    <th>Cable / Diámetro</th><th>Cant.</th><th>Área/cable</th>
-    <th>Área total</th><th>Triada</th><th></th>
-  </tr></thead>`;
-
-  if (useSep) {
-    const fuerza  = cables.map((c,i)=>({c,i})).filter(({c})=> c.zona !== 'control');
-    const control = cables.map((c,i)=>({c,i})).filter(({c})=> c.zona === 'control');
-    const rowsF = makeRows(fuerza.map(x=>x.c),  fuerza.map(x=>x.i));
-    const rowsC = makeRows(control.map(x=>x.c), control.map(x=>x.i));
-
-    const sectionHeader = (label, cls) =>
-      `<tr><td colspan="6" style="padding:6px 10px;font-family:var(--mono);font-size:0.6rem;letter-spacing:2px;background:var(--surface2);border-bottom:1px solid var(--border);">
-        <span class="zone-badge ${cls}" style="margin-right:6px;">${label}</span>
-      </td></tr>`;
-
-    wrap.innerHTML = `<table class="cables-table">${thead}<tbody>
-      ${sectionHeader('FUERZA', 'zone-fuerza')}
-      ${rowsF || '<tr><td colspan="6" style="color:var(--border);font-family:var(--mono);font-size:0.7rem;padding:8px 10px;">Sin cables</td></tr>'}
-      ${sectionHeader('CTRL / INSTRUMENTO', 'zone-control')}
-      ${rowsC || '<tr><td colspan="6" style="color:var(--border);font-family:var(--mono);font-size:0.7rem;padding:8px 10px;">Sin cables</td></tr>'}
-    </tbody></table>`;
-  } else {
-    const allIdx = cables.map((_,i)=>i);
-    wrap.innerHTML = `<table class="cables-table">${thead}<tbody>${makeRows(cables, allIdx)}</tbody></table>`;
-  }
-}
+function letterToMm(l){const i=LETTERS.indexOf(l.toUpperCase());return i>=0?i*ROW_MM:0;}
+function mmToLetter(mm){return LETTERS[Math.min(Math.round(mm/ROW_MM),LETTERS.length-1)]||'X';}
+function colHeight(col){return col.units.reduce((s,u)=>s+(u._gap?u._gapMm:nemaMm(u.nema)),0);}
 
 function calcular() {
-  const ancho = parseFloat(document.getElementById('ancho').value);
-  const altura = parseFloat(document.getElementById('altura').value);
+  clearAlerts();
+  if(!units.length){showAlert('No hay unidades para distribuir','warn');return;}
+  columns=[];
+  const alerts=[];
+  const fixed=units.filter(u=>u.posFixed);
+  const free=units.filter(u=>!u.posFixed);
+  const maxC=fixed.reduce((m,u)=>Math.max(m,u.posFixed.col),0);
+  while(columns.length<maxC)columns.push({id:cid(),units:[]});
 
-  if (!ancho || ancho <= 0) { shake('ancho'); return; }
-  if (!altura || altura <= 0) { shake('altura'); return; }
-  if (cables.length === 0) { alert('Agrega al menos un cable.'); return; }
+  const fbc={};
+  fixed.forEach(u=>{const c=u.posFixed.col;if(!fbc[c])fbc[c]=[];fbc[c].push(u);});
 
-  const areaTotal = ancho * altura;
-  const areaCables = cables.reduce((sum, c) => sum + c.area * c.cant, 0);
-  const pct = (areaCables / areaTotal) * 100;
-  const libre = areaTotal - areaCables;
-  const nCables = cables.reduce((sum, c) => sum + c.cant, 0);
+  Object.keys(fbc).sort((a,b)=>a-b).forEach(cIdx=>{
+    const ci=parseInt(cIdx)-1;
+    const cu=fbc[cIdx].sort((a,b)=>LETTERS.indexOf(a.posFixed.letra)-LETTERS.indexOf(b.posFixed.letra));
+    let acc=0;
+    cu.forEach(u=>{
+      const target=letterToMm(u.posFixed.letra);
+      const diff=target-acc;
+      if(diff<0){alerts.push(`Conflicto: ${u.nema} "${u.tag}" en ${u.posFixed.col}${u.posFixed.letra} solapa.`);return;}
+      if(diff>=150){columns[ci].units.push({_gap:true,_gapMm:diff,id:uid()});acc+=diff;}
+      columns[ci].units.push(u);acc+=nemaMm(u.nema);
+    });
+    if(acc>COL_MAX)alerts.push(`Columna ${cIdx} excede 1800mm (${acc}mm).`);
+  });
 
-  const el = document.getElementById('resultado');
-  el.classList.add('visible');
+  // FFD con soporte para gaps internos (best-fit across gaps + trailing space)
+  function getSlots(h) {
+    const slots = [];
+    columns.forEach((col, ci) => {
+      col.units.forEach((u, gi) => {
+        if (u._gap && !u._free && u._gapMm >= h)
+          slots.push({ ci, gapIdx: gi, space: u._gapMm });
+      });
+      const trail = COL_MAX - colHeight(col);
+      if (trail >= h) slots.push({ ci, gapIdx: -1, space: trail });
+    });
+    slots.sort((a, b) => a.space - b.space); // best fit: menor espacio sobrante
+    return slots;
+  }
 
-  const pctEl = document.getElementById('res-pct');
-  pctEl.textContent = pct.toFixed(1) + '%';
+  function insertIntoSlot(u, slot) {
+    const h = nemaMm(u.nema);
+    const col = columns[slot.ci];
+    if (slot.gapIdx >= 0) {
+      const gap = col.units[slot.gapIdx];
+      const remainder = gap._gapMm - h;
+      const newItems = remainder > 0
+        ? [{ _gap:true, _gapMm:remainder, id:uid() }, u]
+        : [u];
+      col.units.splice(slot.gapIdx, 1, ...newItems);
+    } else {
+      col.units.push(u);
+    }
+  }
 
-  let color, statusClass, statusText;
-  if (pct <= 40) {
-    color = 'var(--accent)';
-    statusClass = 'status-ok';
-    statusText = '● HOLGADO';
-  } else if (pct <= 70) {
-    color = 'var(--warn)';
-    statusClass = 'status-warn';
-    statusText = '● MODERADO';
+  [...free].sort((a,b)=>nemaMm(b.nema)-nemaMm(a.nema)).forEach(u=>{
+    const h = nemaMm(u.nema);
+    const slots = getSlots(h);
+    if (slots.length === 0) columns.push({ id: cid(), units: [u] });
+    else insertIntoSlot(u, slots[0]);
+  });
+
+  columns.forEach(col=>{
+    const left=COL_MAX-colHeight(col);
+    if(left>0)col.units.push({_gap:true,_free:true,_gapMm:left,id:uid()});
+  });
+
+  alerts.forEach(a=>showAlert(a,'warn'));
+  if(!alerts.length)showAlert(`Layout generado: ${columns.length} columna${columns.length>1?'s':''}`, 'info');
+  renderCCM();renderTable();updateStats();renderListaCopiable();
+}
+
+function mmToPx(mm){return(mm/COL_MAX)*COL_H_PX;}
+function calcPosBadge(mm){return mmToLetter(mm);}
+
+function renderRowLabels(){
+  document.getElementById('row-labels').innerHTML=
+    Array.from({length:COL_MAX/ROW_MM},(_,i)=>
+      `<div class="row-label" style="height:${rowPx}px">${LETTERS[i]}</div>`
+    ).join('');
+}
+
+// Renderiza el DOM de una columna concreta dado su índice
+function buildColEl(col, ci, animate) {
+  const used    = Math.min(colHeight(col), COL_MAX);
+  const usedReal= col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema), 0);
+  const pct     = Math.round(Math.min(usedReal, COL_MAX) / COL_MAX * 100);
+  const pc      = pct>90?'var(--danger)':pct>75?'var(--warn)':'var(--accent)';
+  const colDiv  = document.createElement('div');
+  colDiv.className      = 'ccm-col';
+  colDiv.dataset.colidx = ci;
+  if (animate) colDiv.style.animationDelay = (ci * .05) + 's';
+  else         colDiv.style.animation = 'none'; // sin fadeUp al re-renderizar
+  colDiv.innerHTML = `
+    <div class="ccm-col-header">
+      <span class="ccm-col-name">COL ${ci+1}</span>
+      <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted)">${pct}%</span>
+    </div>
+    <div class="ccm-col-prog-bar"><div class="ccm-col-prog-fill" style="width:${pct}%;background:${pc}"></div></div>
+    <div class="ccm-col-body" id="col-body-${ci}" data-colidx="${ci}"></div>
+    <div class="ccm-col-footer">${usedReal}mm &nbsp;·&nbsp; ${pct}% &nbsp;·&nbsp; ${COL_W_MM}mm</div>
+  `;
+  const body = colDiv.querySelector(`#col-body-${ci}`);
+  let acc = 0;
+  col.units.forEach(u => {
+    const h = u._gap ? u._gapMm : nemaMm(u.nema);
+    const div = document.createElement('div');
+    div.style.top    = mmToPx(acc) + 'px';
+    div.style.height = Math.max(mmToPx(h), 2) + 'px';
+    if (u._gap) {
+      div.className = `cub ${u._free ? 'cub-free' : 'cub-gap'}`;
+      div.innerHTML = `<span class="cub-nema">${u._free?'Libre':'Gap'} ${Math.round(h)}mm</span>`;
+    } else {
+      const sizeClass  = 'cub-s' + u.nema.toLowerCase().replace('x','') + 'x';
+      const fixedClass = u.posFixed ? ' cub-fixed' : '';
+      div.className      = `cub ${sizeClass}${fixedClass}`;
+      div.dataset.uid    = u.id;
+      div.dataset.colidx = ci;
+      const posBadge = `${ci+1}${calcPosBadge(acc)}`;
+      let badges = '';
+      div.innerHTML = `
+        <div class="cub-nema">${u.nema}</div>
+        ${u.tag ? `<div class="cub-tag">${u.tag}</div>` : ''}
+        <div class="cub-mm">${nemaMm(u.nema)}mm</div>
+        <div class="cub-pos">${posBadge}</div>
+        ${badges ? `<div class="cub-badges">${badges}</div>` : ''}
+      `;
+    }
+    acc += h;
+    body.appendChild(div);
+  });
+  return colDiv;
+}
+
+// Render completo — reconstruye todas las columnas
+function renderCCM(){
+  const colsEl = document.getElementById('ccm-cols');
+  renderRowLabels();
+  if (!columns.length) {
+    colsEl.innerHTML = `<div class="empty-state" style="padding:3rem 2.5rem;min-width:280px;">
+      <div class="empty-state-icon">▦</div>
+      <div class="empty-state-title">Sin layout generado</div>
+      <div class="empty-state-sub">Agrega unidades y presiona Generar Layout CCM</div>
+    </div>`; return;
+  }
+  colsEl.innerHTML = '';
+  columns.forEach((col, ci) => colsEl.appendChild(buildColEl(col, ci, true)));
+  initMouseDrag();
+  renderListaCopiable();
+}
+
+// Render parcial — solo re-renderiza las columnas indicadas, el resto no se toca
+function renderColsPartial(ciList) {
+  const colsEl = document.getElementById('ccm-cols');
+  ciList.forEach(ci => {
+    const existing = colsEl.querySelector(`.ccm-col[data-colidx="${ci}"]`);
+    const newCol   = buildColEl(columns[ci], ci, false);
+    if (existing) colsEl.replaceChild(newCol, existing);
+    else          colsEl.appendChild(newCol);
+  });
+  initMouseDrag();
+  renderListaCopiable();
+}
+
+// DRAG & DROP
+window.initMouseDrag=function(){
+  const ghost=document.getElementById('drag-ghost');
+  let drag=null;
+  let insertLine=document.getElementById('_insertLine');
+  if(!insertLine){
+    insertLine=document.createElement('div');insertLine.id='_insertLine';
+    insertLine.style.cssText='position:fixed;height:2px;pointer-events:none;z-index:9998;background:var(--accent);display:none;box-shadow:0 0 8px var(--accent);';
+    document.body.appendChild(insertLine);
+  }
+  document.querySelectorAll('.cub[data-uid]').forEach(el=>el.addEventListener('mousedown',onDown));
+
+  function onDown(e){
+    if(e.button!==0)return;e.preventDefault();e.stopPropagation();
+    const el=e.currentTarget;
+    const uidV=parseInt(el.dataset.uid);
+    const ci=parseInt(el.dataset.colidx);
+    const srcPos=columns[ci].units.findIndex(u=>u.id===uidV);
+    drag={uid:uidV,srcCi:ci,srcPos,el};
+    const r=el.getBoundingClientRect();
+    ghost.innerHTML=el.innerHTML;
+    ghost.style.cssText=`position:fixed;width:${r.width}px;pointer-events:none;z-index:9999;background:var(--surface);border:1px solid var(--accent);padding:4px 8px;opacity:.88;box-shadow:0 8px 28px rgba(0,200,150,.2);display:block;left:${r.left}px;top:${r.top}px;`;
+    el.style.opacity='.25';
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  }
+
+  function onMove(e){
+    if(!drag)return;
+    ghost.style.left=(e.clientX-ghost.offsetWidth/2)+'px';
+    ghost.style.top=(e.clientY-14)+'px';
+    document.querySelectorAll('.ccm-col-body').forEach(b=>b.style.outline='');
+    insertLine.style.display='none';
+    const info=getTarget(e.clientX,e.clientY);
+    if(!info)return;
+    const body=document.getElementById(`col-body-${info.ci}`);
+    if(info.fits){
+      body.style.outline='2px solid var(--accent)';
+      insertLine.style.display='block';
+      insertLine.style.left=info.br.left+'px';
+      insertLine.style.width=info.br.width+'px';
+      insertLine.style.top=info.iy+'px';
+    } else {
+      body.style.outline='2px solid var(--danger)';
+    }
+  }
+
+  function onUp(e){
+    if(!drag)return;
+    document.querySelectorAll('.ccm-col-body').forEach(b=>b.style.outline='');
+    insertLine.style.display='none';ghost.style.display='none';drag.el.style.opacity='';
+    const info=getTarget(e.clientX,e.clientY);
+    if(info&&info.fits){
+      const{ci:tci,insertIdx}=info;
+      const{srcCi,srcPos}=drag;
+      const u=columns[srcCi].units[srcPos];
+      if(u&&!u._gap){
+        const dragH = nemaMm(u.nema);
+        u.posFixed = null;
+
+        if (tci === srcCi) {
+          // Misma columna: quitar y reinsertar en posición mm del cursor
+          columns[srcCi].units.splice(srcPos, 1);
+          insertAtMm(tci, u, info.cursorMm);
+        } else {
+          // Distinta columna: dejar gap en origen, insertar en destino por posición mm
+          // Reemplazar unidad en origen por gap del mismo tamaño
+          columns[srcCi].units.splice(srcPos, 1, { _gap: true, _gapMm: dragH, id: uid() });
+          // Fusionar gaps adyacentes en origen
+          fusionarGaps(srcCi);
+          // Insertar en destino por posición mm del cursor
+          insertAtMm(tci, u, info.cursorMm);
+        }
+
+        recomputeFreeGaps();
+        const affected = tci===srcCi ? [tci] : [srcCi, tci];
+        renderColsPartial(affected);
+        renderTable();updateStats();
+      }
+    }
+    drag=null;
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+  }
+
+  function getTarget(mx,my){
+    let tb=null;
+    document.querySelectorAll('.ccm-col-body').forEach(b=>{
+      const r=b.getBoundingClientRect();
+      if(mx>=r.left&&mx<=r.right&&my>=r.top-10&&my<=r.bottom+10)tb=b;
+    });
+    if(!tb)return null;
+    const tci=parseInt(tb.dataset.colidx);
+    const col=columns[tci];
+    const br=tb.getBoundingClientRect();
+    const items=tb.querySelectorAll('.cub');
+    let insertIdx=col.units.filter(u=>!u._free).length;
+    let iy=br.bottom;
+    for(let i=0;i<items.length;i++){
+      const r=items[i].getBoundingClientRect();
+      if(my<=r.top+r.height/2){
+        const us=items[i].dataset.uid;
+        insertIdx=us?col.units.findIndex(u=>u.id===parseInt(us)):i;
+        iy=r.top;break;
+      }
+      iy=r.bottom;
+      const us=items[i].dataset.uid;
+      if(us)insertIdx=col.units.findIndex(u=>u.id===parseInt(us))+1;
+    }
+    iy=Math.max(br.top,Math.min(br.bottom,iy));
+    // Calcular cursorMm: posición en mm dentro de la columna donde suelta el mouse
+    const cursorMm = Math.max(0, Math.min(COL_MAX, (iy - br.top) / COL_H_PX * COL_MAX));
+    const du=columns[drag.srcCi].units[drag.srcPos];
+    const dh=du?nemaMm(du.nema):0;
+    // Espacio real ocupado = solo unidades (sin ningún gap)
+    const realUsed=col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema),0);
+    const net=realUsed-(tci===drag.srcCi?dh:0);
+    return{ci:tci,insertIdx,cursorMm,fits:net+dh<=COL_MAX+1,br,iy};
+  }
+};
+
+// Calcula el mm de inicio de una unidad en su columna
+function calcUnitStartMm(ci, idx) {
+  let acc = 0;
+  for (let i = 0; i < idx; i++) {
+    const u = columns[ci].units[i];
+    acc += u._gap ? u._gapMm : nemaMm(u.nema);
+  }
+  return acc;
+}
+
+// Fusiona gaps adyacentes en una columna
+function fusionarGaps(ci) {
+  const units = columns[ci].units;
+  for (let i = units.length - 2; i >= 0; i--) {
+    if (units[i]._gap && units[i+1] && units[i+1]._gap) {
+      units.splice(i, 2, { _gap: true, _gapMm: units[i]._gapMm + units[i+1]._gapMm, id: uid() });
+    }
+  }
+}
+
+// Inserta una unidad en una columna en la posición mm indicada,
+// ajustando los gaps para que todo lo demás mantenga su posición absoluta.
+function insertAtMm(ci, u, targetMm) {
+  const col = columns[ci];
+  const h = nemaMm(u.nema);
+  targetMm = Math.max(0, Math.min(targetMm, COL_MAX - h));
+
+  // Rebuild column unit list inserting u at targetMm,
+  // keeping all existing units at their current absolute positions.
+  // 1. Collect existing units with their absolute mm positions
+  const entries = []; // {mm, unit}
+  let acc = 0;
+  col.units.forEach(item => {
+    if (!item._gap) entries.push({ mm: acc, unit: item });
+    acc += item._gap ? item._gapMm : nemaMm(item.nema);
+  });
+  // Add the new unit
+  entries.push({ mm: targetMm, unit: u });
+  // Sort by mm
+  entries.sort((a, b) => a.mm - b.mm);
+
+  // 2. Rebuild units array with gaps between
+  const newUnits = [];
+  let cursor = 0;
+  for (const e of entries) {
+    const startMm = Math.max(cursor, e.mm);
+    if (startMm > cursor) {
+      newUnits.push({ _gap: true, _gapMm: startMm - cursor, id: uid() });
+    }
+    newUnits.push(e.unit);
+    cursor = startMm + nemaMm(e.unit.nema);
+  }
+  col.units = newUnits;
+  fusionarGaps(ci);
+}
+
+function recomputeFreeGaps(){
+  columns.forEach(col => {
+    // Quitar solo el gap _free del final
+    col.units = col.units.filter(u => !u._free);
+    // Fusionar gaps internos adyacentes
+    fusionarGaps(columns.indexOf(col));
+    // Calcular espacio libre real al final
+    const totalH = col.units.reduce((s,u) => s + (u._gap ? u._gapMm : nemaMm(u.nema)), 0);
+    const left = COL_MAX - totalH;
+    if (left > 0) col.units.push({ _gap: true, _free: true, _gapMm: left, id: uid() });
+  });
+}
+
+function addColumna(){columns.push({id:cid(),units:[{_gap:true,_free:true,_gapMm:COL_MAX,id:uid()}]});renderCCM();updateStats();}
+function delColumna(){
+  if(!columns.length)return;
+  if(columns[columns.length-1].units.some(u=>!u._gap)&&!confirm('La última columna tiene unidades. ¿Eliminar?'))return;
+  columns.pop();renderCCM();updateStats();
+}
+
+function renderTable(){
+  const tbody=document.getElementById('unit-table-body');
+  let tu=[];
+  if(columns.length){
+    columns.forEach((col,ci)=>{
+      let acc=0;
+      col.units.forEach(u=>{
+        if(!u._gap)tu.push({...u,_ci:ci,_mm:acc});
+        acc+=u._gap?u._gapMm:nemaMm(u.nema);
+      });
+    });
+  } else tu=units.map(u=>({...u,_ci:null,_mm:null}));
+  if(!tu.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;font-family:var(--mono);font-size:0.75rem;letter-spacing:1px;">Sin unidades aún</td></tr>`;return;}
+  tbody.innerHTML=tu.map((u,i)=>{
+    const pos=u._ci!==null?`${u._ci+1}${calcPosBadge(u._mm)}`:(u.posFixed?`${u.posFixed.col}${u.posFixed.letra}`:'—');
+    const tipo=u.posFixed?'<span class="badge badge-fixed">FIJO</span>':'<span class="badge badge-free">LIBRE</span>';
+    return `<tr>
+      <td class="td-num">${i+1}</td>
+      <td class="td-nema" onclick="editNema(this,${u.id})">${u.nema}</td>
+      <td style="color:var(--muted)">${nemaMm(u.nema)}mm</td>
+      <td class="td-tag" onclick="editTag(this,${u.id})">${u.tag||'<span style="opacity:.35">—</span>'}</td>
+      <td class="td-pos" onclick="editPos(this,${u.id})">${pos}</td>
+      <td>${tipo}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delUnitFromAll(${u.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function editNema(td,id){
+  let done=false;
+  const cur=td.textContent.trim();
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-input';
+  inp.value=cur;inp.placeholder='2X';inp.style.cssText='width:52px;text-transform:uppercase;';
+  td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+  function commit(){
+    if(done)return;done=true;
+    const val=inp.value.trim().toUpperCase();
+    const u=findUnitById(id);
+    if(u&&NEMA_H[val])u.nema=val;
+    requestAnimationFrame(()=>{renderTable();renderCCM();updateStats();});
+  }
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){done=true;renderTable();}});
+  inp.addEventListener('blur',commit);
+}
+function editTag(td,id){
+  let done=false;
+  const cur=td.textContent.trim()==='—'?'':td.textContent.trim();
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-input';inp.value=cur;inp.style.width='100%';
+  td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+  function commit(){if(done)return;done=true;const u=findUnitById(id);if(u)u.tag=inp.value.trim();requestAnimationFrame(()=>renderTable());}
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){done=true;renderTable();}});
+  inp.addEventListener('blur',commit);
+}
+function editPos(td,id){
+  let done=false;
+  // Find which column contains this unit
+  let srcCi=-1;
+  columns.forEach((col,ci)=>{ if(col.units.find(x=>x.id===id&&!x._gap)) srcCi=ci; });
+  const u=findUnitById(id);
+  if(!u)return;
+  const cur=u.posFixed?`${u.posFixed.col}${u.posFixed.letra}`:'';
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-input';
+  inp.value=cur;inp.placeholder='1A…';inp.style.width='56px';
+  td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+  function commit(){
+    if(done)return;done=true;
+    const raw=inp.value.trim().toUpperCase();
+    const parsed=parsePos(raw);
+    u.posFixed=parsed;
+    const inUnits=units.find(x=>x.id===id);
+    if(inUnits)inUnits.posFixed=parsed;
+
+    if(parsed && srcCi>=0){
+      // Determine target column (may differ from current)
+      const tci=parsed.col-1;
+      const targetMm=letterToMm(parsed.letra);
+
+      if(tci!==srcCi && tci>=0 && tci<columns.length){
+        // Move to different column
+        const srcIdx=columns[srcCi].units.findIndex(x=>x.id===id);
+        const dragH=nemaMm(u.nema);
+        columns[srcCi].units.splice(srcIdx,1,{_gap:true,_gapMm:dragH,id:uid()});
+        fusionarGaps(srcCi);
+        insertAtMm(tci,u,targetMm);
+        recomputeFreeGaps();
+        renderColsPartial([srcCi,tci]);
+      } else if(tci===srcCi){
+        // Move within same column to new mm position
+        const srcIdx=columns[srcCi].units.findIndex(x=>x.id===id);
+        const dragH=nemaMm(u.nema);
+        columns[srcCi].units.splice(srcIdx,1,{_gap:true,_gapMm:dragH,id:uid()});
+        fusionarGaps(srcCi);
+        insertAtMm(srcCi,u,targetMm);
+        recomputeFreeGaps();
+        renderColsPartial([srcCi]);
+      }
+      renderTable();updateStats();renderListaCopiable();
+    } else {
+      requestAnimationFrame(()=>renderTable());
+    }
+  }
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){done=true;renderTable();}});
+  inp.addEventListener('blur',commit);
+}
+function findUnitById(id){
+  let u=units.find(x=>x.id===id);if(u)return u;
+  for(const col of columns){u=col.units.find(x=>x.id===id);if(u&&!u._gap)return u;}
+  return null;
+}
+function delUnitFromAll(id){
+  units=units.filter(u=>u.id!==id);
+  columns.forEach(col=>{col.units=col.units.filter(u=>u.id!==id);});
+  recomputeFreeGaps();renderPending();renderTable();renderCCM();updateStats();renderListaCopiable();
+}
+
+function updateStats(){
+  const total=columns.length?columns.reduce((s,col)=>s+col.units.filter(u=>!u._gap).length,0):units.length;
+  document.getElementById('stat-units').textContent=total;
+  document.getElementById('stat-cols').textContent=columns.length;
+  document.getElementById('stat-width').textContent=columns.length?(columns.length*COL_W_MM)+'mm':'—';
+}
+
+// Almacena el texto de la lista para copiado seguro
+let _listaTexto = '';
+
+function renderListaCopiable() {
+  const el = document.getElementById('lista-copiable');
+  if (!el) return;
+  let list = '';
+  if (columns.length) {
+    columns.forEach((col, ci) => {
+      let acc = 0;
+      col.units.forEach(u => {
+        if (!u._gap) {
+          const pos = `${ci+1}${calcPosBadge(acc)}`;
+          list += `${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+        }
+        acc += u._gap ? u._gapMm : nemaMm(u.nema);
+      });
+    });
+  } else if (units.length) {
+    units.forEach(u => {
+      const pos = u.posFixed ? `${u.posFixed.col}${u.posFixed.letra}` : '';
+      list += `${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+    });
+  }
+  _listaTexto = list.trim();
+  el.textContent = _listaTexto || '—';
+}
+
+function copiarLista() {
+  if (!_listaTexto) return;
+  const fb = document.getElementById('copy-feedback');
+  // Método principal: clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(_listaTexto).then(() => {
+      fb.textContent = '✓ copiado';
+      fb.style.opacity = '1';
+      setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+    }).catch(() => fallbackCopy());
   } else {
-    color = 'var(--danger)';
-    statusClass = 'status-danger';
-    statusText = '● SATURADO';
+    fallbackCopy();
   }
-
-  pctEl.style.color = color;
-  document.getElementById('progress-fill').style.width = Math.min(pct, 100) + '%';
-  document.getElementById('progress-fill').style.background = color;
-
-  const statusEl = document.getElementById('res-status');
-  statusEl.textContent = statusText;
-  statusEl.className = 'status ' + statusClass;
-
-  document.getElementById('s-total').textContent = areaTotal.toFixed(0);
-  document.getElementById('s-cables').textContent = areaCables.toFixed(1);
-  document.getElementById('s-libre').textContent = libre.toFixed(1);
-  document.getElementById('s-ncables').textContent = nCables;
-
-  // Draw canvas visualization
-  document.getElementById('canvas-legend').innerHTML = '';
-  const gap = 0;
-  setTimeout(() => drawEscalerilla(ancho, altura, cables, pct, gap), 100);
-
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  function fallbackCopy() {
+    const ta = document.createElement('textarea');
+    ta.value = _listaTexto;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      fb.textContent = '✓ copiado';
+      fb.style.opacity = '1';
+      setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+    } catch(e) {
+      fb.textContent = '✗ error al copiar';
+      fb.style.opacity = '1';
+      setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+    }
+    document.body.removeChild(ta);
+  }
 }
 
-// Cable colors palette
-const CABLE_COLORS = [
-  '#00c896','#0ea5e9','#f59e0b','#ef4444','#a78bfa',
-  '#f472b6','#34d399','#fb923c','#60a5fa','#e879f9',
-  '#facc15','#4ade80','#38bdf8','#f87171','#c084fc'
-];
-
-function drawEscalerilla(ancho, altura, cableList, pct, gap = 0) {
-  const canvas = document.getElementById('canvas-escalerilla');
-  const ctx = canvas.getContext('2d');
-
-  // Canvas size: map mm to px with padding
-  const PADDING = 32;
-  const MAX_W = canvas.parentElement.offsetWidth || 800;
-  const scale = Math.min((MAX_W - PADDING * 2) / ancho, 200 / altura);
-  const cW = Math.round(ancho * scale);
-  const cH = Math.round(altura * scale);
-
-  canvas.width = cW + PADDING * 2;
-  canvas.height = cH + PADDING * 2;
-  canvas.style.width = '100%';
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const ox = PADDING; // origin x
-  const oy = PADDING; // origin y
-
-  // Background
-  ctx.fillStyle = '#070b10';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Grid lines inside tray
-  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-  ctx.lineWidth = 1;
-  const gridMm = 50;
-  for (let x = 0; x <= ancho; x += gridMm) {
-    ctx.beginPath();
-    ctx.moveTo(ox + x * scale, oy);
-    ctx.lineTo(ox + x * scale, oy + cH);
-    ctx.stroke();
-  }
-
-  // Tray body
-  ctx.strokeStyle = '#4a6a8a';
-  ctx.lineWidth = 2.5;
-  ctx.strokeRect(ox, oy, cW, cH);
-
-  // Tray cross-hatching (side walls appearance)
-  ctx.fillStyle = 'rgba(74,106,138,0.08)';
-  ctx.fillRect(ox, oy, cW, cH);
-
-  // Rungs (escalones de la escalerilla)
-  const rungSpacing = Math.max(100, ancho / 6); // mm between rungs
-  ctx.strokeStyle = 'rgba(74,106,138,0.35)';
-  ctx.lineWidth = 1.5;
-  for (let x = rungSpacing; x < ancho; x += rungSpacing) {
-    ctx.beginPath();
-    ctx.moveTo(ox + x * scale, oy);
-    ctx.lineTo(ox + x * scale, oy + cH);
-    ctx.stroke();
-  }
-
-  // Dimension labels
-  ctx.fillStyle = '#4a6a8a';
-  ctx.font = `${Math.max(9, scale * 2)}px DM Mono, monospace`;
-  ctx.textAlign = 'center';
-  ctx.fillText(`${ancho} mm`, ox + cW / 2, oy - 10);
-  ctx.save();
-  ctx.translate(ox - 14, oy + cH / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText(`${altura} mm`, 0, 0);
-  ctx.restore();
-
-  // Separator
-  const sep = getSeparadorMm ? getSeparadorMm() : null;
-  const sepPosLeft  = sep ? sep.pos : null;                        // left edge of separator
-  const sepPosRight = sep ? sep.pos + sep.grosor : null;           // right edge
-  const SEP_GROSOR_MM = sep ? sep.grosor : 0;
-
-  // Draw separator on canvas
-  if (sep && sep.pos > 0 && sep.pos < ancho) {
-    const spx = ox + sep.pos * scale;
-    const sgx = sep.grosor * scale;
-
-    // Separator fill
-    ctx.fillStyle = 'rgba(14,165,233,0.12)';
-    ctx.fillRect(spx, oy, sgx, cH);
-
-    // Separator border lines
-    ctx.strokeStyle = 'rgba(14,165,233,0.7)';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 3]);
-    ctx.beginPath(); ctx.moveTo(spx, oy); ctx.lineTo(spx, oy + cH); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(spx + sgx, oy); ctx.lineTo(spx + sgx, oy + cH); ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Zone labels above tray
-    ctx.fillStyle = 'rgba(239,68,68,0.8)';
-    ctx.font = `bold ${Math.max(8, 10)}px DM Mono, monospace`;
-    ctx.textAlign = 'center';
-    ctx.fillText('FUERZA', ox + sep.pos * scale / 2, oy - 10);
-    ctx.fillStyle = 'rgba(14,165,233,0.8)';
-    ctx.fillText('CTRL/INST', ox + (sep.pos + sep.grosor + (ancho - sep.pos - sep.grosor) / 2) * scale, oy - 10);
-  }
-
-  // Build placement queue — one per zone (or single queue if no separator)
-  const queue = [];
-
-  cableList.forEach((cable, ci) => {
-    const color = CABLE_COLORS[ci % CABLE_COLORS.length];
-    const zona = cable.zona || 'fuerza';
-    if (cable.triada && cable.cant % 3 === 0 && cable.cant >= 3) {
-      const numTriadas = cable.cant / 3;
-      for (let t = 0; t < numTriadas; t++) {
-        queue.push({ type: 'triada', r: cable.diam / 2, color, zona });
-      }
-    } else {
-      for (let n = 0; n < cable.cant; n++) {
-        queue.push({ type: 'single', r: cable.diam / 2, color, typeIdx: ci, zona });
-      }
-    }
-  });
-
-  // Sort largest first (by r)
-  queue.sort((a, b) => b.r - a.r);
-
-  const placed = [];
-
-  // Zone bounds in mm
-  function getZoneBounds(zona) {
-    if (!sep || !sep.pos) return { xMin: 0, xMax: ancho };
-    if (zona === 'control') return { xMin: sep.pos + sep.grosor, xMax: ancho };
-    return { xMin: 0, xMax: sep.pos };
-  }
-
-  function findLowestY(cx, r, isTriada) {
-    let bestY = altura - r; // no gap from floor
-    for (const p of placed) {
-      const dx = Math.abs(cx - p.x);
-      // Internal triada circles touch tangentially (no gap between triada members)
-      const sameTriadaBlock = isTriada && p.triada;
-      const hGap = sameTriadaBlock ? 0 : gap;
-      const vGap = 0; // always tangential vertically
-      const minDistH = r + p.r + hGap;
-      const minDistV = r + p.r + vGap;
-      if (dx < minDistH) {
-        if (dx < minDistV) {
-          const dy = Math.sqrt(Math.max(0, minDistV * minDistV - dx * dx));
-          bestY = Math.min(bestY, p.y - dy);
-        }
-      }
-    }
-    return bestY;
-  }
-
-  function collidesWithPlaced(cx, cy, r, isTriada) {
-    for (const p of placed) {
-      const dx = cx - p.x;
-      const dy = cy - p.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const sameTriadaBlock = isTriada && p.triada;
-      const hGap = sameTriadaBlock ? 0 : gap;
-      const minDist = Math.abs(dx) > Math.abs(dy)
-        ? r + p.r + hGap
-        : r + p.r;
-      if (dist < minDist - 0.01) return true;
-    }
-    return false;
-  }
-
-  function placeSingle(r, color, isTriada, zona) {
-    const step = Math.max(0.1, r * 0.05);
-    const bounds = getZoneBounds(zona || 'fuerza');
-    let bestX = -1, bestY = -Infinity;
-    for (let cx = bounds.xMin + r + gap; cx <= bounds.xMax - r - gap; cx += step) {
-      const cy = findLowestY(cx, r, isTriada);
-      if (cy - r < 0) continue;
-      if (bestX < 0 || cy > bestY || (cy === bestY && cx < bestX)) {
-        bestY = cy; bestX = cx;
-      }
-    }
-    if (bestX < 0) return false;
-    placed.push({ x: bestX, y: bestY, r, color, triada: isTriada || false });
-    return true;
-  }
-
-  function placeTriada(r, color, zona) {
-    const hDist = 2 * r;  // bottom pair tangential, no internal gap
-    const vOffset = Math.sqrt(Math.max(0, (2*r)*(2*r) - r*r)); // r*sqrt(3)
-    const step = Math.max(0.1, r * 0.05);
-
-    let bestLx = -1, bestBotY = -Infinity;
-
-    const trBounds = getZoneBounds(zona || 'fuerza');
-    for (let lx = trBounds.xMin + r + gap; lx + hDist + r + gap <= trBounds.xMax; lx += step) {
-      const rx = lx + hDist;
-      const tx = lx + hDist / 2;
-
-      const lyL = findLowestY(lx, r, true);
-      const lyR = findLowestY(rx, r, true);
-      const botY = Math.min(lyL, lyR);
-      const topY = botY - vOffset;
-
-      if (botY - r < 0 || topY - r < 0) continue;
-      if (collidesWithPlaced(lx, botY, r, true)) continue;
-      if (collidesWithPlaced(rx, botY, r, true)) continue;
-      if (collidesWithPlaced(tx, topY, r, true)) continue;
-
-      // Priority: lowest row first (highest botY), then leftmost X
-      if (bestLx < 0) {
-        bestBotY = botY;
-        bestLx = lx;
-      } else {
-        // Accept if this position is on a lower row (higher botY by more than a tolerance)
-        // OR same row but more to the left
-        const sameLine = Math.abs(botY - bestBotY) < r * 0.1;
-        if (!sameLine && botY > bestBotY) {
-          bestBotY = botY;
-          bestLx = lx;
-        } else if (sameLine && lx < bestLx) {
-          bestBotY = botY;
-          bestLx = lx;
-        }
-      }
-    }
-
-    if (bestLx < 0) {
-      placeSingle(r, color, false, zona);
-      placeSingle(r, color, false, zona);
-      placeSingle(r, color, false, zona);
-      return;
-    }
-
-    const rx = bestLx + hDist;
-    const tx = bestLx + hDist / 2;
-    const topY = bestBotY - vOffset;
-
-    placed.push({ x: bestLx, y: bestBotY, r, color, triada: true });
-    placed.push({ x: rx,     y: bestBotY, r, color, triada: true });
-    placed.push({ x: tx,     y: topY,     r, color, triada: true });
-  }
-
-  // Place everything in queue order (largest first, triadas and singles interleaved)
-  for (const item of queue) {
-    if (item.type === 'triada') {
-      placeTriada(item.r, item.color, item.zona);
-    } else {
-      placeSingle(item.r, item.color, false, item.zona);
-    }
-  }
-
-  // Draw placed cables — stroke clipped inside so circles appear truly tangential
-  for (const c of placed) {
-    const px = ox + c.x * scale;
-    const py = oy + c.y * scale;
-    const pr = c.r * scale;
-    const strokeW = Math.max(1, pr * 0.04);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(px, py, pr, 0, Math.PI * 2);
-    ctx.clip();
-
-    // Fill gradient — triada cables get purple tint overlay
-    const baseColor = c.triada ? '#a78bfa' : c.color;
-    const grad = ctx.createRadialGradient(px - pr * 0.3, py - pr * 0.3, 0, px, py, pr);
-    grad.addColorStop(0, baseColor + 'dd');
-    grad.addColorStop(0.55, baseColor + '99');
-    grad.addColorStop(1, baseColor + '44');
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(px, py, pr - strokeW / 2, 0, Math.PI * 2);
-    ctx.strokeStyle = baseColor;
-    ctx.lineWidth = strokeW * 2;
-    ctx.stroke();
-
-    ctx.restore();
-
-    // Label
-    if (pr > 10) {
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${Math.min(pr * 0.7, 13)}px DM Mono, monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(c.r * 2, px, py);
-    }
-
-    // Small triangle badge on triada circles
-    if (c.triada && pr > 6) {
-      const ts = Math.max(5, pr * 0.3);
-      ctx.beginPath();
-      ctx.moveTo(px, py - pr + ts * 0.2);
-      ctx.lineTo(px - ts * 0.6, py - pr + ts * 1.1);
-      ctx.lineTo(px + ts * 0.6, py - pr + ts * 1.1);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(167,139,250,0.9)';
-      ctx.fill();
-    }
-  }
-
-  ctx.textBaseline = 'alphabetic';
-
-  // Legend
-  const legend = document.getElementById('canvas-legend');
-  const seenTypes = {};
-  cableList.forEach((cable, ci) => {
-    if (!seenTypes[ci]) {
-      seenTypes[ci] = true;
-      const color = CABLE_COLORS[ci % CABLE_COLORS.length];
-      legend.innerHTML += `
-        <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.65rem;color:var(--muted);">
-          <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0;"></div>
-          Ø${cable.diam}mm × ${cable.cant}
-        </div>`;
-    }
-  });
+function showAlert(msg,type='info'){
+  const div=document.createElement('div');div.className=`alert alert-${type}`;div.textContent=msg;
+  document.getElementById('alerts-box').appendChild(div);
 }
+function clearAlerts(){document.getElementById('alerts-box').innerHTML='';}
 
-function shake(id) {
-  const el = document.getElementById(id);
-  el.style.borderColor = 'var(--danger)';
-  el.style.animation = 'none';
-  setTimeout(() => {
-    el.style.animation = '';
-    el.style.borderColor = '';
-  }, 600);
-  el.focus();
-}
-
-// Enter key to add cable
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.activeElement.id === 'cant') addCable();
-  if (e.key === 'Enter' && document.activeElement.id === 'diam') document.getElementById('cant').focus();
-});
+renderRowLabels();updateStats();renderPending();
+document.getElementById('inp-tag').addEventListener('keydown',e=>{if(e.key==='Enter')addUnit(false);});
+document.getElementById('inp-pos').addEventListener('keydown',e=>{if(e.key==='Enter')addUnit(false);});
 </script>
 </body>
 </html>
