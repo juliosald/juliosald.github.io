@@ -1131,24 +1131,23 @@ window.initMouseDrag=function(){
         u.posFixed = null;
 
         if (tci === srcCi) {
-          // Misma columna: quitar y reinsertar
+          // Misma columna: reconstruir desde posiciones absolutas
+          // Calcular mm de cada unidad antes de mover
+          const snapMm = calcSnapMm(tci, u.id, null);
+          // Quitar unidad de su posición
           columns[srcCi].units.splice(srcPos, 1);
-          // Quitar gaps para recalcular posición limpia
-          const onlyUnits = columns[tci].units.filter(x => !x._gap);
-          // Calcular ri entre unidades reales
-          const srcRealPos = columns[srcCi].units.slice(0, srcPos).filter(x => !x._gap).length;
-          let ri = info.insertIdx;
-          if (srcRealPos < ri) ri--;
-          ri = Math.max(0, Math.min(ri, onlyUnits.length));
-          onlyUnits.splice(ri, 0, u);
-          columns[tci].units = onlyUnits;
+          // Insertar en nueva posición relativa al cursor
+          const destMm = info.cursorMm;
+          insertAtMm(tci, u, destMm);
         } else {
-          // Distinta columna: quitar de origen, insertar en destino entre unidades reales
-          columns[srcCi].units = columns[srcCi].units.filter(x => !x._gap && x.id !== u.id);
-          const destUnits = columns[tci].units.filter(x => !x._gap);
-          const ri = Math.min(insertIdx, destUnits.length);
-          destUnits.splice(ri, 0, u);
-          columns[tci].units = destUnits;
+          // Distinta columna: dejar gap en origen, insertar en destino por posición mm
+          const srcMm = calcUnitStartMm(srcCi, srcPos);
+          // Reemplazar unidad en origen por gap del mismo tamaño
+          columns[srcCi].units.splice(srcPos, 1, { _gap: true, _gapMm: dragH, id: uid() });
+          // Fusionar gaps adyacentes en origen
+          fusionarGaps(srcCi);
+          // Insertar en destino por posición mm del cursor
+          insertAtMm(tci, u, info.cursorMm);
         }
 
         recomputeFreeGaps();
@@ -1187,17 +1186,28 @@ window.initMouseDrag=function(){
       if(us)insertIdx=col.units.findIndex(u=>u.id===parseInt(us))+1;
     }
     iy=Math.max(br.top,Math.min(br.bottom,iy));
+    // Calcular cursorMm: posición en mm dentro de la columna donde suelta el mouse
+    const cursorMm = Math.max(0, Math.min(COL_MAX, (iy - br.top) / COL_H_PX * COL_MAX));
     const du=columns[drag.srcCi].units[drag.srcPos];
     const dh=du?nemaMm(du.nema):0;
-    // Espacio real ocupado = solo unidades (sin ningún gap interno ni free)
+    // Espacio real ocupado = solo unidades (sin ningún gap)
     const realUsed=col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema),0);
-    // Si es la misma columna, descontamos la unidad que estamos moviendo
     const net=realUsed-(tci===drag.srcCi?dh:0);
-    return{ci:tci,insertIdx,fits:net+dh<=COL_MAX+1,br,iy};
+    return{ci:tci,insertIdx,cursorMm,fits:net+dh<=COL_MAX+1,br,iy};
   }
 };
 
-// Fusiona todos los gaps adyacentes (internos y free) en uno solo
+// Calcula el mm de inicio de una unidad en su columna
+function calcUnitStartMm(ci, idx) {
+  let acc = 0;
+  for (let i = 0; i < idx; i++) {
+    const u = columns[ci].units[i];
+    acc += u._gap ? u._gapMm : nemaMm(u.nema);
+  }
+  return acc;
+}
+
+// Fusiona gaps adyacentes en una columna
 function fusionarGaps(ci) {
   const units = columns[ci].units;
   for (let i = units.length - 2; i >= 0; i--) {
@@ -1207,15 +1217,52 @@ function fusionarGaps(ci) {
   }
 }
 
+// Inserta una unidad en una columna en la posición mm indicada,
+// ajustando los gaps para que todo lo demás mantenga su posición absoluta.
+function insertAtMm(ci, u, targetMm) {
+  const col = columns[ci];
+  const h = nemaMm(u.nema);
+  targetMm = Math.max(0, Math.min(targetMm, COL_MAX - h));
+
+  // Rebuild column unit list inserting u at targetMm,
+  // keeping all existing units at their current absolute positions.
+  // 1. Collect existing units with their absolute mm positions
+  const entries = []; // {mm, unit}
+  let acc = 0;
+  col.units.forEach(item => {
+    if (!item._gap) entries.push({ mm: acc, unit: item });
+    acc += item._gap ? item._gapMm : nemaMm(item.nema);
+  });
+  // Add the new unit
+  entries.push({ mm: targetMm, unit: u });
+  // Sort by mm
+  entries.sort((a, b) => a.mm - b.mm);
+
+  // 2. Rebuild units array with gaps between
+  const newUnits = [];
+  let cursor = 0;
+  for (const e of entries) {
+    const startMm = Math.max(cursor, e.mm);
+    if (startMm > cursor) {
+      newUnits.push({ _gap: true, _gapMm: startMm - cursor, id: uid() });
+    }
+    newUnits.push(e.unit);
+    cursor = startMm + nemaMm(e.unit.nema);
+  }
+  col.units = newUnits;
+  fusionarGaps(ci);
+}
+
 function recomputeFreeGaps(){
-  columns.forEach((col, ci) => {
-    // Calcular espacio real ocupado solo por unidades (ignorar todos los gaps)
-    const realUsed = col.units.reduce((s,u) => u._gap ? s : s + nemaMm(u.nema), 0);
-    const left = COL_MAX - realUsed;
-    // Quitar todos los gaps existentes
-    col.units = col.units.filter(u => !u._gap);
-    // Agregar gap libre al final si queda espacio
-    if (left > 0) col.units.push({_gap:true, _free:true, _gapMm:left, id:uid()});
+  columns.forEach(col => {
+    // Quitar solo el gap _free del final
+    col.units = col.units.filter(u => !u._free);
+    // Fusionar gaps internos adyacentes
+    fusionarGaps(columns.indexOf(col));
+    // Calcular espacio libre real al final
+    const totalH = col.units.reduce((s,u) => s + (u._gap ? u._gapMm : nemaMm(u.nema)), 0);
+    const left = COL_MAX - totalH;
+    if (left > 0) col.units.push({ _gap: true, _free: true, _gapMm: left, id: uid() });
   });
 }
 
