@@ -508,6 +508,8 @@
   .unit-table .td-nema { color: var(--accent); font-family: var(--display); font-size: 1rem; cursor: pointer; }
   .unit-table .td-tag  { cursor: pointer; }
   .unit-table .td-tag:hover, .unit-table .td-nema:hover { color: var(--accent); }
+  .unit-table .td-pos  { cursor: pointer; font-family: var(--mono); color: var(--warn); }
+  .unit-table .td-pos:hover { color: var(--text); }
 
   .inline-select, .inline-input {
     background: var(--bg);
@@ -840,24 +842,20 @@ function editPendingNema(id) {
   const el = document.querySelector(`.unit-item-nema[onclick="editPendingNema(${id})"]`);
   if (!el) return;
   let done = false;
-  const sel = document.createElement('select');
-  sel.className = 'inline-select';
-  sel.style.cssText = 'width:90px;font-size:11px;';
-  Object.keys(NEMA_H).forEach(s => {
-    const o = document.createElement('option');
-    o.value = s; o.textContent = s;
-    if (s === u.nema) o.selected = true;
-    sel.appendChild(o);
-  });
-  el.replaceWith(sel);
-  sel.focus();
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'inline-input';
+  inp.value = u.nema; inp.placeholder = '2X';
+  inp.style.cssText = 'width:52px;font-size:11px;text-transform:uppercase;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
   function commit() {
     if (done) return; done = true;
-    u.nema = sel.value;
+    const val = inp.value.trim().toUpperCase();
+    if (NEMA_H[val]) u.nema = val;
     renderPending(); renderTable(); updateStats();
   }
-  sel.addEventListener('change', commit);
-  sel.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { done = true; renderPending(); } });
+  inp.addEventListener('blur', commit);
 }
 
 function editPendingTag(id) {
@@ -996,65 +994,84 @@ function renderRowLabels(){
     ).join('');
 }
 
+// Renderiza el DOM de una columna concreta dado su índice
+function buildColEl(col, ci, animate) {
+  const used    = Math.min(colHeight(col), COL_MAX);
+  const usedReal= col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema), 0);
+  const pct     = Math.round(Math.min(usedReal, COL_MAX) / COL_MAX * 100);
+  const pc      = pct>90?'var(--danger)':pct>75?'var(--warn)':'var(--accent)';
+  const colDiv  = document.createElement('div');
+  colDiv.className      = 'ccm-col';
+  colDiv.dataset.colidx = ci;
+  if (animate) colDiv.style.animationDelay = (ci * .05) + 's';
+  else         colDiv.style.animation = 'none'; // sin fadeUp al re-renderizar
+  colDiv.innerHTML = `
+    <div class="ccm-col-header">
+      <span class="ccm-col-name">COL ${ci+1}</span>
+      <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted)">${pct}%</span>
+    </div>
+    <div class="ccm-col-prog-bar"><div class="ccm-col-prog-fill" style="width:${pct}%;background:${pc}"></div></div>
+    <div class="ccm-col-body" id="col-body-${ci}" data-colidx="${ci}"></div>
+    <div class="ccm-col-footer">${used}mm / ${COL_MAX}mm &nbsp;·&nbsp; ${pct}% &nbsp;·&nbsp; ${COL_W_MM}mm</div>
+  `;
+  const body = colDiv.querySelector(`#col-body-${ci}`);
+  let acc = 0;
+  col.units.forEach(u => {
+    const h = u._gap ? u._gapMm : nemaMm(u.nema);
+    const div = document.createElement('div');
+    div.style.top    = mmToPx(acc) + 'px';
+    div.style.height = Math.max(mmToPx(h), 2) + 'px';
+    if (u._gap) {
+      div.className = `cub ${u._free ? 'cub-free' : 'cub-gap'}`;
+      div.innerHTML = `<span class="cub-nema">${u._free?'Libre':'Gap'} ${Math.round(h)}mm</span>`;
+    } else {
+      const sizeClass  = 'cub-s' + u.nema.toLowerCase().replace('x','') + 'x';
+      const fixedClass = u.posFixed ? ' cub-fixed' : '';
+      div.className      = `cub ${u.reservado ? 'cub-reserved' : sizeClass + fixedClass}`;
+      div.dataset.uid    = u.id;
+      div.dataset.colidx = ci;
+      const posBadge = `${ci+1}${calcPosBadge(acc)}`;
+      let badges = '';
+      if (u.reservado) badges += `<span class="badge badge-reserved">RSRV</span>`;
+      div.innerHTML = `
+        <div class="cub-nema">${u.nema}</div>
+        ${u.tag ? `<div class="cub-tag">${u.tag}</div>` : ''}
+        <div class="cub-mm">${nemaMm(u.nema)}mm</div>
+        <div class="cub-pos">${posBadge}</div>
+        ${badges ? `<div class="cub-badges">${badges}</div>` : ''}
+      `;
+    }
+    acc += h;
+    body.appendChild(div);
+  });
+  return colDiv;
+}
+
+// Render completo — reconstruye todas las columnas
 function renderCCM(){
-  const colsEl=document.getElementById('ccm-cols');
+  const colsEl = document.getElementById('ccm-cols');
   renderRowLabels();
-  if(!columns.length){
-    colsEl.innerHTML=`<div class="empty-state" style="padding:3rem 2.5rem;min-width:280px;">
+  if (!columns.length) {
+    colsEl.innerHTML = `<div class="empty-state" style="padding:3rem 2.5rem;min-width:280px;">
       <div class="empty-state-icon">▦</div>
       <div class="empty-state-title">Sin layout generado</div>
       <div class="empty-state-sub">Agrega unidades y presiona Generar Layout CCM</div>
-    </div>`;return;
+    </div>`; return;
   }
-  colsEl.innerHTML='';
-  columns.forEach((col,ci)=>{
-    const used=Math.min(colHeight(col),COL_MAX);
-    const usedReal=col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema),0);
-    const pct=Math.round(Math.min(usedReal,COL_MAX)/COL_MAX*100);
-    const pc=pct>90?'var(--danger)':pct>75?'var(--warn)':'var(--accent)';
-    const colDiv=document.createElement('div');
-    colDiv.className='ccm-col';colDiv.dataset.colidx=ci;
-    colDiv.style.animationDelay=(ci*.05)+'s';
-    colDiv.innerHTML=`
-      <div class="ccm-col-header">
-        <span class="ccm-col-name">COL ${ci+1}</span>
-        <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted)">${pct}%</span>
-      </div>
-      <div class="ccm-col-prog-bar"><div class="ccm-col-prog-fill" style="width:${pct}%;background:${pc}"></div></div>
-      <div class="ccm-col-body" id="col-body-${ci}" data-colidx="${ci}"></div>
-      <div class="ccm-col-footer">${used}mm / ${COL_MAX}mm &nbsp;·&nbsp; ${pct}% &nbsp;·&nbsp; ${COL_W_MM}mm</div>
-    `;
-    colsEl.appendChild(colDiv);
-    const body=colDiv.querySelector(`#col-body-${ci}`);
-    let acc=0;
-    col.units.forEach(u=>{
-      const h=u._gap?u._gapMm:nemaMm(u.nema);
-      const div=document.createElement('div');
-      div.style.top=mmToPx(acc)+'px';
-      div.style.height=Math.max(mmToPx(h),2)+'px';
-      if(u._gap){
-        div.className=`cub ${u._free?'cub-free':'cub-gap'}`;
-        div.innerHTML=`<span class="cub-nema">${u._free?'Libre':'Gap'} ${Math.round(h)}mm</span>`;
-      } else {
-        const sizeClass = 'cub-s' + u.nema.toLowerCase().replace('x','') + 'x';
-        const fixedClass = u.posFixed ? ' cub-fixed' : '';
-        div.className=`cub ${u.reservado ? 'cub-reserved' : sizeClass + fixedClass}`;
-        div.dataset.uid=u.id;div.dataset.colidx=ci;
-        const posLetter=calcPosBadge(acc);
-        const posBadge=`${ci+1}${posLetter}`;
-        let badges='';
+  colsEl.innerHTML = '';
+  columns.forEach((col, ci) => colsEl.appendChild(buildColEl(col, ci, true)));
+  initMouseDrag();
+  renderListaCopiable();
+}
 
-        if(u.reservado)badges+=`<span class="badge badge-reserved">RSRV</span>`;
-        div.innerHTML=`
-          <div class="cub-nema">${u.nema}</div>
-          ${u.tag?`<div class="cub-tag">${u.tag}</div>`:''}
-          <div class="cub-mm">${nemaMm(u.nema)}mm</div>
-          <div class="cub-pos">${posBadge}</div>
-          ${badges?`<div class="cub-badges">${badges}</div>`:''}
-        `;
-      }
-      acc+=h;body.appendChild(div);
-    });
+// Render parcial — solo re-renderiza las columnas indicadas, el resto no se toca
+function renderColsPartial(ciList) {
+  const colsEl = document.getElementById('ccm-cols');
+  ciList.forEach(ci => {
+    const existing = colsEl.querySelector(`.ccm-col[data-colidx="${ci}"]`);
+    const newCol   = buildColEl(columns[ci], ci, false);
+    if (existing) colsEl.replaceChild(newCol, existing);
+    else          colsEl.appendChild(newCol);
   });
   initMouseDrag();
   renderListaCopiable();
@@ -1117,15 +1134,43 @@ window.initMouseDrag=function(){
       const{srcCi,srcPos}=drag;
       const u=columns[srcCi].units[srcPos];
       if(u&&!u._gap){
-        columns[srcCi].units.splice(srcPos,1);
-        u.posFixed=null;
-        let ri=insertIdx;
-        if(tci===srcCi&&srcPos<ri)ri--;
-        columns[tci].units=columns[tci].units.filter(x=>!x._free);
-        ri=Math.min(ri,columns[tci].units.length);
-        columns[tci].units.splice(ri,0,u);
-        if(tci!==srcCi)columns[srcCi].units=columns[srcCi].units.filter(x=>!x._free);
-        recomputeFreeGaps();renderCCM();renderTable();updateStats();
+        const dragH = nemaMm(u.nema);
+        u.posFixed = null;
+
+        if (tci === srcCi) {
+          // Misma columna: quitar, limpiar gaps libres, reinsertar
+          columns[srcCi].units.splice(srcPos, 1);
+          let ri = insertIdx;
+          if (srcPos < ri) ri--;
+          columns[tci].units = columns[tci].units.filter(x => !x._free);
+          ri = Math.min(ri, columns[tci].units.length);
+          columns[tci].units.splice(ri, 0, u);
+        } else {
+          // Distinta columna: reemplazar posición origen con gap del mismo tamaño
+          columns[srcCi].units.splice(srcPos, 1, { _gap: true, _gapMm: dragH, id: uid() });
+          fusionarGaps(srcCi);
+
+          // Insertar en destino: si cae sobre un gap interno, dividirlo
+          columns[tci].units = columns[tci].units.filter(x => !x._free);
+          let ri = Math.min(insertIdx, columns[tci].units.length);
+          // Si ri apunta a un gap interno y la unidad cabe dentro, dividir el gap
+          const gapAtRi = columns[tci].units[ri];
+          if (gapAtRi && gapAtRi._gap && !gapAtRi._free && gapAtRi._gapMm >= dragH) {
+            const remainder = gapAtRi._gapMm - dragH;
+            const newItems = remainder > 0
+              ? [u, { _gap: true, _gapMm: remainder, id: uid() }]
+              : [u];
+            columns[tci].units.splice(ri, 1, ...newItems);
+          } else {
+            columns[tci].units.splice(ri, 0, u);
+          }
+          fusionarGaps(tci);
+        }
+
+        recomputeFreeGaps();
+        const affected = tci===srcCi ? [tci] : [srcCi, tci];
+        renderColsPartial(affected);
+        renderTable();updateStats();
       }
     }
     drag=null;
@@ -1160,11 +1205,23 @@ window.initMouseDrag=function(){
     iy=Math.max(br.top,Math.min(br.bottom,iy));
     const du=columns[drag.srcCi].units[drag.srcPos];
     const dh=du?nemaMm(du.nema):0;
-    const fg=col.units.find(u=>u._free);
-    const net=colHeight(col)-(fg?fg._gapMm:0)-(tci===drag.srcCi?dh:0);
+    // Espacio real ocupado = solo unidades (sin ningún gap interno ni free)
+    const realUsed=col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema),0);
+    // Si es la misma columna, descontamos la unidad que estamos moviendo
+    const net=realUsed-(tci===drag.srcCi?dh:0);
     return{ci:tci,insertIdx,fits:net+dh<=COL_MAX+1,br,iy};
   }
 };
+
+// Fusiona gaps internos adyacentes en uno solo
+function fusionarGaps(ci) {
+  const units = columns[ci].units;
+  for (let i = units.length - 2; i >= 0; i--) {
+    if (units[i]._gap && !units[i]._free && units[i+1] && units[i+1]._gap && !units[i+1]._free) {
+      units.splice(i, 2, { _gap: true, _gapMm: units[i]._gapMm + units[i+1]._gapMm, id: uid() });
+    }
+  }
+}
 
 function recomputeFreeGaps(){
   columns.forEach(col=>{
@@ -1202,7 +1259,7 @@ function renderTable(){
       <td class="td-nema" onclick="editNema(this,${u.id})">${u.nema}</td>
       <td style="color:var(--muted)">${nemaMm(u.nema)}mm</td>
       <td class="td-tag" onclick="editTag(this,${u.id})">${u.tag||'<span style="opacity:.35">—</span>'}</td>
-      <td style="font-family:var(--mono);color:var(--warn)">${pos}</td>
+      <td class="td-pos" onclick="editPos(this,${u.id})">${pos}</td>
       <td>${tipo}</td>
       <td><button class="btn btn-danger btn-sm" onclick="delUnitFromAll(${u.id})">✕</button></td>
     </tr>`;
@@ -1211,11 +1268,19 @@ function renderTable(){
 
 function editNema(td,id){
   let done=false;
-  const sel=document.createElement('select');sel.className='inline-select';
-  Object.keys(NEMA_H).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===td.textContent.trim())o.selected=true;sel.appendChild(o);});
-  td.innerHTML='';td.appendChild(sel);sel.focus();
-  function commit(){if(done)return;done=true;const u=findUnitById(id);if(u)u.nema=sel.value;requestAnimationFrame(()=>{renderTable();renderCCM();updateStats();});}
-  sel.addEventListener('change',commit);sel.addEventListener('blur',commit);
+  const cur=td.textContent.trim();
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-input';
+  inp.value=cur;inp.placeholder='2X';inp.style.cssText='width:52px;text-transform:uppercase;';
+  td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+  function commit(){
+    if(done)return;done=true;
+    const val=inp.value.trim().toUpperCase();
+    const u=findUnitById(id);
+    if(u&&NEMA_H[val])u.nema=val;
+    requestAnimationFrame(()=>{renderTable();renderCCM();updateStats();});
+  }
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){done=true;renderTable();}});
+  inp.addEventListener('blur',commit);
 }
 function editTag(td,id){
   let done=false;
@@ -1223,6 +1288,26 @@ function editTag(td,id){
   const inp=document.createElement('input');inp.type='text';inp.className='inline-input';inp.value=cur;inp.style.width='100%';
   td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
   function commit(){if(done)return;done=true;const u=findUnitById(id);if(u)u.tag=inp.value.trim();requestAnimationFrame(()=>renderTable());}
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){done=true;renderTable();}});
+  inp.addEventListener('blur',commit);
+}
+function editPos(td,id){
+  let done=false;
+  const u=findUnitById(id);
+  if(!u)return;
+  const cur=u.posFixed?`${u.posFixed.col}${u.posFixed.letra}`:'';
+  const inp=document.createElement('input');inp.type='text';inp.className='inline-input';
+  inp.value=cur;inp.placeholder='1A…';inp.style.width='56px';
+  td.innerHTML='';td.appendChild(inp);inp.focus();inp.select();
+  function commit(){
+    if(done)return;done=true;
+    const parsed=parsePos(inp.value.trim());
+    u.posFixed=parsed;
+    // also sync back to units array if unit came from columns
+    const inUnits=units.find(x=>x.id===id);
+    if(inUnits)inUnits.posFixed=parsed;
+    requestAnimationFrame(()=>renderTable());
+  }
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){done=true;renderTable();}});
   inp.addEventListener('blur',commit);
 }
