@@ -1131,33 +1131,24 @@ window.initMouseDrag=function(){
         u.posFixed = null;
 
         if (tci === srcCi) {
-          // Misma columna: quitar, limpiar gaps libres, reinsertar
+          // Misma columna: quitar y reinsertar
           columns[srcCi].units.splice(srcPos, 1);
-          let ri = insertIdx;
-          if (srcPos < ri) ri--;
-          columns[tci].units = columns[tci].units.filter(x => !x._free);
-          ri = Math.min(ri, columns[tci].units.length);
-          columns[tci].units.splice(ri, 0, u);
+          // Quitar gaps para recalcular posición limpia
+          const onlyUnits = columns[tci].units.filter(x => !x._gap);
+          // Calcular ri entre unidades reales
+          const srcRealPos = columns[srcCi].units.slice(0, srcPos).filter(x => !x._gap).length;
+          let ri = info.insertIdx;
+          if (srcRealPos < ri) ri--;
+          ri = Math.max(0, Math.min(ri, onlyUnits.length));
+          onlyUnits.splice(ri, 0, u);
+          columns[tci].units = onlyUnits;
         } else {
-          // Distinta columna: reemplazar posición origen con gap del mismo tamaño
-          columns[srcCi].units.splice(srcPos, 1, { _gap: true, _gapMm: dragH, id: uid() });
-          fusionarGaps(srcCi);
-
-          // Insertar en destino: si cae sobre un gap interno, dividirlo
-          columns[tci].units = columns[tci].units.filter(x => !x._free);
-          let ri = Math.min(insertIdx, columns[tci].units.length);
-          // Si ri apunta a un gap interno y la unidad cabe dentro, dividir el gap
-          const gapAtRi = columns[tci].units[ri];
-          if (gapAtRi && gapAtRi._gap && !gapAtRi._free && gapAtRi._gapMm >= dragH) {
-            const remainder = gapAtRi._gapMm - dragH;
-            const newItems = remainder > 0
-              ? [u, { _gap: true, _gapMm: remainder, id: uid() }]
-              : [u];
-            columns[tci].units.splice(ri, 1, ...newItems);
-          } else {
-            columns[tci].units.splice(ri, 0, u);
-          }
-          fusionarGaps(tci);
+          // Distinta columna: quitar de origen, insertar en destino entre unidades reales
+          columns[srcCi].units = columns[srcCi].units.filter(x => !x._gap && x.id !== u.id);
+          const destUnits = columns[tci].units.filter(x => !x._gap);
+          const ri = Math.min(insertIdx, destUnits.length);
+          destUnits.splice(ri, 0, u);
+          columns[tci].units = destUnits;
         }
 
         recomputeFreeGaps();
@@ -1206,21 +1197,25 @@ window.initMouseDrag=function(){
   }
 };
 
-// Fusiona gaps internos adyacentes en uno solo
+// Fusiona todos los gaps adyacentes (internos y free) en uno solo
 function fusionarGaps(ci) {
   const units = columns[ci].units;
   for (let i = units.length - 2; i >= 0; i--) {
-    if (units[i]._gap && !units[i]._free && units[i+1] && units[i+1]._gap && !units[i+1]._free) {
+    if (units[i]._gap && units[i+1] && units[i+1]._gap) {
       units.splice(i, 2, { _gap: true, _gapMm: units[i]._gapMm + units[i+1]._gapMm, id: uid() });
     }
   }
 }
 
 function recomputeFreeGaps(){
-  columns.forEach(col=>{
-    col.units=col.units.filter(u=>!u._free);
-    const left=COL_MAX-colHeight(col);
-    if(left>0)col.units.push({_gap:true,_free:true,_gapMm:left,id:uid()});
+  columns.forEach((col, ci) => {
+    // Calcular espacio real ocupado solo por unidades (ignorar todos los gaps)
+    const realUsed = col.units.reduce((s,u) => u._gap ? s : s + nemaMm(u.nema), 0);
+    const left = COL_MAX - realUsed;
+    // Quitar todos los gaps existentes
+    col.units = col.units.filter(u => !u._gap);
+    // Agregar gap libre al final si queda espacio
+    if (left > 0) col.units.push({_gap:true, _free:true, _gapMm:left, id:uid()});
   });
 }
 
