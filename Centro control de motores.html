@@ -644,8 +644,7 @@
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:0.5rem;">
-        <button class="btn btn-primary" onclick="addUnit(false)">+ Agregar</button>
-        <button class="btn btn-ghost" onclick="addUnit(true)">▤ Reservado</button>
+        <button class="btn btn-primary" onclick="addUnit()">+ Agregar</button>
       </div>
     </div>
 
@@ -653,8 +652,6 @@
       <div class="section-label">Formato: SIZE ; tag ; posición</div>
       <textarea id="txt-lista" placeholder="2X ; M-101
 4X ; Bomba B ; 2K
-R2X ; Futura ampliación
-R3X ; Reserva ; 1C
 6X ; Compresor
 1X"></textarea>
       <div style="display:flex;gap:8px;margin-top:0.75rem;">
@@ -779,13 +776,13 @@ function parsePos(s) {
   return m?{col:parseInt(m[1]),letra:m[2]}:null;
 }
 
-function addUnit(reservado) {
+function addUnit() {
   const nema=document.getElementById('sel-size').value;
   const tag=document.getElementById('inp-tag').value.trim();
   const posRaw=document.getElementById('inp-pos').value.trim();
   const posFixed=parsePos(posRaw);
   if(posRaw&&!posFixed){showAlert('Posición inválida. Formato: número+letra (ej. 1A, 2K)','warn');return;}
-  units.push({id:uid(),nema,tag,reservado,posFixed});
+  units.push({id:uid(),nema,tag,reservado:false,posFixed});
   document.getElementById('inp-tag').value='';
   document.getElementById('inp-pos').value='';
   renderPending();renderTable();updateStats();
@@ -798,10 +795,8 @@ function importarLista() {
     const parts=line.split(';').map(s=>s.trim());
     if(!parts[0])return;
     let nemaRaw=parts[0].toUpperCase();
-    const reservado=nemaRaw.startsWith('R');
-    const nema=reservado?nemaRaw.slice(1):nemaRaw;
-    if(!NEMA_H[nema])return;
-    units.push({id:uid(),nema,tag:parts[1]||'',reservado,posFixed:parsePos(parts[2])});
+    if(!NEMA_H[nemaRaw])return;
+    units.push({id:uid(),nema:nemaRaw,tag:parts[1]||'',reservado:false,posFixed:parsePos(parts[2])});
     added++;
   });
   showAlert(`${added} unidades importadas`,'info');
@@ -826,12 +821,11 @@ function renderPending() {
     </div>`;return;
   }
   el.innerHTML=units.map(u=>`
-    <div class="unit-item ${u.reservado?'reserved':''}">
+    <div class="unit-item">
       <span class="unit-item-nema" title="Clic para cambiar size" onclick="editPendingNema(${u.id})">${u.nema}</span>
       <span class="unit-item-mm">${nemaMm(u.nema)}mm</span>
       <span class="unit-item-tag" title="Clic para editar tag" onclick="editPendingTag(${u.id})">${u.tag||'<span style="opacity:.35">sin tag</span>'}</span>
       <span class="${u.posFixed?'unit-item-pos':'unit-item-pos-empty'}" title="Clic para editar posición fija" onclick="editPendingPos(${u.id})">${u.posFixed?u.posFixed.col+u.posFixed.letra:'pos'}</span>
-      ${u.reservado?'<span class="badge badge-reserved">RSRV</span>':''}
       <button class="unit-item-del" onclick="delUnit(${u.id})">✕</button>
     </div>`).join('');
 }
@@ -1027,12 +1021,11 @@ function buildColEl(col, ci, animate) {
     } else {
       const sizeClass  = 'cub-s' + u.nema.toLowerCase().replace('x','') + 'x';
       const fixedClass = u.posFixed ? ' cub-fixed' : '';
-      div.className      = `cub ${u.reservado ? 'cub-reserved' : sizeClass + fixedClass}`;
+      div.className      = `cub ${sizeClass}${fixedClass}`;
       div.dataset.uid    = u.id;
       div.dataset.colidx = ci;
       const posBadge = `${ci+1}${calcPosBadge(acc)}`;
       let badges = '';
-      if (u.reservado) badges += `<span class="badge badge-reserved">RSRV</span>`;
       div.innerHTML = `
         <div class="cub-nema">${u.nema}</div>
         ${u.tag ? `<div class="cub-tag">${u.tag}</div>` : ''}
@@ -1253,7 +1246,7 @@ function renderTable(){
   if(!tu.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;font-family:var(--mono);font-size:0.75rem;letter-spacing:1px;">Sin unidades aún</td></tr>`;return;}
   tbody.innerHTML=tu.map((u,i)=>{
     const pos=u._ci!==null?`${u._ci+1}${calcPosBadge(u._mm)}`:(u.posFixed?`${u.posFixed.col}${u.posFixed.letra}`:'—');
-    const tipo=u.reservado?'<span class="badge badge-reserved">RSRV</span>':(u.posFixed?'<span class="badge badge-fixed">FIJO</span>':'<span class="badge badge-free">LIBRE</span>');
+    const tipo=u.posFixed?'<span class="badge badge-fixed">FIJO</span>':'<span class="badge badge-free">LIBRE</span>';
     return `<tr>
       <td class="td-num">${i+1}</td>
       <td class="td-nema" onclick="editNema(this,${u.id})">${u.nema}</td>
@@ -1342,7 +1335,7 @@ function renderListaCopiable() {
       col.units.forEach(u => {
         if (!u._gap) {
           const pos = `${ci+1}${calcPosBadge(acc)}`;
-          list += `${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+          list += `${u.nema} ; ${u.tag||''} ; ${pos}\n`;
         }
         acc += u._gap ? u._gapMm : nemaMm(u.nema);
       });
@@ -1350,7 +1343,7 @@ function renderListaCopiable() {
   } else if (units.length) {
     units.forEach(u => {
       const pos = u.posFixed ? `${u.posFixed.col}${u.posFixed.letra}` : '';
-      list += `${u.reservado?'R':''}${u.nema} ; ${u.tag||''} ; ${pos}\n`;
+      list += `${u.nema} ; ${u.tag||''} ; ${pos}\n`;
     });
   }
   _listaTexto = list.trim();
