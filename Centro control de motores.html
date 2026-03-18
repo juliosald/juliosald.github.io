@@ -1006,7 +1006,7 @@ function buildColEl(col, ci, animate) {
     </div>
     <div class="ccm-col-prog-bar"><div class="ccm-col-prog-fill" style="width:${pct}%;background:${pc}"></div></div>
     <div class="ccm-col-body" id="col-body-${ci}" data-colidx="${ci}"></div>
-    <div class="ccm-col-footer">${used}mm / ${COL_MAX}mm &nbsp;·&nbsp; ${pct}% &nbsp;·&nbsp; ${COL_W_MM}mm</div>
+    <div class="ccm-col-footer">${usedReal}mm &nbsp;·&nbsp; ${pct}% &nbsp;·&nbsp; ${COL_W_MM}mm</div>
   `;
   const body = colDiv.querySelector(`#col-body-${ci}`);
   let acc = 0;
