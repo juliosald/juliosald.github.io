@@ -309,10 +309,15 @@
     transition: background .15s;
   }
   .unit-item:hover { background: rgba(255,255,255,.02); }
-  .unit-item-nema { font-family: var(--display); font-size: 14px; color: var(--accent); min-width: 36px; }
+  .unit-item-nema { font-family: var(--display); font-size: 14px; color: var(--accent); min-width: 36px; cursor: pointer; }
+  .unit-item-nema:hover { color: var(--text); }
   .unit-item-mm   { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); min-width: 44px; }
-  .unit-item-tag  { font-family: var(--mono); font-size: 0.75rem; color: var(--text); flex: 1; }
-  .unit-item-pos  { font-family: var(--mono); font-size: 0.65rem; color: var(--warn); }
+  .unit-item-tag  { font-family: var(--mono); font-size: 0.75rem; color: var(--text); flex: 1; cursor: pointer; }
+  .unit-item-tag:hover { color: var(--accent); }
+  .unit-item-pos  { font-family: var(--mono); font-size: 0.65rem; color: var(--warn); cursor: pointer; }
+  .unit-item-pos:hover { color: var(--text); }
+  .unit-item-pos-empty { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); opacity:.4; cursor: pointer; }
+  .unit-item-pos-empty:hover { opacity:.7; }
   .unit-item-del  { margin-left: auto; opacity: .35; transition: opacity .2s; cursor: pointer; font-size: 14px; background: none; border: none; color: var(--danger); }
   .unit-item-del:hover { opacity: 1; }
   .unit-item.reserved { border-color: rgba(239,68,68,.2); }
@@ -820,13 +825,85 @@ function renderPending() {
   }
   el.innerHTML=units.map(u=>`
     <div class="unit-item ${u.reservado?'reserved':''}">
-      <span class="unit-item-nema">${u.nema}</span>
+      <span class="unit-item-nema" title="Clic para cambiar size" onclick="editPendingNema(${u.id})">${u.nema}</span>
       <span class="unit-item-mm">${nemaMm(u.nema)}mm</span>
-      <span class="unit-item-tag">${u.tag||'<span style="opacity:.35">sin tag</span>'}</span>
-      ${u.posFixed?`<span class="unit-item-pos">${u.posFixed.col}${u.posFixed.letra}</span>`:''}
+      <span class="unit-item-tag" title="Clic para editar tag" onclick="editPendingTag(${u.id})">${u.tag||'<span style="opacity:.35">sin tag</span>'}</span>
+      <span class="${u.posFixed?'unit-item-pos':'unit-item-pos-empty'}" title="Clic para editar posición fija" onclick="editPendingPos(${u.id})">${u.posFixed?u.posFixed.col+u.posFixed.letra:'pos'}</span>
       ${u.reservado?'<span class="badge badge-reserved">RSRV</span>':''}
       <button class="unit-item-del" onclick="delUnit(${u.id})">✕</button>
     </div>`).join('');
+}
+
+function editPendingNema(id) {
+  const u = units.find(x => x.id === id);
+  if (!u) return;
+  const el = document.querySelector(`.unit-item-nema[onclick="editPendingNema(${id})"]`);
+  if (!el) return;
+  let done = false;
+  const sel = document.createElement('select');
+  sel.className = 'inline-select';
+  sel.style.cssText = 'width:90px;font-size:11px;';
+  Object.keys(NEMA_H).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    if (s === u.nema) o.selected = true;
+    sel.appendChild(o);
+  });
+  el.replaceWith(sel);
+  sel.focus();
+  function commit() {
+    if (done) return; done = true;
+    u.nema = sel.value;
+    renderPending(); renderTable(); updateStats();
+  }
+  sel.addEventListener('change', commit);
+  sel.addEventListener('blur', commit);
+}
+
+function editPendingTag(id) {
+  const u = units.find(x => x.id === id);
+  if (!u) return;
+  const el = document.querySelector(`.unit-item-tag[onclick="editPendingTag(${id})"]`);
+  if (!el) return;
+  let done = false;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'inline-input';
+  inp.value = u.tag || ''; inp.placeholder = 'tag…';
+  inp.style.cssText = 'flex:1;width:100%;font-size:11px;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit() {
+    if (done) return; done = true;
+    u.tag = inp.value.trim();
+    renderPending(); renderTable();
+  }
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { done = true; renderPending(); } });
+  inp.addEventListener('blur', commit);
+}
+
+function editPendingPos(id) {
+  const u = units.find(x => x.id === id);
+  if (!u) return;
+  const selector = u.posFixed
+    ? `.unit-item-pos[onclick="editPendingPos(${id})"]`
+    : `.unit-item-pos-empty[onclick="editPendingPos(${id})"]`;
+  const el = document.querySelector(selector);
+  if (!el) return;
+  let done = false;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'inline-input';
+  inp.value = u.posFixed ? u.posFixed.col + u.posFixed.letra : '';
+  inp.placeholder = '1A…'; inp.style.cssText = 'width:52px;font-size:11px;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit() {
+    if (done) return; done = true;
+    const parsed = parsePos(inp.value.trim());
+    u.posFixed = parsed;
+    renderPending(); renderTable();
+  }
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { done = true; renderPending(); } });
+  inp.addEventListener('blur', commit);
 }
 
 function delUnit(id){units=units.filter(u=>u.id!==id);renderPending();renderTable();updateStats();}
