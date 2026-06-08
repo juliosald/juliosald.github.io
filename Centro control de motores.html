@@ -287,6 +287,24 @@
   }
   .btn-generate:active { transform: translateY(0); }
 
+  /* PDF EXPORT BUTTON */
+  .btn-pdf {
+    background: rgba(14,165,233,.1);
+    color: var(--accent2);
+    border: 1px solid rgba(14,165,233,.3);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .2s;
+    border-radius: 0;
+  }
+  .btn-pdf:hover { background: rgba(14,165,233,.2); border-color: var(--accent2); }
+
   /* BADGES */
   .badge {
     font-family: var(--mono);
@@ -337,8 +355,23 @@
   /* DIVIDER */
   .divider { height: 1px; background: var(--border); margin: 1rem 0; }
 
-  /* CCM VISUALIZER */
-  .ccm-wrapper { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+  /* ── CCM VISUALIZER ───────────────────────────────────────────────────────── */
+  /* El wrapper no hace scroll horizontal; en su lugar escala el contenido       */
+  .ccm-wrapper {
+    display: flex;
+    gap: 0;
+    /* sin overflow-x: auto — el escalado lo gestiona JS con transform */
+    padding-bottom: 8px;
+    /* Necesario para que transform-origin funcione desde la izquierda */
+    transform-origin: top left;
+  }
+
+  /* Contenedor externo que limita el alto visible después del scale */
+  .ccm-outer {
+    width: 100%;
+    overflow: hidden; /* oculta lo que sobresale, sin scroll */
+    position: relative;
+  }
 
   .row-labels {
     display: flex;
@@ -424,19 +457,18 @@
   .cub-pos    { font-family: var(--mono); font-size: 0.55rem; color: var(--warn); }
   .cub-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px; }
 
-  /* Colores por size — 12 tonos distribuidos en el espectro */
-  .cub-s1x  { background: rgba(0,200,150,.10); }   /* verde esmeralda */
-  .cub-s2x  { background: rgba(14,165,233,.10); }  /* azul cielo */
-  .cub-s3x  { background: rgba(139,92,246,.10); }  /* violeta */
-  .cub-s4x  { background: rgba(236,72,153,.10); }  /* rosa */
-  .cub-s5x  { background: rgba(245,158,11,.10); }  /* ámbar */
-  .cub-s6x  { background: rgba(239,68,68,.10); }   /* rojo */
-  .cub-s7x  { background: rgba(6,182,212,.10); }   /* cian */
-  .cub-s8x  { background: rgba(168,85,247,.10); }  /* púrpura */
-  .cub-s9x  { background: rgba(34,197,94,.10); }   /* verde lima */
-  .cub-s10x { background: rgba(249,115,22,.10); }  /* naranja */
-  .cub-s11x { background: rgba(20,184,166,.10); }  /* teal */
-  .cub-s12x { background: rgba(99,102,241,.10); }  /* índigo */
+  .cub-s1x  { background: rgba(0,200,150,.10); }
+  .cub-s2x  { background: rgba(14,165,233,.10); }
+  .cub-s3x  { background: rgba(139,92,246,.10); }
+  .cub-s4x  { background: rgba(236,72,153,.10); }
+  .cub-s5x  { background: rgba(245,158,11,.10); }
+  .cub-s6x  { background: rgba(239,68,68,.10); }
+  .cub-s7x  { background: rgba(6,182,212,.10); }
+  .cub-s8x  { background: rgba(168,85,247,.10); }
+  .cub-s9x  { background: rgba(34,197,94,.10); }
+  .cub-s10x { background: rgba(249,115,22,.10); }
+  .cub-s11x { background: rgba(20,184,166,.10); }
+  .cub-s12x { background: rgba(99,102,241,.10); }
 
   .cub-s1x:hover  { background: rgba(0,200,150,.18); }
   .cub-s2x:hover  { background: rgba(14,165,233,.18); }
@@ -451,7 +483,6 @@
   .cub-s11x:hover { background: rgba(20,184,166,.18); }
   .cub-s12x:hover { background: rgba(99,102,241,.18); }
 
-  /* Borde izquierdo de color como acento adicional */
   .cub-s1x  { border-left: 2px solid rgba(0,200,150,.5); }
   .cub-s2x  { border-left: 2px solid rgba(14,165,233,.5); }
   .cub-s3x  { border-left: 2px solid rgba(139,92,246,.5); }
@@ -465,7 +496,6 @@
   .cub-s11x { border-left: 2px solid rgba(20,184,166,.5); }
   .cub-s12x { border-left: 2px solid rgba(99,102,241,.5); }
 
-  /* Fijo: mantiene color del size pero con tinte ámbar en el borde */
   .cub-fixed .cub-nema { opacity: .85; }
 
   .cub-reserved {
@@ -555,6 +585,18 @@
     display: none;
   }
 
+  /* SCALE INDICATOR */
+  #scale-badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: none;
+    align-items: center;
+    gap: 5px;
+  }
+  #scale-badge span { color: var(--accent2); }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -582,6 +624,141 @@
   }
   .card:nth-child(1) { animation-delay: .1s; }
   .card:nth-child(2) { animation-delay: .2s; }
+
+  /* ─────────────────────────────────────────────────────────────────────────── */
+  /* PRINT / PDF STYLES                                                          */
+  /* ─────────────────────────────────────────────────────────────────────────── */
+  @media print {
+    /* Paleta clara sobre blanco para imprimir */
+    :root {
+      --bg: #ffffff;
+      --surface: #f8f9fa;
+      --surface2: #f0f2f5;
+      --border: #d0d7e2;
+      --accent: #007a5c;
+      --accent2: #0369a1;
+      --warn: #b45309;
+      --danger: #dc2626;
+      --text: #1a202c;
+      --muted: #4a5568;
+    }
+
+    /* Reset body */
+    body { background: #fff; color: #1a202c; }
+    body::before { display: none; }
+
+    /* Mostrar solo la sección de impresión */
+    .no-print,
+    header .header-right,
+    .grid,
+    #lista-card,
+    footer,
+    #drag-ghost,
+    .btn-pdf,
+    .btn-generate,
+    .btn-ghost,
+    .btn-primary,
+    .btn-danger,
+    .alerts {
+      display: none !important;
+    }
+
+    .container { padding: 0; max-width: 100%; }
+
+    /* Título de impresión */
+    .print-header {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+    .print-header h1 {
+      font-family: var(--display);
+      font-size: 2rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+    .print-header .print-meta {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.8;
+    }
+
+    /* Cards de layout y tabla */
+    .card {
+      border: 1px solid var(--border);
+      background: #fff;
+      animation: none;
+      break-inside: avoid;
+      margin-bottom: 16px;
+    }
+    .card::before { display: none; }
+
+    /* Layout gráfico: sin overflow, escala encogida */
+    .ccm-outer {
+      overflow: visible !important;
+    }
+    .ccm-wrapper {
+      transform: none !important; /* se fuerza reset; el @media print hace su propio escalado */
+      transform-origin: top left;
+    }
+    /* Columnas impresas más estrechas */
+    .ccm-col { width: 90px; }
+    .ccm-col-body { flex: 0 0 340px; height: 340px; }
+    .ccm-cols { gap: 5px; }
+
+    /* Colores de fondo para impresión a color */
+    .cub-s1x  { background: rgba(0,160,120,.12) !important; }
+    .cub-s2x  { background: rgba(14,130,200,.12) !important; }
+    .cub-s3x  { background: rgba(120,80,220,.12) !important; }
+    .cub-s4x  { background: rgba(200,60,140,.12) !important; }
+    .cub-s5x  { background: rgba(200,130,.12) !important; }
+    .cub-s6x  { background: rgba(200,55,55,.12) !important; }
+    .cub-s7x  { background: rgba(0,160,200,.12) !important; }
+    .cub-s8x  { background: rgba(140,70,220,.12) !important; }
+    .cub-s9x  { background: rgba(30,170,80,.12) !important; }
+    .cub-s10x { background: rgba(220,90,20,.12) !important; }
+    .cub-s11x { background: rgba(15,155,140,.12) !important; }
+    .cub-s12x { background: rgba(80,85,210,.12) !important; }
+
+    .cub-nema   { color: #1a202c; }
+    .cub-tag    { color: #4a5568; }
+    .cub-mm     { color: #718096; }
+    .cub-pos    { color: #b45309; }
+    .cub-gap .cub-nema, .cub-free .cub-nema { color: #a0aec0; }
+
+    /* Tabla */
+    .unit-table th { color: #4a5568; border-bottom: 2px solid var(--border); }
+    .unit-table td { color: #1a202c; border-bottom: 1px solid #e2e8f0; }
+    .unit-table .td-nema { color: var(--accent); }
+    .unit-table .td-pos  { color: var(--warn); }
+
+    .badge-fixed    { background: #fef3c7; color: #b45309; border-color: #f59e0b; }
+    .badge-free     { background: #d1fae5; color: #065f46; border-color: #10b981; }
+
+    .card-label { color: var(--muted); }
+    .card-label::after { background: var(--border); }
+
+    .ccm-col-header { background: #f0f2f5; border-color: var(--border); }
+    .ccm-col-name { color: var(--accent); }
+    .ccm-col-footer { background: #f0f2f5; border-color: var(--border); color: var(--muted); }
+    .ccm-col-prog-bar { background: #e2e8f0; }
+
+    /* Forzar salto de página entre layout y tabla */
+    .print-page-break { page-break-before: always; break-before: page; }
+
+    @page {
+      size: A3 landscape;
+      margin: 15mm 12mm;
+    }
+  }
+
+  /* El header de impresión se oculta en pantalla */
+  .print-header { display: none; }
 </style>
 </head>
 <body>
@@ -590,8 +767,18 @@
 
 <div class="container">
 
-<!-- HEADER -->
-<header>
+  <!-- HEADER IMPRESIÓN (solo visible al imprimir) -->
+  <div class="print-header">
+    <h1>CCM LAYOUT</h1>
+    <div class="print-meta">
+      <div>Centro Control de Motores</div>
+      <div id="print-stats-line">—</div>
+      <div id="print-date"></div>
+    </div>
+  </div>
+
+<!-- HEADER PANTALLA -->
+<header class="no-print" style="display:flex">
   <div class="brand">
     <h1>CCM LAYOUT</h1>
     <p>Calculadora de layout · Centro Control de Motores</p>
@@ -605,7 +792,7 @@
 </header>
 
 <!-- GRID: INGRESO + PENDIENTES -->
-<div class="grid">
+<div class="grid no-print">
 
   <!-- INGRESO -->
   <div class="card">
@@ -686,13 +873,16 @@
 <div class="card card-plain" style="animation-delay:.15s;margin-bottom:1.5rem;padding:1.75rem;">
   <div class="card-label">
     Layout gráfico
-    <span style="margin-left:auto;display:flex;gap:8px;">
+    <span id="scale-badge">escala <span id="scale-val">100%</span></span>
+    <span style="margin-left:auto;display:flex;gap:8px;" class="no-print">
+      <button class="btn-pdf" onclick="exportarPDF()">⬇ Exportar PDF</button>
       <button class="btn btn-ghost btn-sm" onclick="addColumna()">＋ Columna</button>
       <button class="btn btn-ghost btn-sm" onclick="delColumna()">－ Eliminar última</button>
     </span>
   </div>
-  <div style="overflow-x:auto;">
-    <div class="ccm-wrapper">
+  <!-- Contenedor externo con altura dinámica; .ccm-wrapper escala dentro -->
+  <div class="ccm-outer" id="ccm-outer">
+    <div class="ccm-wrapper" id="ccm-wrapper">
       <div class="row-labels" id="row-labels"></div>
       <div class="ccm-cols" id="ccm-cols">
         <div class="empty-state" style="padding:3rem 2.5rem;min-width:280px;">
@@ -709,13 +899,13 @@
 <div class="card" style="animation-delay:.2s;padding:1.75rem;">
   <div class="card-label">
     Tabla de unidades
-    <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-left:auto;">Clic en size o tag para editar</span>
+    <span style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-left:auto;" class="no-print">Clic en size o tag para editar</span>
   </div>
   <div style="overflow-x:auto;">
     <table class="unit-table">
       <thead>
         <tr>
-          <th>#</th><th>Size</th><th>Altura</th><th>Tag</th><th>Posición</th><th>Tipo</th>
+          <th>#</th><th>Size</th><th>Altura</th><th>Tag</th><th>Posición</th><th>Tipo</th><th class="no-print"></th>
         </tr>
       </thead>
       <tbody id="unit-table-body">
@@ -724,8 +914,6 @@
     </table>
   </div>
 </div>
-
-
 
 <!-- LISTA COPIABLE -->
 <div class="card" style="animation-delay:.25s;padding:1.75rem;margin-top:1.5rem;" id="lista-card">
@@ -743,7 +931,7 @@
 
 <footer>CCM LAYOUT · CALCULADORA DE DISTRIBUCIÓN · julioproyectista.cl</footer>
 
-</div>
+</div><!-- /container -->
 
 <script>
 const COL_MAX  = 1800;
@@ -762,6 +950,48 @@ function nemaMm(n) { return NEMA_H[n]||300; }
 let units=[], columns=[], _uid=0, _cid=0;
 function uid(){ return ++_uid; }
 function cid(){ return ++_cid; }
+
+/* ── AUTO-SCALE: encoge el layout para que quepa sin scroll horizontal ─────── */
+function applyScale() {
+  const wrapper = document.getElementById('ccm-wrapper');
+  const outer   = document.getElementById('ccm-outer');
+  const badge   = document.getElementById('scale-badge');
+  const valEl   = document.getElementById('scale-val');
+  if (!wrapper || !outer) return;
+
+  // Resetear para leer el tamaño natural
+  wrapper.style.transform = 'none';
+  outer.style.height      = '';
+
+  const naturalW = wrapper.scrollWidth;
+  const availW   = outer.clientWidth || outer.offsetWidth;
+
+  if (naturalW <= availW || naturalW === 0) {
+    badge.style.display = 'none';
+    return;
+  }
+
+  const scale = availW / naturalW;
+  wrapper.style.transform       = `scale(${scale})`;
+  wrapper.style.transformOrigin = 'top left';
+  // Ajustar la altura del contenedor externo para que no quede espacio vacío
+  outer.style.height = (wrapper.scrollHeight * scale) + 'px';
+
+  valEl.textContent       = Math.round(scale * 100) + '%';
+  badge.style.display     = 'inline-flex';
+}
+
+/* Exportar PDF — usa window.print con estilos @media print */
+function exportarPDF() {
+  // Actualizar datos de impresión antes de imprimir
+  const total = columns.length
+    ? columns.reduce((s,col) => s + col.units.filter(u=>!u._gap).length, 0)
+    : units.length;
+  const statsLine = `${total} unidades · ${columns.length} columnas · ${columns.length ? columns.length*COL_W_MM+'mm' : '—'}`;
+  document.getElementById('print-stats-line').textContent = statsLine;
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+  window.print();
+}
 
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['individual','lista'][i]===name));
@@ -931,7 +1161,6 @@ function calcular() {
     if(acc>COL_MAX)alerts.push(`Columna ${cIdx} excede 1800mm (${acc}mm).`);
   });
 
-  // FFD con soporte para gaps internos (best-fit across gaps + trailing space)
   function getSlots(h) {
     const slots = [];
     columns.forEach((col, ci) => {
@@ -942,7 +1171,7 @@ function calcular() {
       const trail = COL_MAX - colHeight(col);
       if (trail >= h) slots.push({ ci, gapIdx: -1, space: trail });
     });
-    slots.sort((a, b) => a.space - b.space); // best fit: menor espacio sobrante
+    slots.sort((a, b) => a.space - b.space);
     return slots;
   }
 
@@ -988,7 +1217,6 @@ function renderRowLabels(){
     ).join('');
 }
 
-// Renderiza el DOM de una columna concreta dado su índice
 function buildColEl(col, ci, animate) {
   const used    = Math.min(colHeight(col), COL_MAX);
   const usedReal= col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema), 0);
@@ -998,7 +1226,7 @@ function buildColEl(col, ci, animate) {
   colDiv.className      = 'ccm-col';
   colDiv.dataset.colidx = ci;
   if (animate) colDiv.style.animationDelay = (ci * .05) + 's';
-  else         colDiv.style.animation = 'none'; // sin fadeUp al re-renderizar
+  else         colDiv.style.animation = 'none';
   colDiv.innerHTML = `
     <div class="ccm-col-header">
       <span class="ccm-col-name">COL ${ci+1}</span>
@@ -1025,13 +1253,11 @@ function buildColEl(col, ci, animate) {
       div.dataset.uid    = u.id;
       div.dataset.colidx = ci;
       const posBadge = `${ci+1}${calcPosBadge(acc)}`;
-      let badges = '';
       div.innerHTML = `
         <div class="cub-nema">${u.nema}</div>
         ${u.tag ? `<div class="cub-tag">${u.tag}</div>` : ''}
         <div class="cub-mm">${nemaMm(u.nema)}mm</div>
         <div class="cub-pos">${posBadge}</div>
-        ${badges ? `<div class="cub-badges">${badges}</div>` : ''}
       `;
     }
     acc += h;
@@ -1040,7 +1266,6 @@ function buildColEl(col, ci, animate) {
   return colDiv;
 }
 
-// Render completo — reconstruye todas las columnas
 function renderCCM(){
   const colsEl = document.getElementById('ccm-cols');
   renderRowLabels();
@@ -1049,15 +1274,18 @@ function renderCCM(){
       <div class="empty-state-icon">▦</div>
       <div class="empty-state-title">Sin layout generado</div>
       <div class="empty-state-sub">Agrega unidades y presiona Generar Layout CCM</div>
-    </div>`; return;
+    </div>`;
+    applyScale();
+    return;
   }
   colsEl.innerHTML = '';
   columns.forEach((col, ci) => colsEl.appendChild(buildColEl(col, ci, true)));
   initMouseDrag();
   renderListaCopiable();
+  // Esperar a que el DOM pinte antes de escalar
+  requestAnimationFrame(() => applyScale());
 }
 
-// Render parcial — solo re-renderiza las columnas indicadas, el resto no se toca
 function renderColsPartial(ciList) {
   const colsEl = document.getElementById('ccm-cols');
   ciList.forEach(ci => {
@@ -1068,9 +1296,13 @@ function renderColsPartial(ciList) {
   });
   initMouseDrag();
   renderListaCopiable();
+  requestAnimationFrame(() => applyScale());
 }
 
-// DRAG & DROP
+// Re-escalar si cambia el tamaño de la ventana
+window.addEventListener('resize', () => applyScale());
+
+/* ── DRAG & DROP ─────────────────────────────────────────────────────────── */
 window.initMouseDrag=function(){
   const ghost=document.getElementById('drag-ghost');
   let drag=null;
@@ -1131,22 +1363,12 @@ window.initMouseDrag=function(){
         u.posFixed = null;
 
         if (tci === srcCi) {
-          // Misma columna: reconstruir desde posiciones absolutas
-          // Calcular mm de cada unidad antes de mover
-          const snapMm = calcSnapMm(tci, u.id, null);
-          // Quitar unidad de su posición
           columns[srcCi].units.splice(srcPos, 1);
-          // Insertar en nueva posición relativa al cursor
           const destMm = info.cursorMm;
           insertAtMm(tci, u, destMm);
         } else {
-          // Distinta columna: dejar gap en origen, insertar en destino por posición mm
-          const srcMm = calcUnitStartMm(srcCi, srcPos);
-          // Reemplazar unidad en origen por gap del mismo tamaño
           columns[srcCi].units.splice(srcPos, 1, { _gap: true, _gapMm: dragH, id: uid() });
-          // Fusionar gaps adyacentes en origen
           fusionarGaps(srcCi);
-          // Insertar en destino por posición mm del cursor
           insertAtMm(tci, u, info.cursorMm);
         }
 
@@ -1186,18 +1408,15 @@ window.initMouseDrag=function(){
       if(us)insertIdx=col.units.findIndex(u=>u.id===parseInt(us))+1;
     }
     iy=Math.max(br.top,Math.min(br.bottom,iy));
-    // Calcular cursorMm: posición en mm dentro de la columna donde suelta el mouse
     const cursorMm = Math.max(0, Math.min(COL_MAX, (iy - br.top) / COL_H_PX * COL_MAX));
     const du=columns[drag.srcCi].units[drag.srcPos];
     const dh=du?nemaMm(du.nema):0;
-    // Espacio real ocupado = solo unidades (sin ningún gap)
     const realUsed=col.units.reduce((s,u)=>u._gap?s:s+nemaMm(u.nema),0);
     const net=realUsed-(tci===drag.srcCi?dh:0);
     return{ci:tci,insertIdx,cursorMm,fits:net+dh<=COL_MAX+1,br,iy};
   }
 };
 
-// Calcula el mm de inicio de una unidad en su columna
 function calcUnitStartMm(ci, idx) {
   let acc = 0;
   for (let i = 0; i < idx; i++) {
@@ -1207,7 +1426,6 @@ function calcUnitStartMm(ci, idx) {
   return acc;
 }
 
-// Fusiona gaps adyacentes en una columna
 function fusionarGaps(ci) {
   const units = columns[ci].units;
   for (let i = units.length - 2; i >= 0; i--) {
@@ -1217,28 +1435,20 @@ function fusionarGaps(ci) {
   }
 }
 
-// Inserta una unidad en una columna en la posición mm indicada,
-// ajustando los gaps para que todo lo demás mantenga su posición absoluta.
 function insertAtMm(ci, u, targetMm) {
   const col = columns[ci];
   const h = nemaMm(u.nema);
   targetMm = Math.max(0, Math.min(targetMm, COL_MAX - h));
 
-  // Rebuild column unit list inserting u at targetMm,
-  // keeping all existing units at their current absolute positions.
-  // 1. Collect existing units with their absolute mm positions
-  const entries = []; // {mm, unit}
+  const entries = [];
   let acc = 0;
   col.units.forEach(item => {
     if (!item._gap) entries.push({ mm: acc, unit: item });
     acc += item._gap ? item._gapMm : nemaMm(item.nema);
   });
-  // Add the new unit
   entries.push({ mm: targetMm, unit: u });
-  // Sort by mm
   entries.sort((a, b) => a.mm - b.mm);
 
-  // 2. Rebuild units array with gaps between
   const newUnits = [];
   let cursor = 0;
   for (const e of entries) {
@@ -1255,11 +1465,8 @@ function insertAtMm(ci, u, targetMm) {
 
 function recomputeFreeGaps(){
   columns.forEach(col => {
-    // Quitar solo el gap _free del final
     col.units = col.units.filter(u => !u._free);
-    // Fusionar gaps internos adyacentes
     fusionarGaps(columns.indexOf(col));
-    // Calcular espacio libre real al final
     const totalH = col.units.reduce((s,u) => s + (u._gap ? u._gapMm : nemaMm(u.nema)), 0);
     const left = COL_MAX - totalH;
     if (left > 0) col.units.push({ _gap: true, _free: true, _gapMm: left, id: uid() });
@@ -1296,7 +1503,7 @@ function renderTable(){
       <td class="td-tag" onclick="editTag(this,${u.id})">${u.tag||'<span style="opacity:.35">—</span>'}</td>
       <td class="td-pos" onclick="editPos(this,${u.id})">${pos}</td>
       <td>${tipo}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="delUnitFromAll(${u.id})">✕</button></td>
+      <td class="no-print"><button class="btn btn-danger btn-sm" onclick="delUnitFromAll(${u.id})">✕</button></td>
     </tr>`;
   }).join('');
 }
@@ -1338,7 +1545,6 @@ function editPos(td,id){
     if(done)return;done=true;
     const parsed=parsePos(inp.value.trim());
     u.posFixed=parsed;
-    // also sync back to units array if unit came from columns
     const inUnits=units.find(x=>x.id===id);
     if(inUnits)inUnits.posFixed=parsed;
     requestAnimationFrame(()=>renderTable());
@@ -1364,7 +1570,6 @@ function updateStats(){
   document.getElementById('stat-width').textContent=columns.length?(columns.length*COL_W_MM)+'mm':'—';
 }
 
-// Almacena el texto de la lista para copiado seguro
 let _listaTexto = '';
 
 function renderListaCopiable() {
@@ -1395,7 +1600,6 @@ function renderListaCopiable() {
 function copiarLista() {
   if (!_listaTexto) return;
   const fb = document.getElementById('copy-feedback');
-  // Método principal: clipboard API
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(_listaTexto).then(() => {
       fb.textContent = '✓ copiado';
