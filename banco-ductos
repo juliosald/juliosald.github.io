@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Banco de Ductos</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e14;
+  --surface: #111720;
+  --surface2: #161d29;
+  --border: #1e2a3a;
+  --accent: #00c896;
+  --accent2: #0ea5e9;
+  --accent3: #a78bfa;
+  --warn: #f59e0b;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --display: 'Bebas Neue', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  animation: fadeDown 0.6s ease both;
+}
+.brand h1 {
+  font-family: var(--display);
+  font-size: 2.8rem;
+  letter-spacing: 2px;
+  color: var(--accent);
+  line-height: 1;
+}
+.brand p {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.badge {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  padding: 4px 10px;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+.back-link {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--accent); }
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 700px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .brand h1 { font-size: 2rem; }
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.card.card-blue::before {
+  background: linear-gradient(90deg, var(--accent2), transparent);
+}
+.card.card-purple::before {
+  background: linear-gradient(90deg, var(--accent3), transparent);
+}
+.card-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.field { margin-bottom: 1rem; }
+.field label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+}
+.field input, .field select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field select { cursor: pointer; }
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field input[type="number"] { text-align: center; }
+.btn-calc {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  border: none;
+  cursor: pointer;
+  padding: 14px;
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 1.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-calc:hover {
+  background: #00e6ad;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(0,200,150,0.3);
+}
+.btn-reset {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--muted);
+  margin-top: 0.75rem;
+  width: 100%;
+  transition: all 0.2s;
+}
+.btn-reset:hover { color: var(--text); border-color: #2e3f55; }
+.results-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 700px) { .results-row { grid-template-columns: 1fr; } }
+.svg-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.svg-wrap svg { width: 100%; height: auto; display: block; }
+.dim-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.dim-table th {
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.dim-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(30,42,58,0.5);
+  color: var(--text);
+}
+.dim-table tr:last-child td { border-bottom: none; }
+.dim-table td input {
+  width: 80px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.dim-table td input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,200,150,0.1);
+}
+.dim-table td input.readonly { color: var(--muted); border-color: transparent; pointer-events: none; }
+.dim-table td select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  outline: none;
+  cursor: pointer;
+}
+.dim-table td select:focus { border-color: var(--accent); }
+.dim-table td .unit {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.dim-table td.num-cell {
+  color: var(--accent2);
+  font-weight: 500;
+}
+.summary-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.summary-item {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+}
+.summary-item .val {
+  font-size: 1.1rem;
+  color: var(--accent);
+  display: block;
+}
+.summary-item .lbl {
+  color: var(--muted);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.note-box {
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.2);
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--warn);
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  margin-top: 1rem;
+}
+.ref-table th, .ref-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(30,42,58,0.5);
+  text-align: center;
+}
+.ref-table th {
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.ref-table tr.active-row { background: rgba(0,200,150,0.07); }
+.ref-table tr.active-row td { color: var(--accent); font-weight: 500; }
+.notes-list {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-top: 0.5rem;
+  padding-left: 1.2rem;
+}
+.notes-list li { margin-bottom: 2px; }
+.hidden { display: none; }
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.5s ease both; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>BANCO DE DUCTOS</h1>
+      <p>Calculadora gráfica · Sección transversal</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="badge">HORMIGÓN H25 · ACERO A36-42H</span>
+      <a class="back-link" href="index.html">← volver</a>
+    </div>
+  </header>
+
+  <div class="calc-grid">
+    <div class="card fade-up">
+      <div class="card-label">Parámetros de entrada</div>
+      <div class="field">
+        <label>Cantidad de ductos</label>
+        <input type="number" id="qty" min="1" max="64" value="4">
+      </div>
+      <div class="field">
+        <label>Diámetro nominal inicial</label>
+        <select id="diam">
+          <option value="2">2"</option>
+          <option value="4" selected>4"</option>
+          <option value="6">6"</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tipo de banco</label>
+        <select id="tipo">
+          <option value="simple">Simple</option>
+          <option value="reforzado">Reforzado</option>
+          <option value="ambos" selected>Ambos (comparación)</option>
+        </select>
+      </div>
+      <button class="btn-calc" onclick="generar()">▶ GENERAR BANCO</button>
+    </div>
+
+    <div class="card card-blue fade-up">
+      <div class="card-label">Disposición de ductos</div>
+      <div class="note-box">
+        La matriz se propone automáticamente lo más cuadrada posible según la cantidad. Filas y columnas son editables. Numeración: fila superior de izq. a der., continuando hacia la fila de abajo.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+        <div class="field">
+          <label>Filas (rows)</label>
+          <input type="number" id="rows" min="1" max="16" value="2">
+        </div>
+        <div class="field">
+          <label>Columnas (cols)</label>
+          <input type="number" id="cols" min="1" max="16" value="2">
+        </div>
+      </div>
+      <div id="matrix-preview" style="margin-top:1rem;"></div>
+    </div>
+  </div>
+
+  <div id="resultado"></div>
+</div>
+
+<script>
+const TABLA = {
+  2: { A: 130, B: 180, XY: 40 },
+  4: { A: 150, B: 200, XY: 60 },
+  6: { A: 180, B: 230, XY: 90 }
+};
+const DUCT_OD = { 2: 60, 4: 110, 6: 160 };
+const REBAR_NOTAS = {
+  2: 'φ 8@250 / φ 12 (Tip.)',
+  4: 'φ 12 (Tip.)',
+  6: 'φ 12 / φ 8 / φ 8@250 (Tip.)'
+};
+
+let state = null;
+
+function initPreview() {
+  const qty = Math.max(1, parseInt(document.getElementById('qty').value) || 1);
+  const cols = Math.ceil(Math.sqrt(qty));
+  const rows = Math.ceil(qty / cols);
+  document.getElementById('rows').value = rows;
+  document.getElementById('cols').value = cols;
+  drawMatrixPreview(cols, rows, qty);
+}
+
+function drawMatrixPreview(cols, rows, qty) {
+  const size = 26, gap = 5;
+  const totalW = cols * size + (cols - 1) * gap;
+  const totalH = rows * size + (rows - 1) * gap;
+  let html = `<svg width="${totalW + 20}" height="${totalH + 20}" viewBox="-10 -10 ${totalW + 20} ${totalH + 20}">`;
+  let placed = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cx = c * (size + gap), cy = r * (size + gap);
+      if (placed < qty) {
+        placed++;
+        html += `<circle cx="${cx}" cy="${cy}" r="${size / 2}" fill="rgba(0,200,150,0.15)" stroke="#00c896" stroke-width="1.5"/>`;
+        html += `<text x="${cx}" y="${cy + 4}" font-family="DM Mono, monospace" font-size="11" fill="#00c896" text-anchor="middle">${placed}</text>`;
+      } else {
+        html += `<circle cx="${cx}" cy="${cy}" r="${size / 2}" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4,3"/>`;
+        html += `<text x="${cx}" y="${cy + 4}" font-family="DM Mono, monospace" font-size="10" fill="#f59e0b" text-anchor="middle">R</text>`;
+      }
+    }
+  }
+  html += `</svg>`;
+  html += `<div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);letter-spacing:1px;margin-top:6px;">${cols} columnas × ${rows} filas · ${placed} ductos · ${rows * cols - qty} reservas (R)</div>`;
+  document.getElementById('matrix-preview').innerHTML = html;
+}
+
+function layout(tipo) {
+  const s = state;
+  const E = tipo === 'simple' ? s.A : s.B;
+  const rows = s.rows, cols = s.cols;
+  const resDuct = { diam: s.resDiam, X: TABLA[s.resDiam].XY, Y: TABLA[s.resDiam].XY };
+  const grid = [];
+  let idx = 0;
+  for (let r = 0; r < rows; r++) {
+    grid[r] = [];
+    for (let c = 0; c < cols; c++) {
+      if (idx < s.qty) grid[r][c] = { d: idx, res: false, duct: s.ducts[idx] };
+      else grid[r][c] = { d: -1, res: true, duct: resDuct };
+      idx++;
+    }
+  }
+  const ec = [], er = [];
+  for (let c = 0; c < cols; c++) ec.push(c);
+  for (let r = 0; r < rows; r++) er.push(r);
+  const colMax = {}, rowMax = {};
+  ec.forEach(c => {
+    let b = null;
+    for (let r = 0; r < rows; r++) {
+      const cell = grid[r][c];
+      if (!b || cell.duct.diam > b.diam) b = cell.duct;
+    }
+    colMax[c] = b;
+  });
+  er.forEach(r => {
+    let b = null;
+    for (let c = 0; c < cols; c++) {
+      const cell = grid[r][c];
+      if (!b || cell.duct.diam > b.diam) b = cell.duct;
+    }
+    rowMax[r] = b;
+  });
+  const x = {}, y = {}, gx = {}, gy = {};
+  ec.forEach((c, i) => {
+    if (i === 0) { x[c] = E; }
+    else { const pc = ec[i - 1]; gx[c] = s.base + colMax[pc].X + colMax[c].X; x[c] = x[pc] + gx[c]; }
+  });
+  er.forEach((r, i) => {
+    if (i === 0) { y[r] = E; }
+    else { const pr = er[i - 1]; gy[r] = s.base + rowMax[pr].Y + rowMax[r].Y; y[r] = y[pr] + gy[r]; }
+  });
+  const W = ec.length ? x[ec[ec.length - 1]] + E : 2 * E;
+  const H = er.length ? y[er[er.length - 1]] + E : 2 * E;
+  let maxIdx = 0;
+  s.ducts.forEach((d, i) => { if (d.diam > s.ducts[maxIdx].diam) maxIdx = i; });
+  return { E, grid, x, y, gx, gy, W, H, ec, er, colMax, rowMax, maxIdx, resCount: rows * cols - s.qty };
+}
+
+function generar() {
+  const qty = Math.max(1, parseInt(document.getElementById('qty').value) || 1);
+  const diam = parseInt(document.getElementById('diam').value);
+  const tipo = document.getElementById('tipo').value;
+  const rows = Math.max(1, parseInt(document.getElementById('rows').value) || 2);
+  const cols = Math.max(1, parseInt(document.getElementById('cols').value) || 2);
+
+  if (rows * cols < qty) {
+    alert(`La matriz ${rows}×${cols} (${rows * cols}) es menor que la cantidad (${qty}). Aumenta filas o columnas.`);
+    return;
+  }
+
+  const ducts = Array.from({ length: qty }, () => ({ diam, X: TABLA[diam].XY, Y: TABLA[diam].XY }));
+
+  const maxD = Math.max(...ducts.map(d => d.diam));
+  state = {
+    qty, diam, tipo, rows, cols, ducts,
+    A: TABLA[maxD].A, B: TABLA[maxD].B,
+    base: 50, prof: 750, resDiam: diam
+  };
+
+  const simpleBlock = tipo === 'simple' || tipo === 'ambos';
+  const refBlock = tipo === 'reforzado' || tipo === 'ambos';
+
+  let html = `<div class="summary-row fade-up">
+    <div class="summary-item"><span class="val" id="sum_qty">${qty}</span><span class="lbl">Ductos</span></div>
+    <div class="summary-item"><span class="val" id="sum_diam">${maxD}"</span><span class="lbl">Ø mayor</span></div>
+    <div class="summary-item"><span class="val" id="sum_mat">${cols}×${rows}</span><span class="lbl">Matriz</span></div>
+    <div class="summary-item"><span class="val" id="sum_z">–</span><span class="lbl">Z máx (mm)</span></div>
+    <div class="summary-item"><span class="val" id="sum_res">${rows * cols - qty}</span><span class="lbl">Reservas (R)</span></div>
+  </div>`;
+
+  html += `<button class="btn-calc" onclick="exportPDF()" style="background:var(--accent2);margin:0.5rem 0 1rem;width:auto;padding:10px 24px;font-size:0.8rem;">↓ EXPORTAR PDF</button>`;
+
+  if (simpleBlock || refBlock) {
+    html += `<div class="results-row fade-up">`;
+    if (simpleBlock) {
+      html += `<div class="card"><div class="card-label">Banco Simple</div>
+        <div class="svg-wrap" id="svg-simple"></div>
+        <div class="summary-row">
+          <div class="summary-item"><span class="val" id="sum_Ws">–</span><span class="lbl">Ancho (mm)</span></div>
+          <div class="summary-item"><span class="val" id="sum_Hs">–</span><span class="lbl">Alto (mm)</span></div>
+        </div>
+      </div>`;
+    }
+    if (refBlock) {
+      html += `<div class="card card-blue"><div class="card-label">Banco Reforzado</div>
+        <div class="svg-wrap" id="svg-ref"></div>
+        <div class="summary-row">
+          <div class="summary-item"><span class="val" id="sum_Wr">–</span><span class="lbl">Ancho (mm)</span></div>
+          <div class="summary-item"><span class="val" id="sum_Hr">–</span><span class="lbl">Alto (mm)</span></div>
+        </div>
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:8px;letter-spacing:0.5px;">Armadura: ${REBAR_NOTAS[maxD]}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += buildDuctsCard();
+  html += buildCotasCard();
+  html += buildRefCard();
+
+  const res = document.getElementById('resultado');
+  res.innerHTML = html;
+  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  refresh();
+}
+
+function buildDuctsCard() {
+  const s = state;
+  let t = `<table class="dim-table"><thead><tr><th>#</th><th>Ø ducto</th><th>X</th><th>Y</th></tr></thead><tbody>`;
+  s.ducts.forEach((d, i) => {
+    t += `<tr>
+      <td class="num-cell">${i + 1}</td>
+      <td><select id="dd${i}" onchange="setDuctDiam(${i}, this.value)">
+        <option value="2" ${d.diam === 2 ? 'selected' : ''}>2"</option>
+        <option value="4" ${d.diam === 4 ? 'selected' : ''}>4"</option>
+        <option value="6" ${d.diam === 6 ? 'selected' : ''}>6"</option>
+      </select></td>
+      <td><input type="number" id="dx${i}" value="${d.X}" oninput="setDuctXY(${i}, 'X', this.value)"><span class="unit">mm</span></td>
+      <td><input type="number" id="dy${i}" value="${d.Y}" oninput="setDuctXY(${i}, 'Y', this.value)"><span class="unit">mm</span></td>
+    </tr>`;
+  });
+  t += `</tbody></table>`;
+  const resN = s.rows * s.cols - s.qty;
+  const resCtl = `<div style="display:flex;gap:1rem;align-items:flex-end;margin-top:1rem;flex-wrap:wrap;">
+    <div class="field" style="flex:1;min-width:170px;margin-bottom:0;">
+      <label>Ø reservas (R) · ${resN} u.</label>
+      <select id="c_res_diam" onchange="setResDiam(this.value)">
+        <option value="2" ${s.resDiam === 2 ? 'selected' : ''}>2"</option>
+        <option value="4" ${s.resDiam === 4 ? 'selected' : ''}>4"</option>
+        <option value="6" ${s.resDiam === 6 ? 'selected' : ''}>6"</option>
+      </select>
+    </div>
+  </div>`;
+  return `<div class="card card-blue fade-up" style="margin-top:1.5rem;">
+    <div class="card-label">Ductos — edición individual</div>
+    <div class="note-box">Numeración: fila superior de izq. a der., continuando hacia la fila de abajo. La separación de cada eje la da el ducto más grande de ese eje. Si la matriz no se completa, las celdas vacías se rellenan con ductos reserva (R) para uniformidad.</div>
+    ${t}
+    ${resCtl}
+    <button class="btn-reset" onclick="resetNorma()">↺ Restaurar X/Y según norma</button>
+  </div>`;
+}
+
+function buildCotasCard() {
+  const s = state;
+  const isAmbos = s.tipo === 'ambos';
+  const rows = [];
+  if (isAmbos || s.tipo === 'simple') rows.push({ l: 'A (borde simple)', v: s.A, id: 'c_A' });
+  if (isAmbos || s.tipo === 'reforzado') rows.push({ l: 'B (borde reforzado)', v: s.B, id: 'c_B' });
+  rows.push({ l: 'Holgura base (Z)', v: s.base, id: 'c_base' });
+  rows.push({ l: 'Profundidad relleno (Tip.)', v: s.prof, id: 'c_prof' });
+  rows.push({ l: 'Filas', v: s.rows, id: 'c_rows' });
+  rows.push({ l: 'Columnas', v: s.cols, id: 'c_cols' });
+  if (isAmbos || s.tipo === 'simple') {
+    rows.push({ l: 'Ancho simple', v: '–', id: 'c_Ws', readonly: true });
+    rows.push({ l: 'Alto simple', v: '–', id: 'c_Hs', readonly: true });
+  }
+  if (isAmbos || s.tipo === 'reforzado') {
+    rows.push({ l: 'Ancho reforzado', v: '–', id: 'c_Wr', readonly: true });
+    rows.push({ l: 'Alto reforzado', v: '–', id: 'c_Hr', readonly: true });
+  }
+  let t = `<table class="dim-table"><thead><tr><th>Parámetro</th><th>Valor</th></tr></thead><tbody>`;
+  for (const r of rows) {
+    const cls = r.readonly ? 'readonly' : '';
+    const ro = r.readonly ? 'readonly' : '';
+    t += `<tr><td>${r.l}</td><td><input type="number" class="${cls}" id="${r.id}" value="${r.v}" ${ro} oninput="updateCota()"><span class="unit">mm</span></td></tr>`;
+  }
+  t += `</tbody></table>`;
+  return `<div class="card card-purple fade-up" style="margin-top:1.5rem;">
+    <div class="card-label">Cotas editables [mm]</div>
+    ${t}
+  </div>`;
+}
+
+function buildRefCard() {
+  const s = state;
+  const maxD = Math.max(...s.ducts.map(d => d.diam));
+  let tbl = `<table class="ref-table"><thead><tr><th>Ø COND.</th><th>A</th><th>B</th><th>X o Y</th><th>Z</th></tr></thead><tbody>`;
+  for (const d of [2, 4, 6]) {
+    const tt = TABLA[d];
+    const zz = s.base + tt.XY * 2;
+    const act = d === maxD ? 'active-row' : '';
+    tbl += `<tr class="${act}"><td>${d}"</td><td>${tt.A}</td><td>${tt.B}</td><td>${tt.XY}</td><td>${zz}</td></tr>`;
+  }
+  tbl += `</tbody></table>`;
+  return `<div class="card fade-up" style="margin-top:1.5rem;">
+    <div class="card-label">Tabla de medidas [mm]</div>
+    ${tbl}
+    <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:1rem;line-height:1.7;">
+      <div style="margin-bottom:4px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Notas</div>
+      <ol class="notes-list">
+        <li>Las medidas están en mm. Z = ${s.base} + (X + Y)</li>
+        <li>Los bancos reforzados se usarán en pasadas de caminos y en áreas de tránsito pesado</li>
+        <li>Hormigón H25, acero A36-42H</li>
+        <li>Relleno compactado ${s.prof} mm sobre el banco (Tip.)</li>
+      </ol>
+    </div>
+  </div>`;
+}
+
+function setDuctDiam(i, val) {
+  const d = state.ducts[i];
+  d.diam = parseInt(val);
+  d.X = TABLA[d.diam].XY;
+  d.Y = TABLA[d.diam].XY;
+  document.getElementById('dx' + i).value = d.X;
+  document.getElementById('dy' + i).value = d.Y;
+  syncAB();
+  refresh();
+}
+
+function setDuctXY(i, k, val) {
+  state.ducts[i][k] = parseFloat(val) || 0;
+  syncAB();
+  refresh();
+}
+
+function setResDiam(val) {
+  state.resDiam = parseInt(val);
+  refresh();
+}
+
+function syncAB() {
+  const maxD = Math.max(...state.ducts.map(d => d.diam));
+  state.A = TABLA[maxD].A;
+  state.B = TABLA[maxD].B;
+  const a = document.getElementById('c_A');
+  if (a) a.value = state.A;
+  const b = document.getElementById('c_B');
+  if (b) b.value = state.B;
+}
+
+function updateCota() {
+  if (!state) return;
+  const s = state;
+  const v = (id) => {
+    const el = document.getElementById(id);
+    return el ? parseFloat(el.value) || 0 : 0;
+  };
+  const rows = Math.max(1, Math.round(v('c_rows')));
+  const cols = Math.max(1, Math.round(v('c_cols')));
+  if (rows * cols < s.qty) {
+    alert(`La matriz ${rows}×${cols} es menor que la cantidad (${s.qty}).`);
+    document.getElementById('c_rows').value = s.rows;
+    document.getElementById('c_cols').value = s.cols;
+    return;
+  }
+  s.rows = rows;
+  s.cols = cols;
+  if (document.getElementById('c_A')) s.A = v('c_A');
+  if (document.getElementById('c_B')) s.B = v('c_B');
+  s.base = v('c_base');
+  s.prof = v('c_prof');
+  refresh();
+}
+
+function resetNorma() {
+  state.base = 50;
+  setVal('c_base', 50);
+  state.prof = 750;
+  setVal('c_prof', 750);
+  state.resDiam = state.diam;
+  const rs = document.getElementById('c_res_diam');
+  if (rs) rs.value = String(state.diam);
+  state.ducts.forEach((d, i) => {
+    d.X = TABLA[d.diam].XY;
+    d.Y = TABLA[d.diam].XY;
+    document.getElementById('dx' + i).value = d.X;
+    document.getElementById('dy' + i).value = d.Y;
+  });
+  syncAB();
+  refresh();
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+function setTxt(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function refresh() {
+  const s = state;
+  const showS = s.tipo !== 'reforzado';
+  const showR = s.tipo !== 'simple';
+  let zMax = 0;
+  if (showS) {
+    const L = layout('simple');
+    setVal('c_Ws', L.W); setVal('c_Hs', L.H);
+    setTxt('sum_Ws', L.W); setTxt('sum_Hs', L.H);
+    Object.values(L.gx).forEach(g => { if (g > zMax) zMax = g; });
+    Object.values(L.gy).forEach(g => { if (g > zMax) zMax = g; });
+    drawSVG('svg-simple', 'simple');
+  }
+  if (showR) {
+    const L = layout('reforzado');
+    setVal('c_Wr', L.W); setVal('c_Hr', L.H);
+    setTxt('sum_Wr', L.W); setTxt('sum_Hr', L.H);
+    Object.values(L.gx).forEach(g => { if (g > zMax) zMax = g; });
+    Object.values(L.gy).forEach(g => { if (g > zMax) zMax = g; });
+    drawSVG('svg-ref', 'reforzado');
+  }
+  const maxD = Math.max(...s.ducts.map(d => d.diam));
+  setTxt('sum_diam', maxD + '"');
+  setTxt('sum_z', zMax || '–');
+  setTxt('sum_res', s.rows * s.cols - s.qty);
+}
+
+function drawSVG(containerId, tipo) {
+  const s = state;
+  const L = layout(tipo);
+  const { E, W, H, x, y, gx, gy, ec, er, grid, colMax, rowMax, maxIdx, resCount } = L;
+
+  const svgW = 560, svgH = 780;
+  const mL = 95, mT = 64, mR = 25, mB = 200;
+  const drawW = svgW - mL - mR, drawH = svgH - mT - mB;
+  const totalH = H + s.prof;
+  const scale = Math.min(drawW / W, drawH / totalH);
+  const ox = mL + (drawW - W * scale) / 2;
+  const yNT = mT + (drawH - totalH * scale) / 2;
+  const y0 = yNT + s.prof * scale;
+  const y1 = y0 + H * scale;
+  const x0 = ox, x1 = ox + W * scale;
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgW} ${svgH}" style="width:100%;height:auto;display:block;">`;
+  svg += `<rect width="${svgW}" height="${svgH}" fill="#070b10"/>`;
+
+  const pid = containerId;
+  svg += `<defs>
+    <pattern id="conc-${pid}" width="26" height="26" patternUnits="userSpaceOnUse">
+      <rect width="26" height="26" fill="#111720"/>
+      <circle cx="5" cy="7" r="1.1" fill="#ef4444" opacity="0.5"/>
+      <circle cx="16" cy="4" r="0.9" fill="#ef4444" opacity="0.4"/>
+      <circle cx="21" cy="15" r="1.2" fill="#ef4444" opacity="0.5"/>
+      <circle cx="9" cy="19" r="0.9" fill="#ef4444" opacity="0.4"/>
+      <circle cx="14" cy="12" r="0.7" fill="#ef4444" opacity="0.35"/>
+    </pattern>
+    <pattern id="stones-${pid}" width="46" height="34" patternUnits="userSpaceOnUse">
+      <path d="M4 10 L12 4 L20 9 L14 16 Z" fill="none" stroke="#c2410c" stroke-width="1" opacity="0.6"/>
+      <path d="M24 6 L34 3 L40 10 L31 14 Z" fill="none" stroke="#9f1239" stroke-width="1" opacity="0.5"/>
+      <path d="M8 22 L18 18 L24 25 L14 30 Z" fill="none" stroke="#c2410c" stroke-width="1" opacity="0.5"/>
+      <path d="M28 20 L38 17 L43 24 L34 29 Z" fill="none" stroke="#9f1239" stroke-width="1" opacity="0.55"/>
+    </pattern>
+  </defs>`;
+
+  const fillH = y0 - yNT;
+  svg += `<rect x="${x0}" y="${yNT}" width="${x1 - x0}" height="${fillH}" fill="url(#stones-${pid})"/>`;
+  const jit = [0, 3, -2, 4, 1, -3, 0];
+  let plL = '', plR = '';
+  jit.forEach((j, i) => {
+    const yy = yNT + (i / (jit.length - 1)) * fillH;
+    plL += `${x0 + j},${yy} `;
+    plR += `${x1 - j},${yy} `;
+  });
+  svg += `<polyline points="${plL.trim()}" fill="none" stroke="#22d3ee" stroke-width="1.2" opacity="0.8"/>`;
+  svg += `<polyline points="${plR.trim()}" fill="none" stroke="#22d3ee" stroke-width="1.2" opacity="0.8"/>`;
+  svg += `<line x1="${x0 - 30}" y1="${yNT}" x2="${x1 + 30}" y2="${yNT}" stroke="#e879f9" stroke-width="1.5"/>`;
+  svg += `<text x="${x0 - 30}" y="${yNT - 8}" font-family="DM Mono, monospace" font-size="10" fill="#facc15">N.T.</text>`;
+  svg += `<line x1="${x0 - 16}" y1="${yNT - 6}" x2="${x0 - 16}" y2="${yNT - 1}" stroke="#ef4444" stroke-width="1"/>`;
+  const rlx = Math.min((x0 + x1) / 2 + 60, svgW - 90);
+  svg += `<text x="${rlx}" y="${yNT - 8}" font-family="DM Mono, monospace" font-size="10" fill="#facc15" text-anchor="middle">RELLENO COMPACTADO</text>`;
+  svg += `<line x1="${rlx}" y1="${yNT - 5}" x2="${rlx}" y2="${yNT + fillH * 0.45}" stroke="#ef4444" stroke-width="1"/>`;
+  svg += `<polygon points="${rlx},${yNT + fillH * 0.45 + 5} ${rlx - 3},${yNT + fillH * 0.45} ${rlx + 3},${yNT + fillH * 0.45}" fill="#ef4444"/>`;
+
+  const dX = x0 - 20;
+  svg += `<line x1="${dX}" y1="${yNT}" x2="${dX}" y2="${y0}" stroke="#ef4444" stroke-width="1"/>`;
+  svg += `<line x1="${dX - 6}" y1="${yNT}" x2="${dX + 6}" y2="${yNT}" stroke="#ef4444" stroke-width="1"/>`;
+  svg += `<line x1="${dX - 6}" y1="${y0}" x2="${dX + 6}" y2="${y0}" stroke="#ef4444" stroke-width="1"/>`;
+  svg += `<text transform="rotate(-90 ${dX - 8} ${(yNT + y0) / 2})" x="${dX - 8}" y="${(yNT + y0) / 2}" font-family="DM Mono, monospace" font-size="10" fill="#facc15" text-anchor="middle">${s.prof} (Tip.)</text>`;
+
+  svg += `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" fill="url(#conc-${pid})" stroke="#a78bfa" stroke-width="2"/>`;
+  svg += `<text x="${x0 + 4}" y="${y0 + 14}" font-family="DM Mono, monospace" font-size="10" fill="#a78bfa" opacity="0.7">HORMIGÓN (Típ.)</text>`;
+
+  let num = 0;
+  for (let r = 0; r < s.rows; r++) {
+    for (let c = 0; c < s.cols; c++) {
+      const cell = grid[r][c];
+      const cx = ox + x[c] * scale;
+      const cy = y0 + y[r] * scale;
+      const rr = Math.max(6, DUCT_OD[cell.duct.diam] / 2 * scale);
+      if (cell.res) {
+        svg += `<circle cx="${cx}" cy="${cy}" r="${rr}" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,4"/>`;
+        svg += `<text x="${cx}" y="${cy + 4}" font-family="DM Mono, monospace" font-size="${Math.max(8, Math.min(12, rr * 0.7))}" fill="#f59e0b" text-anchor="middle">R</text>`;
+        continue;
+      }
+      num++;
+      const duct = cell.duct;
+      svg += `<circle cx="${cx}" cy="${cy}" r="${rr}" fill="rgba(167,139,250,0.25)" stroke="#c4b5fd" stroke-width="1.5"/>`;
+      svg += `<line x1="${cx - rr * 0.7}" y1="${cy}" x2="${cx + rr * 0.7}" y2="${cy}" stroke="#c4b5fd" stroke-width="0.6" opacity="0.6"/>`;
+      svg += `<line x1="${cx}" y1="${cy - rr * 0.7}" x2="${cx}" y2="${cy + rr * 0.7}" stroke="#c4b5fd" stroke-width="0.6" opacity="0.6"/>`;
+      const fs = Math.max(8, Math.min(13, rr * 0.7));
+      svg += `<text x="${cx}" y="${cy + (rr >= 16 ? 0 : fs / 3)}" font-family="DM Mono, monospace" font-size="${fs}" fill="#fff" text-anchor="middle" font-weight="500">${num}</text>`;
+      if (rr >= 16) svg += `<text x="${cx}" y="${cy + fs}" font-family="DM Mono, monospace" font-size="${fs - 3}" fill="#c4b5fd" text-anchor="middle">${duct.diam}"</text>`;
+    }
+  }
+
+  if (tipo === 'reforzado') {
+    const cover = 40;
+    const rx = ox + cover * scale;
+    const ry = y0 + cover * scale;
+    const rw = (W - 2 * cover) * scale;
+    const rh = (H - 2 * cover) * scale;
+
+    svg += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.7"/>`;
+
+    const stirrupR = Math.max(2.5, 4.5 * scale);
+    const mainR = Math.max(3, 7 * scale);
+    const secR = Math.max(2.5, 4.5 * scale);
+
+    const stirrupSpacing = 250;
+    const numBottom = Math.max(2, Math.floor(W / stirrupSpacing) + 1);
+    for (let i = 0; i < numBottom; i++) {
+      const sx = rx + (i / (numBottom - 1)) * rw;
+      svg += `<circle cx="${sx}" cy="${ry + rh}" r="${stirrupR}" fill="#0ea5e9" opacity="0.95"/>`;
+    }
+
+    const edgeSpacing = Math.min(200, H / 3);
+    const numEdge = Math.max(2, Math.floor(H / edgeSpacing) + 1);
+    for (let i = 0; i < numEdge; i++) {
+      const sy = ry + (i / (numEdge - 1)) * rh;
+      svg += `<circle cx="${rx}" cy="${sy}" r="${mainR}" fill="#0ea5e9" opacity="0.95"/>`;
+      svg += `<circle cx="${rx + rw}" cy="${sy}" r="${secR}" fill="#0ea5e9" opacity="0.95"/>`;
+    }
+  }
+
+  const dimColor = '#00c896';
+  const dimColor2 = '#0ea5e9';
+
+  const botY = y1 + 30;
+  svg += `<line x1="${x0}" y1="${botY}" x2="${x1}" y2="${botY}" stroke="${dimColor}" stroke-width="1"/>`;
+  svg += `<line x1="${x0}" y1="${botY - 8}" x2="${x0}" y2="${botY + 8}" stroke="${dimColor}" stroke-width="1"/>`;
+  svg += `<line x1="${x1}" y1="${botY - 8}" x2="${x1}" y2="${botY + 8}" stroke="${dimColor}" stroke-width="1"/>`;
+  const hPts = [x0];
+  ec.forEach(c => hPts.push(ox + x[c] * scale));
+  hPts.push(x1);
+  for (let i = 1; i < hPts.length; i++) {
+    const a = hPts[i - 1], b = hPts[i];
+    const mid = (a + b) / 2;
+    svg += `<line x1="${b}" y1="${botY - 6}" x2="${b}" y2="${botY + 6}" stroke="${dimColor}" stroke-width="0.8"/>`;
+    const isEdge = i === 1 || i === hPts.length - 1;
+    const val = isEdge ? Math.round(E) : gx[ec[i - 1]];
+    svg += `<text x="${mid}" y="${botY + 18}" font-family="DM Mono, monospace" font-size="10" fill="${dimColor}" text-anchor="middle">${val}</text>`;
+    if (!isEdge) {
+      svg += `<text x="${mid}" y="${botY + 28}" font-family="DM Mono, monospace" font-size="7" fill="${dimColor}" text-anchor="middle" opacity="0.7">${s.base}+${colMax[ec[i - 2]].X}+${colMax[ec[i - 1]].X}</text>`;
+    }
+  }
+
+  const leftX = ox - 42;
+  svg += `<line x1="${leftX}" y1="${y0}" x2="${leftX}" y2="${y1}" stroke="${dimColor}" stroke-width="1"/>`;
+  svg += `<line x1="${leftX - 8}" y1="${y0}" x2="${leftX + 8}" y2="${y0}" stroke="${dimColor}" stroke-width="1"/>`;
+  svg += `<line x1="${leftX - 8}" y1="${y1}" x2="${leftX + 8}" y2="${y1}" stroke="${dimColor}" stroke-width="1"/>`;
+  const vPts = [y0];
+  er.forEach(r => vPts.push(y0 + y[r] * scale));
+  vPts.push(y1);
+  for (let i = 1; i < vPts.length; i++) {
+    const a = vPts[i - 1], b = vPts[i];
+    const mid = (a + b) / 2;
+    svg += `<line x1="${leftX - 6}" y1="${b}" x2="${leftX + 6}" y2="${b}" stroke="${dimColor}" stroke-width="0.8"/>`;
+    const isEdge = i === 1 || i === vPts.length - 1;
+    const val = isEdge ? Math.round(E) : gy[er[i - 1]];
+    svg += `<text x="${leftX - 10}" y="${mid}" font-family="DM Mono, monospace" font-size="10" fill="${dimColor}" text-anchor="end">${val}</text>`;
+    if (!isEdge) {
+      svg += `<text x="${leftX - 10}" y="${mid + 10}" font-family="DM Mono, monospace" font-size="7" fill="${dimColor}" text-anchor="end" opacity="0.7">${s.base}+${rowMax[er[i - 2]].Y}+${rowMax[er[i - 1]].Y}</text>`;
+    }
+  }
+
+  const md = s.ducts[maxIdx];
+  const fY = svgH - 96;
+  svg += `<text x="${svgW / 2}" y="${fY}" font-family="DM Mono, monospace" font-size="13" fill="${dimColor}" text-anchor="middle" font-weight="500">Z = ${s.base} + (X + Y)</text>`;
+  svg += `<text x="${svgW / 2}" y="${fY + 20}" font-family="DM Mono, monospace" font-size="10" fill="${dimColor2}" text-anchor="middle">Ducto mayor #${maxIdx + 1} (${md.diam}"): Z = ${s.base} + (${md.X} + ${md.Y}) = ${s.base + md.X + md.Y} mm</text>`;
+  svg += `<text x="${svgW / 2}" y="${fY + 38}" font-family="DM Mono, monospace" font-size="9" fill="#64748b" text-anchor="middle">Separación entre ejes vecinos = ${s.base} + valor(eje 1) + valor(eje 2) · rige el ducto mayor de cada eje</text>`;
+  if (resCount > 0) {
+    svg += `<text x="${svgW / 2}" y="${fY + 56}" font-family="DM Mono, monospace" font-size="9" fill="#f59e0b" text-anchor="middle">R = ducto reserva para uniformidad · Ø ${s.resDiam}" · ${resCount} unidad(es)</text>`;
+  }
+
+  svg += `</svg>`;
+  document.getElementById(containerId).innerHTML = svg;
+}
+
+async function renderSVGtoCanvas(svgEl) {
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const vb = clone.getAttribute('viewBox').split(' ');
+  const w = parseInt(vb[2]), h = parseInt(vb[3]);
+  clone.setAttribute('width', w);
+  clone.setAttribute('height', h);
+  clone.removeAttribute('style');
+  const svgString = new XMLSerializer().serializeToString(clone);
+  const b64 = btoa(unescape(encodeURIComponent(svgString)));
+  const dataUrl = 'data:image/svg+xml;base64,' + b64;
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = w * 2;
+      canvas.height = h * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.filter = 'grayscale(1) invert(1)';
+      ctx.scale(2, 2);
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => reject(new Error('No se pudo renderizar el SVG como imagen.'));
+    img.src = dataUrl;
+  });
+}
+
+async function exportPDF() {
+  if (!window.jspdf) {
+    alert('Error: No se pudo cargar la librería jsPDF. Verifica tu conexión a internet.');
+    return;
+  }
+  try {
+    const { jsPDF } = window.jspdf;
+    const s = state;
+    const Ls = layout('simple');
+    const Lr = layout('reforzado');
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+    const pageW = 215.9, pageH = 279.4, margin = 15;
+    const maxD = Math.max(...s.ducts.map(d => d.diam));
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(14);
+    doc.text('BANCO DE DUCTOS', margin, 14);
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8);
+    doc.text('Tipo: ' + s.tipo.toUpperCase() + ' | Cant.: ' + s.qty + ' | Mayor: ' + maxD + '" | Matriz: ' + s.cols + 'x' + s.rows + ' | Reservas: ' + (s.rows * s.cols - s.qty) + ' | Base Z: ' + s.base + ' mm', margin, 20);
+
+    let y = 24;
+    const imgAreaW = pageW - margin * 2;
+    const ratio = 780 / 560;
+    const availH = pageH - margin - y - 50;
+    const isBoth = s.tipo === 'ambos';
+    const el1 = document.querySelector('#svg-simple svg');
+    const el2 = document.querySelector('#svg-ref svg');
+
+    if (isBoth && el1 && el2) {
+      let halfW = (imgAreaW - 5) / 2;
+      let halfH = halfW * ratio;
+      if (halfH > availH) { halfH = availH; halfW = halfH / ratio; }
+      const png1 = await renderSVGtoCanvas(el1);
+      const png2 = await renderSVGtoCanvas(el2);
+      doc.addImage(png1, 'PNG', margin, y, halfW, halfH);
+      doc.addImage(png2, 'PNG', margin + halfW + 5, y, halfW, halfH);
+      y += halfH + 6;
+    } else {
+      const el = el1 || el2;
+      if (el) {
+        let imgW = imgAreaW;
+        let imgH = imgW * ratio;
+        if (imgH > availH) { imgH = availH; imgW = imgH / ratio; }
+        const x = margin + (imgAreaW - imgW) / 2;
+        const png = await renderSVGtoCanvas(el);
+        doc.addImage(png, 'PNG', x, y, imgW, imgH);
+        y += imgH + 6;
+      }
+    }
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(10);
+    doc.text('RESUMEN DE DIMENSIONES', margin, y);
+    y += 5;
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8);
+    if (isBoth || s.tipo === 'simple') {
+      doc.text('Simple: Ancho=' + Ls.W + ' mm | Alto=' + Ls.H + ' mm', margin, y); y += 4;
+    }
+    if (isBoth || s.tipo === 'reforzado') {
+      doc.text('Reforzado: Ancho=' + Lr.W + ' mm | Alto=' + Lr.H + ' mm', margin, y); y += 4;
+    }
+    doc.text('Profundidad relleno: ' + s.prof + ' mm (Tip.) | Holgura base: ' + s.base + ' mm', margin, y); y += 6;
+
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(9);
+    doc.text('NOTAS:', margin, y); y += 4;
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(7);
+    doc.text('1. Las medidas estan en mm. Z = ' + s.base + ' + (X + Y)', margin, y);
+    doc.text('2. Los bancos reforzados se usaran en pasadas de caminos y en areas de transito pesado', margin, y + 3.5);
+    doc.text('3. Hormigon H25, acero A36-42H', margin, y + 7);
+    doc.text('4. Relleno compactado ' + s.prof + ' mm sobre el banco (Tip.)', margin, y + 10.5);
+
+    doc.setFontSize(7);
+    doc.setTextColor(128);
+    doc.text('julioproyectista.cl | Calculadora Banco de Ductos', margin, pageH - 10);
+    doc.text(new Date().toLocaleDateString('es-CL'), pageW - margin, pageH - 10, { align: 'right' });
+
+    doc.save('banco-ductos.pdf');
+  } catch (err) {
+    alert('Error al generar el PDF: ' + err.message);
+  }
+}
+
+document.getElementById('qty').addEventListener('input', initPreview);
+document.getElementById('rows').addEventListener('input', () => {
+  drawMatrixPreview(parseInt(document.getElementById('cols').value) || 2, parseInt(document.getElementById('rows').value) || 2, parseInt(document.getElementById('qty').value) || 1);
+});
+document.getElementById('cols').addEventListener('input', () => {
+  drawMatrixPreview(parseInt(document.getElementById('cols').value) || 2, parseInt(document.getElementById('rows').value) || 2, parseInt(document.getElementById('qty').value) || 1);
+});
+initPreview();
+</script>
+</body>
+</html>
