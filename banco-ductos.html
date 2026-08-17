@@ -375,6 +375,7 @@ header {
         <label>Diámetro nominal inicial</label>
         <select id="diam">
           <option value="2">2"</option>
+          <option value="3">3"</option>
           <option value="4" selected>4"</option>
           <option value="6">6"</option>
         </select>
@@ -415,12 +416,14 @@ header {
 <script>
 const TABLA = {
   2: { A: 130, B: 180, XY: 40 },
+  3: { A: 150, B: 200, XY: 45 },
   4: { A: 150, B: 200, XY: 60 },
   6: { A: 180, B: 230, XY: 90 }
 };
-const DUCT_OD = { 2: 60, 4: 110, 6: 160 };
+const DUCT_OD = { 2: 60, 3: 89, 4: 110, 6: 160 };
 const REBAR_NOTAS = {
   2: 'φ 8@250 / φ 12 (Tip.)',
+  3: 'φ 12 (Tip.)',
   4: 'φ 12 (Tip.)',
   6: 'φ 12 / φ 8 / φ 8@250 (Tip.)'
 };
@@ -523,7 +526,7 @@ function generar() {
     return;
   }
 
-  const ducts = Array.from({ length: qty }, () => ({ diam, X: TABLA[diam].XY, Y: TABLA[diam].XY }));
+  const ducts = Array.from({ length: qty }, () => ({ diam, A: TABLA[diam].A, B: TABLA[diam].B, X: TABLA[diam].XY, Y: TABLA[diam].XY }));
 
   const maxD = Math.max(...ducts.map(d => d.diam));
   state = {
@@ -581,15 +584,18 @@ function generar() {
 
 function buildDuctsCard() {
   const s = state;
-  let t = `<table class="dim-table"><thead><tr><th>#</th><th>Ø ducto</th><th>X</th><th>Y</th></tr></thead><tbody>`;
+  let t = `<table class="dim-table"><thead><tr><th>#</th><th>Ø ducto</th><th>A</th><th>B</th><th>X</th><th>Y</th></tr></thead><tbody>`;
   s.ducts.forEach((d, i) => {
     t += `<tr>
       <td class="num-cell">${i + 1}</td>
       <td><select id="dd${i}" onchange="setDuctDiam(${i}, this.value)">
         <option value="2" ${d.diam === 2 ? 'selected' : ''}>2"</option>
+        <option value="3" ${d.diam === 3 ? 'selected' : ''}>3"</option>
         <option value="4" ${d.diam === 4 ? 'selected' : ''}>4"</option>
         <option value="6" ${d.diam === 6 ? 'selected' : ''}>6"</option>
       </select></td>
+      <td><input type="number" id="da${i}" value="${d.A}" oninput="setDuctA(${i}, 'A', this.value)"><span class="unit">mm</span></td>
+      <td><input type="number" id="db${i}" value="${d.B}" oninput="setDuctA(${i}, 'B', this.value)"><span class="unit">mm</span></td>
       <td><input type="number" id="dx${i}" value="${d.X}" oninput="setDuctXY(${i}, 'X', this.value)"><span class="unit">mm</span></td>
       <td><input type="number" id="dy${i}" value="${d.Y}" oninput="setDuctXY(${i}, 'Y', this.value)"><span class="unit">mm</span></td>
     </tr>`;
@@ -601,6 +607,7 @@ function buildDuctsCard() {
       <label>Ø reservas (R) · ${resN} u.</label>
       <select id="c_res_diam" onchange="setResDiam(this.value)">
         <option value="2" ${s.resDiam === 2 ? 'selected' : ''}>2"</option>
+        <option value="3" ${s.resDiam === 3 ? 'selected' : ''}>3"</option>
         <option value="4" ${s.resDiam === 4 ? 'selected' : ''}>4"</option>
         <option value="6" ${s.resDiam === 6 ? 'selected' : ''}>6"</option>
       </select>
@@ -650,7 +657,7 @@ function buildRefCard() {
   const s = state;
   const maxD = Math.max(...s.ducts.map(d => d.diam));
   let tbl = `<table class="ref-table"><thead><tr><th>Ø COND.</th><th>A</th><th>B</th><th>X o Y</th><th>Z</th></tr></thead><tbody>`;
-  for (const d of [2, 4, 6]) {
+  for (const d of [2, 3, 4, 6]) {
     const tt = TABLA[d];
     const zz = s.base + tt.XY * 2;
     const act = d === maxD ? 'active-row' : '';
@@ -675,10 +682,20 @@ function buildRefCard() {
 function setDuctDiam(i, val) {
   const d = state.ducts[i];
   d.diam = parseInt(val);
+  d.A = TABLA[d.diam].A;
+  d.B = TABLA[d.diam].B;
   d.X = TABLA[d.diam].XY;
   d.Y = TABLA[d.diam].XY;
+  document.getElementById('da' + i).value = d.A;
+  document.getElementById('db' + i).value = d.B;
   document.getElementById('dx' + i).value = d.X;
   document.getElementById('dy' + i).value = d.Y;
+  syncAB();
+  refresh();
+}
+
+function setDuctA(i, k, val) {
+  state.ducts[i][k] = parseFloat(val) || 0;
   syncAB();
   refresh();
 }
@@ -695,9 +712,8 @@ function setResDiam(val) {
 }
 
 function syncAB() {
-  const maxD = Math.max(...state.ducts.map(d => d.diam));
-  state.A = TABLA[maxD].A;
-  state.B = TABLA[maxD].B;
+  state.A = Math.max(...state.ducts.map(d => d.A));
+  state.B = Math.max(...state.ducts.map(d => d.B));
   const a = document.getElementById('c_A');
   if (a) a.value = state.A;
   const b = document.getElementById('c_B');
@@ -737,8 +753,12 @@ function resetNorma() {
   const rs = document.getElementById('c_res_diam');
   if (rs) rs.value = String(state.diam);
   state.ducts.forEach((d, i) => {
+    d.A = TABLA[d.diam].A;
+    d.B = TABLA[d.diam].B;
     d.X = TABLA[d.diam].XY;
     d.Y = TABLA[d.diam].XY;
+    document.getElementById('da' + i).value = d.A;
+    document.getElementById('db' + i).value = d.B;
     document.getElementById('dx' + i).value = d.X;
     document.getElementById('dy' + i).value = d.Y;
   });
@@ -914,10 +934,12 @@ function drawSVG(containerId, tipo) {
     const mid = (a + b) / 2;
     svg += `<line x1="${b}" y1="${botY - 6}" x2="${b}" y2="${botY + 6}" stroke="${dimColor}" stroke-width="0.8"/>`;
     const isEdge = i === 1 || i === hPts.length - 1;
-    const val = isEdge ? Math.round(E) : gx[ec[i - 1]];
-    svg += `<text x="${mid}" y="${botY + 18}" font-family="DM Mono, monospace" font-size="10" fill="${dimColor}" text-anchor="middle">${val}</text>`;
+    const label = isEdge ? (tipo === 'simple' ? 'A' : 'B') : 'Z';
+    const val = isEdge ? Math.round(E) : Math.round(gx[ec[i - 1]]);
+    svg += `<text x="${mid}" y="${botY + 18}" font-family="DM Mono, monospace" font-size="12" fill="${dimColor}" text-anchor="middle" font-weight="500">${label}</text>`;
+    svg += `<text x="${mid}" y="${botY + 30}" font-family="DM Mono, monospace" font-size="8" fill="${dimColor}" text-anchor="middle">${val}</text>`;
     if (!isEdge) {
-      svg += `<text x="${mid}" y="${botY + 28}" font-family="DM Mono, monospace" font-size="7" fill="${dimColor}" text-anchor="middle" opacity="0.7">${s.base}+${colMax[ec[i - 2]].X}+${colMax[ec[i - 1]].X}</text>`;
+      svg += `<text x="${mid}" y="${botY + 40}" font-family="DM Mono, monospace" font-size="7" fill="${dimColor}" text-anchor="middle" opacity="0.7">${s.base}+${colMax[ec[i - 2]].X}+${colMax[ec[i - 1]].X}</text>`;
     }
   }
 
@@ -933,10 +955,12 @@ function drawSVG(containerId, tipo) {
     const mid = (a + b) / 2;
     svg += `<line x1="${leftX - 6}" y1="${b}" x2="${leftX + 6}" y2="${b}" stroke="${dimColor}" stroke-width="0.8"/>`;
     const isEdge = i === 1 || i === vPts.length - 1;
-    const val = isEdge ? Math.round(E) : gy[er[i - 1]];
-    svg += `<text x="${leftX - 10}" y="${mid}" font-family="DM Mono, monospace" font-size="10" fill="${dimColor}" text-anchor="end">${val}</text>`;
+    const label = isEdge ? (tipo === 'simple' ? 'A' : 'B') : 'Z';
+    const val = isEdge ? Math.round(E) : Math.round(gy[er[i - 1]]);
+    svg += `<text x="${leftX - 10}" y="${mid}" font-family="DM Mono, monospace" font-size="12" fill="${dimColor}" text-anchor="end" font-weight="500">${label}</text>`;
+    svg += `<text x="${leftX - 22}" y="${mid}" font-family="DM Mono, monospace" font-size="8" fill="${dimColor}" text-anchor="end">${val}</text>`;
     if (!isEdge) {
-      svg += `<text x="${leftX - 10}" y="${mid + 10}" font-family="DM Mono, monospace" font-size="7" fill="${dimColor}" text-anchor="end" opacity="0.7">${s.base}+${rowMax[er[i - 2]].Y}+${rowMax[er[i - 1]].Y}</text>`;
+      svg += `<text x="${leftX - 10}" y="${mid + 12}" font-family="DM Mono, monospace" font-size="7" fill="${dimColor}" text-anchor="end" opacity="0.7">${s.base}+${rowMax[er[i - 2]].Y}+${rowMax[er[i - 1]].Y}</text>`;
     }
   }
 
